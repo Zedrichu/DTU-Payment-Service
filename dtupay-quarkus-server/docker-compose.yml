@@ -1,0 +1,9 @@
+services:
+  dtupay-quarkus-app:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile
+    image: bank-simple-dtupay-quarkus
+    container_name: fmbank-simple-dtupay
+    ports:
+      - "8080:8080"
