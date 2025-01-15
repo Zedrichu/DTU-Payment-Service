@@ -1,6 +1,5 @@
 .vm-ctrl/
-
-tools/
+.tools/
 target/
 pom.xml.tag
 pom.xml.releaseBackup

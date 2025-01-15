@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.acme</groupId>
-    <artifactId>dtupay-quarkus-server</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <groupId>course.webservicedev</groupId>
+    <artifactId>dtupay-facade</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
-        <maven.compiler.release>23</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.17.5</quarkus.platform.version>
+        <quarkus.platform.version>3.17.6</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.0</surefire-plugin.version>
     </properties>
@@ -57,10 +58,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.sun.xml.ws</groupId>
-            <artifactId>jaxws-ri</artifactId>
-            <version>4.0.3</version>
-            <type>pom</type>
+            <groupId>dk.dtu.hubert</groupId>
+            <artifactId>messaging-utilities</artifactId>
+            <version>3.4</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -112,21 +113,13 @@
                 </executions>
                 <configuration>
                     <systemPropertyVariables>
-                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner
+                        </native.image.path>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-
-        <plugin>
-            <groupId>com.sun.xml.ws</groupId>
-            <artifactId>jaxws-maven-plugin</artifactId>
-            <version>4.0.0</version>
-            <executions> <execution>
-                <goals>
-                    <goal>wsimport</goal>
-                </goals> </execution> </executions> <configuration> <wsdlUrls> <wsdlUrl>http://fm-00.compute.dtu.dk/BankService.wsdl.xml</wsdlUrl> </wsdlUrls> <keep>true</keep> <packageName>dtu.ws.fastmoney</packageName> <sourceDestDir>src/main/java</sourceDestDir> </configuration>
-        </plugin>
         </plugins>
     </build>
 
