@@ -12,8 +12,8 @@ done
 
 cd end-to-end-test
 
-docker-compose up -d rabbitMq
+docker compose up -d rabbitMq
 
 sleep 5
 
-docker-compose up -d account-management dtupay-facade
+docker compose up -d account-management dtupay-facade
