@@ -22,12 +22,32 @@ public class AccountManagementService {
 	public void handleCustomerRegistrationRequested(Event event) {
 		var customer = event.getArgument(0, Customer.class);
 		var correlationId = event.getArgument(1, Correlator.class);
-		String id = customerRepository.createAccount(customer);
 
-		var registeredCustomer = new Customer(customer.firstName(), customer.lastName(), customer.cpr(), customer.bankAccountNo(), id);
-		Event newEvent = new Event("CustomerAccountCreated", new Object[]{ registeredCustomer, correlationId });
+
+		Event newEvent;
+		if (validateCustomerInfo(customer)) {
+			newEvent = acceptCustomer(customer, correlationId);
+		} else {
+			newEvent = declineCustomer(customer, correlationId);
+		}
 		this.mque.publish(newEvent);
 //		return id;
+	}
+
+	private Event acceptCustomer(Customer customer, Correlator correlationId) {
+		String id = customerRepository.createAccount(customer);
+		var registeredCustomer = new Customer(customer.firstName(), customer.lastName(), customer.cpr(), customer.bankAccountNo(), id);
+		return new Event("CustomerAccountCreated", new Object[]{ registeredCustomer, correlationId });
+	}
+
+	private Event declineCustomer(Customer customer, Correlator correlationId) {
+		return new Event("CustomerAccountCreationFailed", new Object[]{
+					"Account creation failed: Provided customer must have a valid bank account number and CPR", correlationId
+		});
+	}
+
+	private boolean validateCustomerInfo(Customer customer) {
+		return customer.cpr() != null && customer.bankAccountNo() != null;
 	}
 }
 
