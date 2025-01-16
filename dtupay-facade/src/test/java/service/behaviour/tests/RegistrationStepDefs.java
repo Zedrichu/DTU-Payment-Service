@@ -2,24 +2,30 @@ package service.behaviour.tests;
 
 import dtupay.facade.domain.CustomerService;
 import dtupay.facade.domain.models.Customer;
+import dtupay.facade.utilities.Correlator;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import messaging.Event;
 import messaging.MessageQueue;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
 
 public class RegistrationStepDefs {
 
-	private CompletableFuture<Event> publishedEvent = new CompletableFuture<>();
+	private Map<String, CompletableFuture<Event>> publishedEvents = new ConcurrentHashMap<>();
+	private Map<Customer, Correlator> correlators = new ConcurrentHashMap<>();
 	private MessageQueue q = new MessageQueue() {
 		@Override
 		public void publish(Event event) {
-			publishedEvent.complete(event);
+			var customer = event.getArgument(0, Customer.class);
+			publishedEvents.get(customer.firstName()).complete(event);
 		}
 
 		@Override
@@ -28,13 +34,12 @@ public class RegistrationStepDefs {
 
 	private CustomerService customerService = new CustomerService(q);
 	private Customer customer;
-	private CompletableFuture<String> futureCustomerId = new CompletableFuture<>();
+	private CompletableFuture<String> futureCustomer = new CompletableFuture<>();
 
 	@Given("a customer with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aCustomerWithNameACPRNumberABankAccountAndEmptyId(String firstName, String cpr) {
 		customer = new Customer(firstName, "", cpr, "123", null);
-//		customer.setFirstName(firstName);
-//		customer.setCpr(cpr);
+		publishedEvents.put(customer.firstName(), new CompletableFuture<>());
 		assertNull(customer.id());
 	}
 
@@ -42,29 +47,79 @@ public class RegistrationStepDefs {
 	public void theCustomerIsBeingRegistered() {
 		new Thread(() -> {
 			var result = customerService.register(customer);
-			futureCustomerId.complete(result);
+			futureCustomer.complete(result);
 		}).start();
 	}
 
-	@Then("the {string} event is sent")
+	@Then("the {string} event for the customer is sent")
 	public void theEventIsSent(String eventType) {
-		Event event = new Event(eventType, new Object[]{ customer });
-		assertEquals(event, publishedEvent.join());
+		Event event = publishedEvents.get(customer.firstName()).join();
+		assertEquals(eventType, event.getType());
+
+		var cust = event.getArgument(0, Customer.class);
+		var correlator = event.getArgument(1, Correlator.class);
+		correlators.put(cust, correlator);
 	}
 
 	@When("the {string} event is received with non-empty id")
 	public void theEventIsReceivedWithNonEmptyId(String arg0) {
 		//simulation of event
-		var c = new Customer(customer.firstName(),
-												 customer.lastName(),
-													customer.cpr(),
-													customer.bankAccountNo(),
-													"1234512");
-		customerService.handleCustomerRegistered(new Event("..", new Object[] {c}));
+//		var c = new Customer(customer.firstName(),
+//												 customer.lastName(),
+//													customer.cpr(),
+//													customer.bankAccountNo(),
+//													"1234512");
+		var correlator = correlators.get(customer);
+		assertNotNull(correlator);
+		customerService.handleCustomerAccountCreated(new Event(arg0,
+					new Object[] {"1234512", correlators.get(customer)}));
 	}
+
+	private String futureCustomerId;
 
 	@Then("the customer is registered and his id is set")
 	public void theCustomerIsRegisteredAndHisIdIsSet() {
-		assertNotNull(futureCustomerId.join());
+		futureCustomerId = futureCustomer.join();
+		assertNotNull(futureCustomerId);
 	}
+
+	private Customer customer2;
+	private CompletableFuture<String> futureCustomer2 = new CompletableFuture<>();
+
+	@Given("a second customer with name {string}, a CPR number {string}, a bank account and empty id")
+	public void aSecondCustomerWithNameACPRNumberABankAccountAndEmptyId(String name, String cpr) {
+		customer2 = new Customer(name, "", cpr, "104", null);
+	}
+
+	@When("the second customer is being registered")
+	public void theSecondCustomerIsBeingRegistered() {
+		new Thread(() -> {
+			var result = customerService.register(customer2);
+			futureCustomer2.complete(result);
+		}).start();
+	}
+
+	@Then("the {string} event for the second customer is sent")
+	public void theEventForTheSecondCustomerIsSent(String eventType) {
+		Event event = publishedEvents.get(customer2.firstName()).join();
+		assertEquals(eventType, event.getType());
+
+		var cust = event.getArgument(0, Customer.class);
+		var correlator = event.getArgument(1, Correlator.class);
+		correlators.put(cust, correlator);
+	}
+
+	private String futureCustomerId2;
+
+	@And("the second customer is registered and his id is set")
+	public void theSecondCustomerIsRegisteredAndHisIdIsSet() {
+		futureCustomerId2 = futureCustomer2.join();
+		assertNotNull(futureCustomerId2);
+	}
+
+	@And("the customer IDs are different")
+	public void theCustomerIDsAreDifferent() {
+		assertNotEquals(futureCustomerId, futureCustomerId2);
+	}
+
 }

@@ -7,6 +7,6 @@ import io.cucumber.junit.CucumberOptions;
 import io.cucumber.junit.CucumberOptions.SnippetType;
 
 @RunWith(Cucumber.class)
-@CucumberOptions(plugin = "summary", snippets = SnippetType.CAMELCASE, features = "features")
+@CucumberOptions(plugin = "summary", snippets = SnippetType.CAMELCASE, features = "src/features")
 public class CucumberTest {
 }

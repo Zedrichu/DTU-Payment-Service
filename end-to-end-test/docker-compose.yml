@@ -5,3 +5,9 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+
+  dtupay-facade:
+    image: dtupay-facade-service:latest
+    container_name: rest-facade
+    ports:
+      - "8080:8080"

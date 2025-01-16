@@ -1,0 +1,6 @@
+services:
+  dtupay-facade:
+    image: dtupay-facade-service
+    build:
+      context: .
+      dockerfile: docker/Dockerfile

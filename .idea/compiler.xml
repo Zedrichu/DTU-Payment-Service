@@ -7,9 +7,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="messaging-utilities" />
         <module name="dtupay-facade" />
+        <module name="account-management-service" />
         <module name="end-to-end-test" />
+        <module name="messaging-utilities" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

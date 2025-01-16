@@ -3,6 +3,10 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/DTU Payment Service.iml" filepath="$PROJECT_DIR$/.idea/DTU Payment Service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/obsolete/dtupay-quarkus-server/dtupay-quarkus-server.iml" filepath="$PROJECT_DIR$/obsolete/dtupay-quarkus-server/dtupay-quarkus-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/obsolete/rest-dtupay-client/rest-dtupay-client.iml" filepath="$PROJECT_DIR$/obsolete/rest-dtupay-client/rest-dtupay-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/obsolete/student-id-service/student-id-service.iml" filepath="$PROJECT_DIR$/obsolete/student-id-service/student-id-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/obsolete/student-registration-service/student-registration-service.iml" filepath="$PROJECT_DIR$/obsolete/student-registration-service/student-registration-service.iml" />
     </modules>
   </component>
 </project>
