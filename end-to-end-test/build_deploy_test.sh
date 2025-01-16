@@ -14,8 +14,13 @@ cd end-to-end-test
 
 docker compose up -d rabbitMq
 
-sleep 5
+sleep 10
 
 docker compose up -d account-management dtupay-facade
 
 mvn clean test
+
+# delay finish
+sleep 1
+
+docker compose down
