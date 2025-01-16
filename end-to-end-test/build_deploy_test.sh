@@ -17,3 +17,5 @@ docker-compose up -d rabbitMq
 sleep 5
 
 docker-compose up -d account-management dtupay-facade
+
+mvn clean test
