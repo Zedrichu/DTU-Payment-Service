@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 mvn clean package
-docker-compose build dtupay-facade
+docker compose build dtupay-facade
