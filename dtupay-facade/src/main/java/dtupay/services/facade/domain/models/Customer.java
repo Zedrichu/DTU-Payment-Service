@@ -1,6 +1,5 @@
-package dtupay.facade.domain.models;
+package dtupay.services.facade.domain.models;
 
-import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbProperty;
 
 public record Customer(String firstName, String lastName, String cpr, String bankAccountNo, String id) {

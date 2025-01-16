@@ -1,6 +1,6 @@
-package dtupay.facade.adapter.rest;
+package dtupay.services.facade.adapter.rest;
 
-import dtupay.facade.domain.MerchantService;
+import dtupay.services.facade.domain.MerchantService;
 import messaging.implementations.RabbitMqQueue;
 
 public class MerchantFactory {

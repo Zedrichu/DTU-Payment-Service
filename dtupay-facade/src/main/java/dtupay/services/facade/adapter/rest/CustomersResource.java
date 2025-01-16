@@ -1,7 +1,7 @@
-package dtupay.facade.adapter.rest;
+package dtupay.services.facade.adapter.rest;
 
-import dtupay.facade.domain.models.Customer;
-import dtupay.facade.domain.CustomerService;
+import dtupay.services.facade.domain.models.Customer;
+import dtupay.services.facade.domain.CustomerService;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -16,7 +16,7 @@ public class CustomersResource {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   public Response register(Customer customer) {
-    String customerId = customerService.register(customer);
+    String customerId = customerService.register(customer).id();
     return Response.ok().entity(customerId).build();
   }
 }

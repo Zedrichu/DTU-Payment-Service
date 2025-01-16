@@ -1,8 +1,8 @@
 package service.behaviour.tests;
 
-import dtupay.facade.domain.CustomerService;
-import dtupay.facade.domain.models.Customer;
-import dtupay.facade.utilities.Correlator;
+import dtupay.services.facade.domain.CustomerService;
+import dtupay.services.facade.domain.models.Customer;
+import dtupay.services.facade.utilities.Correlator;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -24,8 +24,8 @@ public class RegistrationStepDefs {
 	private MessageQueue q = new MessageQueue() {
 		@Override
 		public void publish(Event event) {
-			var customer = event.getArgument(0, Customer.class);
-			publishedEvents.get(customer.firstName()).complete(event);
+			var c = event.getArgument(0, Customer.class);
+			publishedEvents.get(c.firstName()).complete(event);
 		}
 
 		@Override
@@ -33,8 +33,11 @@ public class RegistrationStepDefs {
 	};
 
 	private CustomerService customerService = new CustomerService(q);
+
 	private Customer customer;
-	private CompletableFuture<String> futureCustomer = new CompletableFuture<>();
+	private Customer customer2;
+	private CompletableFuture<Customer> futureCustomer = new CompletableFuture<>();
+	private CompletableFuture<Customer> futureCustomer2 = new CompletableFuture<>();
 
 	@Given("a customer with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aCustomerWithNameACPRNumberABankAccountAndEmptyId(String firstName, String cpr) {
@@ -61,34 +64,30 @@ public class RegistrationStepDefs {
 		correlators.put(cust, correlator);
 	}
 
-	@When("the {string} event is received with non-empty id")
+	@When("the {string} event is received for customer with non-empty id")
 	public void theEventIsReceivedWithNonEmptyId(String arg0) {
 		//simulation of event
-//		var c = new Customer(customer.firstName(),
-//												 customer.lastName(),
-//													customer.cpr(),
-//													customer.bankAccountNo(),
-//													"1234512");
 		var correlator = correlators.get(customer);
 		assertNotNull(correlator);
+		var newCustomer = new Customer(customer.firstName(), customer.lastName(), customer.cpr(), customer.bankAccountNo(), "1234512");
 		customerService.handleCustomerAccountCreated(new Event(arg0,
-					new Object[] {"1234512", correlators.get(customer)}));
+					new Object[] {newCustomer, correlators.get(customer)}));
 	}
 
 	private String futureCustomerId;
 
 	@Then("the customer is registered and his id is set")
 	public void theCustomerIsRegisteredAndHisIdIsSet() {
-		futureCustomerId = futureCustomer.join();
+		futureCustomerId = futureCustomer.join().id();
 		assertNotNull(futureCustomerId);
 	}
 
-	private Customer customer2;
-	private CompletableFuture<String> futureCustomer2 = new CompletableFuture<>();
 
 	@Given("a second customer with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aSecondCustomerWithNameACPRNumberABankAccountAndEmptyId(String name, String cpr) {
 		customer2 = new Customer(name, "", cpr, "104", null);
+		publishedEvents.put(customer2.firstName(), new CompletableFuture<>());
+		assertNull(customer2.id());
 	}
 
 	@When("the second customer is being registered")
@@ -109,11 +108,20 @@ public class RegistrationStepDefs {
 		correlators.put(cust, correlator);
 	}
 
+	@When("the {string} event is received for second customer with non-empty id")
+	public void theEventIsReceivedForSecondCustomerWithNonEmptyId(String arg0) {
+		var correlator = correlators.get(customer2);
+		assertNotNull(correlator);
+		var newCustomer = new Customer(customer2.firstName(), customer2.lastName(), customer2.cpr(), customer2.bankAccountNo(), "5266734512");
+		customerService.handleCustomerAccountCreated(new Event(arg0,
+					new Object[] {newCustomer, correlators.get(customer2)}));
+	}
+
 	private String futureCustomerId2;
 
 	@And("the second customer is registered and his id is set")
 	public void theSecondCustomerIsRegisteredAndHisIdIsSet() {
-		futureCustomerId2 = futureCustomer2.join();
+		futureCustomerId2 = futureCustomer2.join().id();
 		assertNotNull(futureCustomerId2);
 	}
 

@@ -1,6 +1,6 @@
-package dtupay.facade.domain;
+package dtupay.services.facade.domain;
 
-import dtupay.facade.domain.models.Merchant;
+import dtupay.services.facade.domain.models.Merchant;
 import messaging.MessageQueue;
 import messaging.Event;
 

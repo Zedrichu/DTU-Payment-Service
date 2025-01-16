@@ -1,4 +1,4 @@
-package dtupay.facade.utilities;
+package dtupay.services.account.utilities;
 
 import lombok.Value;
 
@@ -7,7 +7,11 @@ import java.util.UUID;
 @Value
 public class Correlator {
 
-	private UUID id;
+	public UUID getId() {
+		return id;
+	}
+
+	UUID id;
 
 	public Correlator(UUID id) { this.id = id; }
 

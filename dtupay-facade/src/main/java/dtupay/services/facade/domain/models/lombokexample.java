@@ -1,4 +1,4 @@
-package dtupay.facade.domain.models;
+package dtupay.services.facade.domain.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

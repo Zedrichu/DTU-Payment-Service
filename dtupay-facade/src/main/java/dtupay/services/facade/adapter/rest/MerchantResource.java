@@ -1,12 +1,4 @@
-package dtupay.facade.adapter.rest;
-
-import dtupay.facade.domain.MerchantService;
-import dtupay.facade.domain.models.Merchant;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+package dtupay.services.facade.adapter.rest;
 
 //@Path("/merchant")
 //public class MerchantResource {

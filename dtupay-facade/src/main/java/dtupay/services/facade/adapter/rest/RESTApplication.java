@@ -1,4 +1,4 @@
-package dtupay.facade.adapter.rest;
+package dtupay.services.facade.adapter.rest;
 
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;

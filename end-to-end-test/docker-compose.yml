@@ -11,3 +11,14 @@ services:
     container_name: rest-facade
     ports:
       - "8080:8080"
+    depends_on:
+      rabbitMq:
+        condition: service_started
+
+
+  account-management:
+    image: account-mgmt-service
+    container_name: account-manager
+    depends_on:
+      rabbitMq:
+        condition: service_started
