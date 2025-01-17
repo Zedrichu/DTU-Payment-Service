@@ -1,7 +1,8 @@
 package dtupay.services.account;
 
 import dtupay.services.account.annotations.MethodAuthor;
-import dtupay.services.account.domain.AccountMemoryRepository;
+import dtupay.services.account.domain.AccountRepository;
+import dtupay.services.account.domain.MemoryAccountRepository;
 import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.utilities.Correlator;
 
@@ -16,7 +17,7 @@ public class AccountManagementService {
 	private static final Logger logger = LoggerFactory.getLogger(AccountManagementService.class);
 
 	private MessageQueue mque;
-	private AccountMemoryRepository<Customer> customerRepository = new AccountMemoryRepository<>();
+	private AccountRepository<Customer> customerRepository = new MemoryAccountRepository<>();
 
 	public AccountManagementService(MessageQueue mque) {
 		logger.debug("Initializing AccountManagementService");

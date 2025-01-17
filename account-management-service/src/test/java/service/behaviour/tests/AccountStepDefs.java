@@ -11,7 +11,6 @@ import messaging.MessageQueue;
 import org.mockito.ArgumentCaptor;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -28,7 +27,7 @@ public class AccountStepDefs {
 	@When("a {string} event for a customer is received")
 	public void aEventForACustomerIsReceived(String arg0) {
 		customer = new Customer("test", "test", "123131-1243", "bank1", null);
-		assertNull(customer.id());
+		assertNull(customer.payId());
 		correlator = Correlator.random();
 		accountManagementService.handleCustomerRegistrationRequested(new Event(arg0, new Object[] { customer, correlator }));
 	}
@@ -57,7 +56,7 @@ public class AccountStepDefs {
 		assertEquals(customer.lastName(), recCustomer.lastName());
 		assertEquals(customer.cpr(), recCustomer.cpr());
 		assertEquals(customer.bankAccountNo(), recCustomer.bankAccountNo());
-		assertNotNull(recCustomer.id());
+		assertNotNull(recCustomer.payId());
 	}
 
 	@When("a {string} event for a customer is received with missing bank account number")

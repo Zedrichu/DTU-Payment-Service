@@ -1,9 +1,9 @@
-package dtupay.services.facade.adapter.rest;
+package dtupay.services.facade.adapter.mq;
 
 import dtupay.services.facade.domain.MerchantService;
 import messaging.implementations.RabbitMqQueue;
 
-public class MerchantFactory {
+public class MerchantServiceFactory {
 	static MerchantService service = null;
 
 	public synchronized MerchantService getService() {

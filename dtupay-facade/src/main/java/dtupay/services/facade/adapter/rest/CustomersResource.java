@@ -1,8 +1,8 @@
 package dtupay.services.facade.adapter.rest;
 
+import dtupay.services.facade.adapter.mq.CustomerServiceFactory;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.CustomerService;
-import dtupay.services.facade.exception.AccountCreationException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -20,7 +20,7 @@ import java.util.concurrent.CompletionException;
 public class CustomersResource {
 
   private Logger logger = LoggerFactory.getLogger(CustomersResource.class);
-  private CustomerService customerService = new CustomerFactory().getService();
+  private CustomerService customerService = new CustomerServiceFactory().getService();
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -29,7 +29,7 @@ public class CustomersResource {
     logger.info("Customer registration resource accessed: {}", customer);
     try {
       Customer registeredCustomer = customerService.register(customer);
-      String id = registeredCustomer.id();
+      String id = registeredCustomer.payId();
       return Response
             .created(new URI("localhost:8080/customers/"+id))
             .entity(registeredCustomer)

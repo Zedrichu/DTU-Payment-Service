@@ -1,9 +1,9 @@
-package dtupay.services.facade.adapter.rest;
+package dtupay.services.facade.adapter.mq;
 
 import dtupay.services.facade.domain.CustomerService;
 import messaging.implementations.RabbitMqQueue;
 
-public class CustomerFactory {
+public class CustomerServiceFactory {
 
 	static CustomerService service = null;
 

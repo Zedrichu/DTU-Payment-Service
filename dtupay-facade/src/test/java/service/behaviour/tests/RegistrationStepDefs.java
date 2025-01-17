@@ -45,7 +45,7 @@ public class RegistrationStepDefs {
 	public void aCustomerWithNameACPRNumberABankAccountAndEmptyId(String firstName, String cpr) {
 		customer = new Customer(firstName, "", cpr, "123", null);
 		publishedEvents.put(customer.firstName(), new CompletableFuture<>());
-		assertNull(customer.id());
+		assertNull(customer.payId());
 	}
 
 	@When("the customer is being registered")
@@ -85,7 +85,7 @@ public class RegistrationStepDefs {
 
 	@Then("the customer is registered and his id is set")
 	public void theCustomerIsRegisteredAndHisIdIsSet() {
-		futureCustomerId = futureCustomer.join().id();
+		futureCustomerId = futureCustomer.join().payId();
 		assertNotNull(futureCustomerId);
 	}
 
@@ -94,7 +94,7 @@ public class RegistrationStepDefs {
 	public void aSecondCustomerWithNameACPRNumberABankAccountAndEmptyId(String name, String cpr) {
 		customer2 = new Customer(name, "", cpr, "104", null);
 		publishedEvents.put(customer2.firstName(), new CompletableFuture<>());
-		assertNull(customer2.id());
+		assertNull(customer2.payId());
 	}
 
 	@When("the second customer is being registered")
@@ -128,7 +128,7 @@ public class RegistrationStepDefs {
 
 	@And("the second customer is registered and his id is set")
 	public void theSecondCustomerIsRegisteredAndHisIdIsSet() {
-		futureCustomerId2 = futureCustomer2.join().id();
+		futureCustomerId2 = futureCustomer2.join().payId();
 		assertNotNull(futureCustomerId2);
 	}
 
@@ -141,7 +141,7 @@ public class RegistrationStepDefs {
 	public void aCustomerWithNameACPRNumberNoBankAccountAndEmptyId(String name, String cpr) {
 		customer = new Customer(name, "", cpr, null, null);
 		publishedEvents.put(customer.firstName(), new CompletableFuture<>());
-		assertNull(customer.id());
+		assertNull(customer.payId());
 	}
 
 	@When("the {string} event is received for the customer")
@@ -157,7 +157,7 @@ public class RegistrationStepDefs {
 	@Then("an exception raises with error message {string}")
 	public void anExceptionRaisesWithErrorMessage(String arg0) {
 		try {
-			futureCustomerId = futureCustomer.join().id();
+			futureCustomerId = futureCustomer.join().payId();
 		} catch (CompletionException exception) {
 			assertNotNull(exception);
 			assertTrue(exception.getCause() instanceof AccountCreationException);

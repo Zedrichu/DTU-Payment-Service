@@ -1,12 +1,13 @@
 package dtupay.services.account.domain;
 
-import dtupay.services.account.domain.models.Customer;
+import dtupay.services.account.annotations.ClassAuthor;
 
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class AccountMemoryRepository<T> implements AccountRepository<T> {
+@ClassAuthor(author = "Adrian Zvizdenco", stdno = "s204683")
+public class MemoryAccountRepository<T> implements AccountRepository<T> {
 	private final Map<String, T> accounts = new ConcurrentHashMap<>();
 
 	@Override
