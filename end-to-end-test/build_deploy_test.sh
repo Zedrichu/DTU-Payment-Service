@@ -4,7 +4,7 @@ docker image prune -f
 
 cd ..
 
-for dir in dtupay-facade account-management-service messaging-utilities-3.4; do
+for dir in messaging-utilities dtupay-facade account-management-service; do
   pushd $dir
   ./build.sh
   popd
