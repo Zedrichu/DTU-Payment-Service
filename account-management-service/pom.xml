@@ -12,8 +12,15 @@
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <surefire-plugin.version>3.5.0</surefire-plugin.version>
+
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-json-binding-provider</artifactId>
+            <version>7.0.0.Alpha1</version>
+        </dependency>
         <dependency>
             <groupId>dk.dtu.hubert</groupId>
             <artifactId>messaging-utilities</artifactId>
@@ -52,6 +59,20 @@
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
         </dependency>
+
+        <!-- SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.9</version> <!-- Replace with the latest version -->
+        </dependency>
+
+        <!-- Logback Implementation -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.6</version> <!-- Replace with the latest version -->
+        </dependency>
     </dependencies>
 
     <build>
@@ -81,6 +102,7 @@
                         <phase>package</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
+                            <goal>properties</goal>
                         </goals>
                         <configuration>
                             <outputDirectory>
@@ -89,6 +111,17 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire-plugin.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <maven.home>${maven.home}</maven.home>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -5,6 +5,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 1s
+      timeout: 3s
+      retries: 15
 
   dtupay-facade:
     image: dtupay-facade-service:latest
@@ -13,7 +18,7 @@ services:
       - "8080:8080"
     depends_on:
       rabbitMq:
-        condition: service_started
+        condition: service_healthy
 
 
   account-management:
@@ -21,4 +26,4 @@ services:
     container_name: account-manager
     depends_on:
       rabbitMq:
-        condition: service_started
+        condition: service_healthy

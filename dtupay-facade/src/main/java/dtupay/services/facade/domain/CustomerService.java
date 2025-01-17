@@ -1,6 +1,7 @@
 package dtupay.services.facade.domain;
 
 import dtupay.services.facade.domain.models.Customer;
+import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.utilities.Correlator;
 import messaging.Event;
 import messaging.MessageQueue;
@@ -20,7 +21,7 @@ public class CustomerService {
     this.mque.addHandler("CustomerAccountCreated", this::handleCustomerAccountCreated);
   }
 
-  public Customer register(Customer customer) {
+  public Customer register(Customer customer) throws AccountCreationException {
     var correlationId = Correlator.random();
     correlations.put(correlationId, new CompletableFuture<>());
     Event event = new Event("CustomerRegistrationRequested", new Object[]{ customer, correlationId });
@@ -34,4 +35,9 @@ public class CustomerService {
     correlations.get(correlationId).complete(s);
   }
 
+  public void handleCustomerAccountCreationFailed(Event event) {
+    var errorMessage = event.getArgument(0, String.class);
+    var correlationId = event.getArgument(1, Correlator.class);
+    correlations.get(correlationId).completeExceptionally(new AccountCreationException(errorMessage));
+  }
 }

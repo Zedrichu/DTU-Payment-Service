@@ -62,7 +62,7 @@ public class AccountStepDefs {
 
 	@When("a {string} event for a customer is received with missing bank account number")
 	public void aEventForACustomerIsReceivedWithMissingBankAccountNumber(String arg0) {
-		customerNoBank = new Customer("test", "test", "123131-1243", null, null);
+		customerNoBank = new Customer("test", "test", "123131-1243", "", null);
 		correlator = Correlator.random();
 		accountManagementService.handleCustomerRegistrationRequested(new Event(arg0, new Object[] { customerNoBank, correlator }));
 	}

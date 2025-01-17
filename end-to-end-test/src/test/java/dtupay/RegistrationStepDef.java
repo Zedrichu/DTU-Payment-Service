@@ -14,8 +14,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class RegistrationStepDef {
 
@@ -23,11 +22,11 @@ public class RegistrationStepDef {
   private BankService bankService = new BankServiceService().getBankServicePort();
   private String bankAccountNo;
   private CustomerService customerService = new CustomerService();
-  private String customerId;
-  private String customerId2;
+  private Customer registeredCustomer;
+  private Customer registeredCustomer2;
   private List<String> bankAccounts = new ArrayList<>();
 
-  @Given("a unregistered user with CPR {string} and name {string} and lastname {string}")
+  @Given("an unregistered user with CPR {string} and name {string} and lastname {string}")
   public void aUserWithCPRAndNameAndLastname(String cpr, String firstName, String lastName) {
     user = new User();
     user.setFirstName(firstName);
@@ -44,15 +43,15 @@ public class RegistrationStepDef {
 
   @When("the user is registered as a customer in DTUPay")
   public void theUserIsRegisteredAsACustomerInDTUPay() {
-    customerId = customerService.register(new Customer(user.getFirstName(),
+    registeredCustomer = customerService.register(new Customer(user.getFirstName(),
                                           user.getLastName(),
                                           user.getCprNumber(),
                                           bankAccountNo, null));
   }
   @Then("the customer is registered with a non-empty customer id")
   public void theCustomerIsRegisteredWithANonEmptyCustomerId() {
-    System.out.println("Customer ID: " + customerId);
-    assertNotNull(customerId);
+
+    assertNotNull(registeredCustomer.id());
   }
 
   @After
@@ -62,17 +61,33 @@ public class RegistrationStepDef {
     }
   }
 
+  private Exception exception;
+
   @When("the second user is registered as a customer in DTUPay")
   public void theSecondUserIsRegisteredAsACustomerInDTUPay() {
     customerId2 = customerService.register(new Customer(user.getFirstName(),
           user.getLastName(),
           user.getCprNumber(),
           bankAccountNo, null));
+    } catch (Exception e) {
+      exception = e;
+    }
   }
 
   @Then("the customer IDs are different")
   public void theCustomerIDsAreDifferent() {
-    assertNotEquals(customerId,customerId2);
+    assertNotEquals(registeredCustomer.id(),registeredCustomer2.id());
   }
 
+  @And("the user does not have a bank account")
+  public void theUserDoesNotHaveABankAccount() {
+    bankAccountNo = null;
+  }
+
+  @Then("the user gets an error message {string} and is not registered")
+  public void theUserGetsAnErrorMessage(String errorMessage) {
+    assertNull(registeredCustomer.id());
+    assertTrue(exception instanceof AccountCreationException);
+    assertEquals(errorMessage, exception.getMessage());
+  }
 }

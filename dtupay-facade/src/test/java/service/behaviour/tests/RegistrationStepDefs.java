@@ -2,6 +2,7 @@ package service.behaviour.tests;
 
 import dtupay.services.facade.domain.CustomerService;
 import dtupay.services.facade.domain.models.Customer;
+import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.utilities.Correlator;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -12,6 +13,7 @@ import messaging.MessageQueue;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -49,8 +51,12 @@ public class RegistrationStepDefs {
 	@When("the customer is being registered")
 	public void theCustomerIsBeingRegistered() {
 		new Thread(() -> {
-			var result = customerService.register(customer);
-			futureCustomer.complete(result);
+			try {
+				var result = customerService.register(customer);
+				futureCustomer.complete(result);
+			} catch (Exception e) {
+				futureCustomer.completeExceptionally(e);
+			}
 		}).start();
 	}
 
@@ -130,4 +136,31 @@ public class RegistrationStepDefs {
 		assertNotEquals(futureCustomerId, futureCustomerId2);
 	}
 
+	@Given("a customer with name {string}, a CPR number {string}, no bank account and empty id")
+	public void aCustomerWithNameACPRNumberNoBankAccountAndEmptyId(String name, String cpr) {
+		customer = new Customer(name, "", cpr, null, null);
+		publishedEvents.put(customer.firstName(), new CompletableFuture<>());
+		assertNull(customer.id());
+	}
+
+	@When("the {string} event is received for the customer")
+	public void theEventIsReceivedForTheCustomer(String eventName) {
+		var correlator = correlators.get(customer);
+		var errorMessage = "Account creation failed: Provided customer must have a valid bank account number and CPR";
+		assertNotNull(correlator);
+		customerService.handleCustomerAccountCreationFailed(new Event(eventName,
+					new Object[] {errorMessage, correlators.get(customer)}));
+
+	}
+
+	@Then("an exception raises with error message {string}")
+	public void anExceptionRaisesWithErrorMessage(String arg0) {
+		try {
+			futureCustomerId = futureCustomer.join().id();
+		} catch (CompletionException exception) {
+			assertNotNull(exception);
+			assertTrue(exception.getCause() instanceof AccountCreationException);
+			assertEquals(arg0, exception.getCause().getMessage());
+		}
+	}
 }
