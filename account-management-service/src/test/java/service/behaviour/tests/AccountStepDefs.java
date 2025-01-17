@@ -46,7 +46,7 @@ public class AccountStepDefs {
 			verify(queue).publish(eventCaptor.capture());
 			receivedEvent = eventCaptor.getValue();
 		}
-		assertEquals(eventName, receivedEvent.getType());
+		assertEquals(eventName, receivedEvent.getTopic());
 		assertEquals(correlator.getId(), receivedEvent.getArgument(1, Correlator.class).getId());
 	}
 
