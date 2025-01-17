@@ -63,7 +63,7 @@ public class RegistrationStepDefs {
 	@Then("the {string} event for the customer is sent")
 	public void theEventIsSent(String eventType) {
 		Event event = publishedEvents.get(customer.firstName()).join();
-		assertEquals(eventType, event.getType());
+		assertEquals(eventType, event.getTopic());
 
 		var cust = event.getArgument(0, Customer.class);
 		var correlator = event.getArgument(1, Correlator.class);
@@ -108,7 +108,7 @@ public class RegistrationStepDefs {
 	@Then("the {string} event for the second customer is sent")
 	public void theEventForTheSecondCustomerIsSent(String eventType) {
 		Event event = publishedEvents.get(customer2.firstName()).join();
-		assertEquals(eventType, event.getType());
+		assertEquals(eventType, event.getTopic());
 
 		var cust = event.getArgument(0, Customer.class);
 		var correlator = event.getArgument(1, Correlator.class);

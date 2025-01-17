@@ -13,21 +13,10 @@
         <module name="messaging-utilities" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="dtupay-quarkus-server" target="23" />
-      <module name="old-dtupay-facade" target="21" />
-      <module name="rest-dtupay-client" target="23" />
-      <module name="student-id-service" target="11" />
-      <module name="student-registration-service" target="11" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="dtupay-facade" options="-parameters" />
-      <module name="dtupay-quarkus-server" options="-parameters" />
-      <module name="old-dtupay-facade" options="-parameters" />
-      <module name="student-id-service" options="-parameters" />
-      <module name="student-registration-service" options="-parameters" />
     </option>
   </component>
 </project>

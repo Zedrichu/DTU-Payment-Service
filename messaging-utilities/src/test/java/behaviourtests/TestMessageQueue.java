@@ -3,19 +3,25 @@ package behaviourtests;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 
+import com.google.gson.reflect.TypeToken;
+
 import messaging.Event;
+import messaging.implementations.MessageQueueAsync;
 import messaging.implementations.RabbitMqQueue;
 
 public class TestMessageQueue {
 
-	// @Test
+	@Test
 	public void testPublishSubscribe() {
-		var q = new RabbitMqQueue();
+		var q = new MessageQueueAsync();
 		var done = new Object() {
 			boolean value = false;
 		};
@@ -27,9 +33,9 @@ public class TestMessageQueue {
 		assertTrue(done.value);
 	}
 
-	// @Test
+	@Test
 	public void testHandlerExecutedTwice() {
-		var q = new RabbitMqQueue();
+		var q = new MessageQueueAsync();
 		final var i = new Object() {
 			public int value = 0;
 		};
@@ -42,9 +48,9 @@ public class TestMessageQueue {
 		assertEquals(2, i.value);
 	}
 
-	// @Test
+	@Test
 	public void testPublishWithTwoHandlers() {
-		var q = new RabbitMqQueue();
+		var q = new MessageQueueAsync();
 		var done1 = new Object() {
 			boolean value = false;
 		};
@@ -67,11 +73,11 @@ public class TestMessageQueue {
 	 * One handler completes a CompletableFuture waited for in another handler. That
 	 * handler initiates the first handler by publishing an event.
 	 */
-	// @Test
+	@Test
 	public void testNoDeadlock() {
 		var cf = new CompletableFuture<Boolean>();
 		var done = new CompletableFuture<Boolean>();
-		var q = new RabbitMqQueue();
+		var q = new MessageQueueAsync();
 		q.addHandler("one", e -> {
 			cf.join();
 			done.complete(true); // We have reached passed the blocking join.
@@ -94,12 +100,12 @@ public class TestMessageQueue {
 		}
 	}
 
-	// @Test
+	// @Test // Only works when using RabbitMq
 	public void testTopicMatching() {
 		var q = new RabbitMqQueue();
 		var s = new HashSet<String>();
 		q.addHandler("one.*", e -> {
-			s.add(e.getType());
+			s.add(e.getTopic());
 		});
 		q.publish(new Event("one.one"));
 		q.publish(new Event("one.two"));
@@ -108,5 +114,35 @@ public class TestMessageQueue {
 		expected.add("one.one");
 		expected.add("one.two");
 		assertEquals(expected, s);
+	}
+	
+	// @Test
+	public void testDeserializationOfLists() throws InterruptedException, ExecutionException {
+		var q = new RabbitMqQueue();
+		CompletableFuture<List<String>> actual = new CompletableFuture<List<String>>();
+		q.addHandler("list", e -> {
+			actual.complete(e.getArgument(0, new TypeToken<List<String>>(){}.getType()));
+		});
+		List<String> expected = new ArrayList<>();
+		expected.add("1");
+		expected.add("2");
+		q.publish(new Event("list", expected));
+		actual.join();
+		assertEquals(expected,actual.get());
+	}
+	
+	@Test
+	public void testDeserializationOfListsInProcessQueue() throws InterruptedException, ExecutionException {
+		var q = new MessageQueueAsync();
+		CompletableFuture<List<String>> actual = new CompletableFuture<List<String>>();
+		q.addHandler("list", e -> {
+			actual.complete(e.getArgument(0, new TypeToken<List<String>>(){}.getType()));
+		});
+		List<String> expected = new ArrayList<>();
+		expected.add("1");
+		expected.add("2");
+		q.publish(new Event("list", expected));
+		actual.join();
+		assertEquals(expected,actual.get());
 	}
 }

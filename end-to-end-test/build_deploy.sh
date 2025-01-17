@@ -4,7 +4,8 @@ docker image prune -f
 
 cd ..
 
-for dir in messaging-utilities-3.4 dtupay-facade account-management-service; do
+# Setup by Adrian Zvizdenco (s204683)
+for dir in messaging-utilities dtupay-facade account-management-service; do
   pushd $dir
   ./build.sh
   popd

@@ -7,22 +7,26 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.CompletionException;
 
 @Path("/customers")
 public class CustomersResource {
 
+  private Logger logger = LoggerFactory.getLogger(CustomersResource.class);
   private CustomerService customerService = new CustomerFactory().getService();
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Response register(Customer customer) throws URISyntaxException {
+    logger.info("Customer registration resource accessed: {}", customer);
     try {
       Customer registeredCustomer = customerService.register(customer);
       String id = registeredCustomer.id();
@@ -30,10 +34,10 @@ public class CustomersResource {
             .created(new URI("localhost:8080/customers/"+id))
             .entity(registeredCustomer)
             .build();
-    } catch (AccountCreationException exception) {
+    } catch (CompletionException exception) {
       return Response
               .status(Response.Status.BAD_REQUEST)
-              .entity(exception.getMessage())
+              .entity(exception.getCause().getMessage())
               .build();
     }
   }

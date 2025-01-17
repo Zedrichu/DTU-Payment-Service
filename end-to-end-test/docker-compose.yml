@@ -5,7 +5,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    healthcheck:
+    healthcheck: # Setup by Adrian Zvizdenco (s204683)
       test: rabbitmq-diagnostics check_port_connectivity
       interval: 1s
       timeout: 3s

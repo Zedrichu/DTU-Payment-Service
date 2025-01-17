@@ -43,14 +43,18 @@ public class RegistrationStepDef {
 
   @When("the user is registered as a customer in DTUPay")
   public void theUserIsRegisteredAsACustomerInDTUPay() {
-    registeredCustomer = customerService.register(new Customer(user.getFirstName(),
+    try {
+      registeredCustomer = customerService.register(new Customer(user.getFirstName(),
                                           user.getLastName(),
                                           user.getCprNumber(),
                                           bankAccountNo, null));
+    } catch (Exception e) {
+      exception = e;
+    }
+
   }
   @Then("the customer is registered with a non-empty customer id")
   public void theCustomerIsRegisteredWithANonEmptyCustomerId() {
-
     assertNotNull(registeredCustomer.id());
   }
 
@@ -87,7 +91,7 @@ public class RegistrationStepDef {
 
   @Then("the user gets an error message {string} and is not registered")
   public void theUserGetsAnErrorMessage(String errorMessage) {
-    assertNull(registeredCustomer.id());
+    assertNull(registeredCustomer);
     assertTrue(exception instanceof AccountCreationException);
     assertEquals(errorMessage, exception.getMessage());
   }

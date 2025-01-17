@@ -12,7 +12,7 @@ public class CustomerService {
   Client client = ClientBuilder.newClient();
   WebTarget baseURL = client.target("http://localhost:8080");
 
-  public Customer register(Customer customer) {
+  public Customer register(Customer customer) throws AccountCreationException {
     Response response = baseURL
           .path("/customers")
           .request()
