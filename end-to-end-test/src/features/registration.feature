@@ -15,6 +15,7 @@ Feature: DTUPay Registration
     When the second user is registered as a customer in DTUPay
     Then the customer IDs are different
 
+  ### Adrian Zvizdenco (s204683)
   Scenario: Unsuccessful Customer Registration
     Given an unregistered user with CPR "050505-0506" and name "John" and lastname "Doe"
     And the user does not have a bank account
