@@ -1,5 +1,7 @@
-package dtupay;
+package dtupay.services;
 
+import dtupay.AccountCreationException;
+import dtupay.model.Customer;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;

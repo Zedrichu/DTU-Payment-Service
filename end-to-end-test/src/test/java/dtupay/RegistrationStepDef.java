@@ -4,6 +4,8 @@ import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
 import dtu.ws.fastmoney.User;
+import dtupay.model.Customer;
+import dtupay.services.CustomerService;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -55,7 +57,7 @@ public class RegistrationStepDef {
   }
   @Then("the customer is registered with a non-empty customer id")
   public void theCustomerIsRegisteredWithANonEmptyCustomerId() {
-    assertNotNull(registeredCustomer.id());
+    assertNotNull(registeredCustomer.payId());
   }
 
   @After
@@ -81,7 +83,7 @@ public class RegistrationStepDef {
 
   @Then("the customer IDs are different")
   public void theCustomerIDsAreDifferent() {
-    assertNotEquals(registeredCustomer.id(),registeredCustomer2.id());
+    assertNotEquals(registeredCustomer.payId(),registeredCustomer2.payId());
   }
 
   @And("the user does not have a bank account")

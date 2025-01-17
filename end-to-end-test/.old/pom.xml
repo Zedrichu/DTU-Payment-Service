@@ -11,8 +11,8 @@
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
+        <quarkus.platform.artifact-payId>quarkus-bom</quarkus.platform.artifact-payId>
+        <quarkus.platform.group-payId>io.quarkus.platform</quarkus.platform.group-payId>
         <quarkus.platform.version>3.17.6</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.0</surefire-plugin.version>
@@ -21,8 +21,8 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>${quarkus.platform.artifact-id}</artifactId>
+                <groupId>${quarkus.platform.group-payId}</groupId>
+                <artifactId>${quarkus.platform.artifact-payId}</artifactId>
                 <version>${quarkus.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -68,7 +68,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>${quarkus.platform.group-id}</groupId>
+                <groupId>${quarkus.platform.group-payId}</groupId>
                 <artifactId>quarkus-maven-plugin</artifactId>
                 <version>${quarkus.platform.version}</version>
                 <extensions>true</extensions>
@@ -125,7 +125,7 @@
 
     <profiles>
         <profile>
-            <id>native</id>
+            <payId>native</payId>
             <activation>
                 <property>
                     <name>native</name>
