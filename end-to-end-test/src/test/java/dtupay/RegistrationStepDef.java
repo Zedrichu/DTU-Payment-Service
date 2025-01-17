@@ -65,7 +65,8 @@ public class RegistrationStepDef {
 
   @When("the second user is registered as a customer in DTUPay")
   public void theSecondUserIsRegisteredAsACustomerInDTUPay() {
-    customerId2 = customerService.register(new Customer(user.getFirstName(),
+    try {
+      registeredCustomer2 = customerService.register(new Customer(user.getFirstName(),
           user.getLastName(),
           user.getCprNumber(),
           bankAccountNo, null));

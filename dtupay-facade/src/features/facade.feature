@@ -22,3 +22,16 @@ Feature: DTUPay Facade Feature
     Then the second customer is registered and his id is set
     And the customer IDs are different
 
+  Scenario: Unsuccessful Customer Registration
+    Given a customer with name "Tom", a CPR number "213124-1234", no bank account and empty id
+    When the customer is being registered
+    Then the "CustomerRegistrationRequested" event for the customer is sent
+    When the "CustomerAccountCreationFailed" event is received for the customer
+    Then an exception raises with error message "Account creation failed: Provided customer must have a valid bank account number and CPR"
+
+
+#  Scenario: Unsuccessful Customer Registration
+#    Given an unregistered user with CPR "050505-0506" and name "John" and lastname "Doe"
+#    And the user does not have a bank account
+#    When the user is registered as a customer in DTUPay
+#    Then the user gets an error message "Account creation failed: Provided customer must have a valid bank account number and CPR" and is not registered

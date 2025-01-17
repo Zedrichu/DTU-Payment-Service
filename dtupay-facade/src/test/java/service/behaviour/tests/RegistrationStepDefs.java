@@ -81,6 +81,7 @@ public class RegistrationStepDefs {
 	}
 
 	private String futureCustomerId;
+	private Exception exception;
 
 	@Then("the customer is registered and his id is set")
 	public void theCustomerIsRegisteredAndHisIdIsSet() {
