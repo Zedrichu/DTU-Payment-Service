@@ -92,5 +92,15 @@ public class AccountManager {
 		this.mque.publish(newEvent);
 
 	}
+
+    public void handleTokenVerified(Event event) {
+		Customer customer = customerRepository.getAccount(event.getArgument(0, String.class));
+		var correlationId = event.getArgument(1, Correlator.class);
+		Event newEvent = new Event("CustomerAccountVerified", new Object[]{ customer, correlationId });
+		logger.debug("New customer verified: {}", newEvent);
+
+		this.mque.publish(newEvent);
+
+	}
 }
 

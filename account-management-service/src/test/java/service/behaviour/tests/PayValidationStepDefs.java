@@ -30,6 +30,9 @@ public class PayValidationStepDefs {
     Merchant receivedMerchant;
     Event receivedEvent;
     private String merchantId;
+    Customer customer;
+    Customer receivedCustomer;
+    String customerId;
 
     @Given("a registered merchant")
     public void aRegisteredMerchant() {
@@ -51,16 +54,10 @@ public class PayValidationStepDefs {
     public void theEventIsSentWithTheMerchantInformation(String arg0) {
         eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(queue).publish(eventCaptor.capture());
-        for (Event event : eventCaptor.getAllValues()) {
-            System.out.println(event.getTopic());
-        }
-        System.out.println(eventCaptor.getAllValues().size());
         receivedEvent = eventCaptor.getValue();
-        System.out.println(receivedEvent);
-        System.out.println(receivedEvent.getArgument(1, Correlator.class));
         receivedMerchant = receivedEvent.getArgument(0, Merchant.class);
         assertEquals(receivedEvent.getTopic(),arg0);
-        assertEquals(correlator,receivedEvent.getArgument(1, Correlator.class));
+        assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
 
     }
 
@@ -70,5 +67,35 @@ public class PayValidationStepDefs {
         assertEquals(merchant.cpr(),receivedMerchant.cpr());
         assertEquals(merchant.bankAccountNo(),receivedMerchant.bankAccountNo());
 
+    }
+
+    @Given("a registered customer")
+    public void aRegisteredCustomer() {
+        customer = new Customer("Seller", "Ja", "1234", "111", "asdfas");
+        customerId = customerAccountRepository.createAccount(customer);
+    }
+
+    @When("the {string} event for the customerid is received")
+    public void theEventForTheCustomeridIsReceived(String arg0) {
+        correlator = Correlator.random();
+        accountManagementService.handleTokenVerified(new Event(arg0, new Object[] { customerId, correlator }));
+
+    }
+
+    @Then("the {string} event is sent with the customer information")
+    public void theEventIsSentWithTheCustomerInformation(String arg0) {
+        eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(queue).publish(eventCaptor.capture());
+        receivedEvent = eventCaptor.getValue();
+        receivedCustomer = receivedEvent.getArgument(0, Customer.class);
+        assertEquals(receivedEvent.getTopic(),arg0);
+        assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
+    }
+
+    @And("the customer account is verified")
+    public void theCustomerAccountIsVerified() {
+        assertEquals(customer.firstName(),receivedCustomer.firstName());
+        assertEquals(customer.cpr(),receivedCustomer.cpr());
+        assertEquals(customer.bankAccountNo(),receivedCustomer.bankAccountNo());
     }
 }
