@@ -36,6 +36,13 @@ Feature: DTUPay Facade Feature
     When the "MerchantAccountCreated" event is received for merchant with non-empty id
     Then the merchant is registered and their id is set
 
+  Scenario: Successful Payment
+    Given a valid payment request
+    When the payment request is initiated
+    Then the "PaymentInitiated" event for the payment request is sent
+    When the "BankTransferConfirmed" event is received
+    Then the payment was successful
+
 
 #  Scenario: Unsuccessful Customer Registration
 #    Given an unregistered user with CPR "050505-0506" and name "John" and lastname "Doe"

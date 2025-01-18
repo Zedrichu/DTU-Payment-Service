@@ -10,6 +10,8 @@ services:
       interval: 1s
       timeout: 3s
       retries: 15
+    environment:
+      - JAVA_TOOL_OPTIONS=-XX:UseSVE=0
 
   dtupay-facade:
     image: dtupay-facade-service:latest
@@ -19,6 +21,8 @@ services:
     depends_on:
       rabbitMq:
         condition: service_healthy
+    environment:
+      - JAVA_TOOL_OPTIONS=-XX:UseSVE=0
 
 
   account-management:
@@ -27,3 +31,5 @@ services:
     depends_on:
       rabbitMq:
         condition: service_healthy
+    environment:
+      - JAVA_TOOL_OPTIONS=-XX:UseSVE=0

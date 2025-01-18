@@ -1,6 +1,8 @@
 package service.behaviour.tests;
 
-import dtupay.services.account.AccountManagementService;
+import dtupay.services.account.AccountManager;
+import dtupay.services.account.domain.AccountRepository;
+import dtupay.services.account.domain.MemoryAccountRepository;
 import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.utilities.Correlator;
@@ -18,12 +20,14 @@ import static org.mockito.Mockito.verify;
 public class AccountStepDefs {
 
 	MessageQueue queue = mock(MessageQueue.class);
-	AccountManagementService accountManagementService = new AccountManagementService(queue);
 	Correlator correlator;
 	Customer customer;
 	Customer customerNoBank;
 	ArgumentCaptor<Event> eventCaptor;
 	ArgumentCaptor<Event> badEventCaptor;
+	AccountRepository<Customer> customerAccountRepository = new MemoryAccountRepository<>();
+	AccountRepository<Merchant> merchantAccountRepository = new MemoryAccountRepository<>();
+	AccountManager accountManagementService = new AccountManager(queue, customerAccountRepository, merchantAccountRepository);
 
 	Merchant merchant;
 

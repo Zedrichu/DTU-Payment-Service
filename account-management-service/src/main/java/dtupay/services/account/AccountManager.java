@@ -5,6 +5,7 @@ import dtupay.services.account.domain.AccountRepository;
 import dtupay.services.account.domain.MemoryAccountRepository;
 import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.domain.models.Merchant;
+import dtupay.services.account.domain.models.PaymentRequest;
 import dtupay.services.account.utilities.Correlator;
 
 import messaging.Event;
@@ -14,21 +15,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class AccountManagementService {
-	private static final Logger logger = LoggerFactory.getLogger(AccountManagementService.class);
+public class AccountManager {
+	private static final Logger logger = LoggerFactory.getLogger(AccountManager.class);
 
 	private MessageQueue mque;
-	private AccountRepository<Customer> customerRepository = new MemoryAccountRepository<>();
-	private AccountRepository<Merchant> merchantRepository = new MemoryAccountRepository<>();
+	private AccountRepository<Customer> customerRepository;
+	private AccountRepository<Merchant> merchantRepository;
 
-	public AccountManagementService(MessageQueue mque) {
+	public AccountManager(MessageQueue mque, AccountRepository<Customer> customerRepository, AccountRepository<Merchant> merchantRepository) {
 		logger.debug("Initializing AccountManagementService");
+		this.customerRepository = customerRepository;
+		this.merchantRepository = merchantRepository;
 
 		this.mque = mque;
 
 		// Add event handlers
 		this.mque.addHandler("CustomerRegistrationRequested", this::handleCustomerRegistrationRequested);
 		this.mque.addHandler("MerchantRegistrationRequested", this::handleMerchantRegistrationRequested);
+		this.mque.addHandler("PaymentInitiated", this::handlePaymentInitiated);
 	}
 
 	public void handleCustomerRegistrationRequested(Event event) {
@@ -77,6 +81,16 @@ public class AccountManagementService {
 		logger.debug("New merchant registered: {}", newEvent);
 
 		this.mque.publish(newEvent);
+	}
+
+	public void handlePaymentInitiated(Event event) {
+		Merchant merchant = merchantRepository.getAccount(event.getArgument(0, PaymentRequest.class).merchantId());
+		var correlationId = event.getArgument(1, Correlator.class);
+		Event newEvent = new Event("MerchantAccountVerified", new Object[]{ merchant, correlationId });
+		logger.debug("New merchant verified: {}", newEvent);
+
+		this.mque.publish(newEvent);
+
 	}
 }
 

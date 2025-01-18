@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="account-management-service" />
         <module name="dtupay-facade" />
+        <module name="payment-management-service" />
         <module name="end-to-end-test" />
         <module name="messaging-utilities" />
       </profile>

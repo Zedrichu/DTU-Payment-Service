@@ -1,4 +1,4 @@
-Feature: Account Creation
+Feature: dtupay.services.account Account Creation Feature
 
   Scenario: Successful Customer Enrollment
     When a "CustomerRegistrationRequested" event for a customer is received

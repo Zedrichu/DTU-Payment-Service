@@ -1,0 +1,7 @@
+services:
+  account-management:
+    image: payment-mgmt-service
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+

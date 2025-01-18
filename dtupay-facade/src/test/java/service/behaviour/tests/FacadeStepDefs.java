@@ -4,6 +4,7 @@ import dtupay.services.facade.domain.CustomerService;
 import dtupay.services.facade.domain.MerchantService;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Merchant;
+import dtupay.services.facade.domain.models.PaymentRequest;
 import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.utilities.Correlator;
 import io.cucumber.java.en.And;
@@ -12,6 +13,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import messaging.Event;
 import messaging.MessageQueue;
+import org.jboss.resteasy.plugins.interceptors.MessageSanitizerContainerResponseFilter;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -21,30 +23,55 @@ import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
 
-public class RegistrationStepDefs {
+public class FacadeStepDefs {
 
 	private Map<String, CompletableFuture<Event>> publishedEvents = new ConcurrentHashMap<>();
 	private Map<Customer, Correlator> cCorrelators = new ConcurrentHashMap<>();
 	private Map<Merchant, Correlator> mCorrelators = new ConcurrentHashMap<>();
+	private Map<PaymentRequest, Correlator> payCorrelators = new ConcurrentHashMap<>();
 
-	private MessageQueue q = new MessageQueue() {
+	private MessageQueue customerQ = new MessageQueue() {
 		@Override
 		public void publish(Event event) {
-			var c = event.getArgument(0, Customer.class);
-			publishedEvents.get(c.firstName()).complete(event);
+			var arg = event.getArgument(0, Customer.class);
+			publishedEvents.get(arg.firstName()).complete(event);
 		}
 
 		@Override
 		public void addHandler(String topic, Consumer<Event> handler) {}
 	};
 
-	private CustomerService customerService = new CustomerService(q);
-	private MerchantService merchantService = new MerchantService(q);
+	private MessageQueue merchantQ = new MessageQueue() {
+		@Override
+		public void publish(Event event) {
+			var arg = event.getArgument(0, Merchant.class);
+			publishedEvents.get(arg.firstName()).complete(event);
+		}
+
+		@Override
+		public void addHandler(String topic, Consumer<Event> handler) {}
+	};
+
+	private MessageQueue paymentQ = new MessageQueue() {
+		@Override
+		public void publish(Event event) {
+			var arg = event.getArgument(0, PaymentRequest.class);
+			publishedEvents.get(arg.token()).complete(event);
+		}
+
+		@Override
+		public void addHandler(String topic, Consumer<Event> handler) {}
+	};
+
+	private CustomerService customerService = new CustomerService(customerQ);
+	private MerchantService merchantService = new MerchantService(merchantQ);
+	private MerchantService payService = new MerchantService(paymentQ);
 
 	private Customer customer;
 	private Customer customer2;
 	private CompletableFuture<Customer> futureCustomer = new CompletableFuture<>();
 	private CompletableFuture<Customer> futureCustomer2 = new CompletableFuture<>();
+	private CompletableFuture<Boolean> futurePaymentSuccess = new CompletableFuture<>();
 
 	@Given("a customer with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aCustomerWithNameACPRNumberABankAccountAndEmptyId(String firstName, String cpr) {
@@ -211,10 +238,56 @@ public class RegistrationStepDefs {
 					new Object[] { newMerchant, mCorrelators.get(merchant)} ));
 	}
 
-	private String futureMerchantId;
-	@Then("the merchant is registered and their id is set")
+    @Then("the merchant is registered and their id is set")
 	public void theMerchantIsRegisteredAndTheirIdIsSet() {
-		futureMerchantId = futureMerchant.join().payId();
+        String futureMerchantId = futureMerchant.join().payId();
 		assertNotNull(futureMerchantId);
 	}
+
+	private PaymentRequest paymentRequest;
+
+	@Given("a valid payment request")
+	public void aValidPaymentRequest() {
+		String merchantId = "123182752138-mid";
+		String token = "token";
+		int amount = 50;
+		paymentRequest = new PaymentRequest(merchantId, token, amount);
+		publishedEvents.put(paymentRequest.token(), new CompletableFuture<>());
+		assertNotNull(paymentRequest.merchantId());
+		assertTrue(paymentRequest.amount() > 0);
+	}
+
+	@When("the payment request is initiated")
+	public void aValidPaymentRequestIsInitiated() {
+		new Thread(() -> {
+			var success = payService.pay(paymentRequest);
+			futurePaymentSuccess.complete(success);
+		}).start();
+	}
+
+	@Then("the {string} event for the payment request is sent")
+	public void theEventForThePaymentRequestIsSent(String eventType) {
+		Event event = publishedEvents.get(paymentRequest.token()).join();
+		assertEquals(eventType, event.getTopic());
+		var payment = event.getArgument(0, PaymentRequest.class);
+		var correlator = event.getArgument(1, Correlator.class);
+		payCorrelators.put(payment, correlator);
+	}
+
+	@When("the {string} event is received")
+	public void theEventIsReceived(String eventType) {
+		var correlator = payCorrelators.get(paymentRequest);
+		assertNotNull(correlator);
+		String placeholder = "placeholder";
+		payService.handleBankTransferConfirmed(new Event(eventType, new Object[] {
+				placeholder, payCorrelators.get(paymentRequest)
+		}));
+	}
+
+	@Then("the payment was successful")
+	public void thePaymentWasSuccessful() {
+		boolean success = futurePaymentSuccess.join();
+		assertTrue(success);
+	}
+
 }

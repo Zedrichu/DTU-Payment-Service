@@ -2,6 +2,7 @@ package dtupay.services;
 
 import dtupay.AccountCreationException;
 import dtupay.model.Merchant;
+import dtupay.model.PaymentRequest;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
@@ -23,5 +24,14 @@ public class MerchantService {
 			throw new AccountCreationException(response.readEntity(String.class));
 		}
 		return response.readEntity(Merchant.class);
+	}
+
+	public Boolean pay(PaymentRequest paymentRequest){
+
+		Response response = baseURL
+				.path("/payments")
+				.request()
+				.post(Entity.entity(paymentRequest, MediaType.APPLICATION_JSON));
+		return response.getStatus() == Response.Status.OK.getStatusCode();
 	}
 }

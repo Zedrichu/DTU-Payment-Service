@@ -1,5 +1,9 @@
 package dtupay.services.account;
 
+import dtupay.services.account.domain.AccountRepository;
+import dtupay.services.account.domain.MemoryAccountRepository;
+import dtupay.services.account.domain.models.Customer;
+import dtupay.services.account.domain.models.Merchant;
 import messaging.implementations.RabbitMqQueue;
 
 public class StartUp {
@@ -12,6 +16,9 @@ public class StartUp {
 	private void startUp() throws Exception {
 		System.out.println(HOSTNAME);
 		var mq = new RabbitMqQueue(HOSTNAME);
-		new AccountManagementService(mq);
+		AccountRepository<Customer> customerAccountRepository = new MemoryAccountRepository<>();
+		AccountRepository<Merchant> merchantAccountRepository = new MemoryAccountRepository<>();
+
+		new AccountManager(mq, customerAccountRepository, merchantAccountRepository);
 	}
 }
