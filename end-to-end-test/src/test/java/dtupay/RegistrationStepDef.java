@@ -5,7 +5,9 @@ import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
 import dtu.ws.fastmoney.User;
 import dtupay.model.Customer;
+import dtupay.model.Merchant;
 import dtupay.services.CustomerService;
+import dtupay.services.MerchantService;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -96,5 +98,27 @@ public class RegistrationStepDef {
     assertNull(registeredCustomer);
     assertTrue(exception instanceof AccountCreationException);
     assertEquals(errorMessage, exception.getMessage());
+  }
+
+  private Merchant registeredMerchant;
+  private MerchantService merchantService = new MerchantService();
+
+  @When("user is registered as a merchant in DTUPay")
+  public void userIsRegisteredAsAMerchantInDTUPay() {
+    try {
+      registeredMerchant = merchantService.register(
+            new Merchant(user.getFirstName(),
+                          user.getLastName(),
+                          user.getCprNumber(),
+                  "21314",
+                          null));
+    } catch (Exception e) {
+      exception = e;
+    }
+  }
+
+  @Then("the merchant is registered with a non-empty merchant id")
+  public void theMerchantIsRegisteredWithANonEmptyMerchantId() {
+    assertNotNull(registeredMerchant.payId());
   }
 }

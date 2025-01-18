@@ -29,6 +29,13 @@ Feature: DTUPay Facade Feature
     When the "CustomerAccountCreationFailed" event is received for the customer
     Then an exception raises with error message "Account creation failed: Provided customer must have a valid bank account number and CPR"
 
+  Scenario: Successful Merchant Registration
+    Given a merchant with name "Simon", a CPR number "111111-1111", a bank account and empty id
+    When the merchant is being registered
+    Then the "MerchantRegistrationRequested" event for the merchant is sent
+    When the "MerchantAccountCreated" event is received for merchant with non-empty id
+    Then the merchant is registered and their id is set
+
 
 #  Scenario: Unsuccessful Customer Registration
 #    Given an unregistered user with CPR "050505-0506" and name "John" and lastname "Doe"

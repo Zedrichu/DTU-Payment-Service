@@ -4,6 +4,7 @@ import dtupay.services.account.annotations.MethodAuthor;
 import dtupay.services.account.domain.AccountRepository;
 import dtupay.services.account.domain.MemoryAccountRepository;
 import dtupay.services.account.domain.models.Customer;
+import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.utilities.Correlator;
 
 import messaging.Event;
@@ -18,6 +19,7 @@ public class AccountManagementService {
 
 	private MessageQueue mque;
 	private AccountRepository<Customer> customerRepository = new MemoryAccountRepository<>();
+	private AccountRepository<Merchant> merchantRepository = new MemoryAccountRepository<>();
 
 	public AccountManagementService(MessageQueue mque) {
 		logger.debug("Initializing AccountManagementService");
@@ -26,6 +28,7 @@ public class AccountManagementService {
 
 		// Add event handlers
 		this.mque.addHandler("CustomerRegistrationRequested", this::handleCustomerRegistrationRequested);
+		this.mque.addHandler("MerchantRegistrationRequested", this::handleMerchantRegistrationRequested);
 	}
 
 	public void handleCustomerRegistrationRequested(Event event) {
@@ -61,6 +64,19 @@ public class AccountManagementService {
 		boolean cprInvalid = customer.cpr() == null || customer.cpr().isEmpty();
 		boolean bankAccountInvalid = customer.bankAccountNo() == null || customer.bankAccountNo().isEmpty();
 		return ! (cprInvalid || bankAccountInvalid);
+	}
+
+	public void handleMerchantRegistrationRequested(Event event) {
+		logger.debug("Received MerchantRegistrationRequested event: {}", event);
+		var merchant = event.getArgument(0, Merchant.class);
+		var correlationId = event.getArgument(1, Correlator.class);
+
+		String id = merchantRepository.createAccount(merchant);
+		var registeredMerchant = new Merchant(merchant.firstName(), merchant.lastName(), merchant.cpr(), merchant.bankAccountNo(), id);
+		Event newEvent = new Event("MerchantAccountCreated", new Object[] { registeredMerchant, correlationId });
+		logger.debug("New merchant registered: {}", newEvent);
+
+		this.mque.publish(newEvent);
 	}
 }
 

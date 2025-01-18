@@ -31,7 +31,7 @@ public class CustomersResource {
       Customer registeredCustomer = customerService.register(customer);
       String id = registeredCustomer.payId();
       return Response
-            .created(new URI("localhost:8080/customers/"+id))
+            .created(new URI("http://localhost:8080/customers/"+id))
             .entity(registeredCustomer)
             .build();
     } catch (CompletionException exception) {

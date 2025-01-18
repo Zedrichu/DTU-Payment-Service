@@ -1,4 +1,4 @@
-package dtupay.services.facade.domain.models;
+package dtupay.model;
 
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbProperty;

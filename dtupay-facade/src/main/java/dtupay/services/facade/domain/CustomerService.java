@@ -37,9 +37,9 @@ public class CustomerService {
 
   public void handleCustomerAccountCreated(Event e) {
     logger.debug("Received CustomerAccountCreated event: {}", e);
-    var s = e.getArgument(0, Customer.class);
+    var reqCustomer = e.getArgument(0, Customer.class);
     var correlationId = e.getArgument(1, Correlator.class);
-    correlations.get(correlationId).complete(s);
+    correlations.get(correlationId).complete(reqCustomer);
   }
 
   public void handleCustomerAccountCreationFailed(Event event) {

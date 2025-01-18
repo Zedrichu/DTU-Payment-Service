@@ -1,5 +1,5 @@
 # OpenJDK runtime base image
-FROM eclipse-temurin:23 AS jre-build
+FROM eclipse-temurin:23-alpine AS jre-build
 # Set working directory inside container
 WORKDIR /service
 

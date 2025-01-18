@@ -2,6 +2,7 @@ package service.behaviour.tests;
 
 import dtupay.services.account.AccountManagementService;
 import dtupay.services.account.domain.models.Customer;
+import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.utilities.Correlator;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -23,6 +24,8 @@ public class AccountStepDefs {
 	Customer customerNoBank;
 	ArgumentCaptor<Event> eventCaptor;
 	ArgumentCaptor<Event> badEventCaptor;
+
+	Merchant merchant;
 
 	@When("a {string} event for a customer is received")
 	public void aEventForACustomerIsReceived(String arg0) {
@@ -71,4 +74,21 @@ public class AccountStepDefs {
 		assertEquals(arg0, receivedEvent.getArgument(0, String.class));
 	}
 
+	@When("a {string} event for a merchant is received")
+	public void aEventForAMerchantIsReceived(String arg0) {
+		merchant = new Merchant("test", "test", "123456-1234", "1", null);
+		assertNull(merchant.payId());
+		correlator = Correlator.random();
+		accountManagementService.handleMerchantRegistrationRequested(new Event(arg0, new Object[] { merchant, correlator }));
+	}
+
+	@And("the merchant account is assigned a merchant id")
+	public void theMerchantAccountIsAssignedAMerchantId() {
+		var recMerchant = receivedEvent.getArgument(0, Merchant.class);
+		assertEquals(merchant.firstName(), recMerchant.firstName());
+		assertEquals(merchant.lastName(), recMerchant.lastName());
+		assertEquals(merchant.cpr(), recMerchant.cpr());
+		assertEquals(merchant.bankAccountNo(), recMerchant.bankAccountNo());
+		assertNotNull(recMerchant.payId());
+	}
 }

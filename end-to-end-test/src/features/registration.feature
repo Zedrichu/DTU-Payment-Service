@@ -22,9 +22,8 @@ Feature: DTUPay Registration
     When the user is registered as a customer in DTUPay
     Then the user gets an error message "Account creation failed: Provided customer must have a valid bank account number and CPR" and is not registered
 
-
-#  Scenario: Successful Merchant Registration
-#   Given a unregistered user with CPR "050505-0505" and name "John" and lastname "Doe"
-#   And a registered bank account for the user with balance 1000
-#   When user is registered as a merchant in DTUPay
-#   Then the merchant is registered with a non-empty customer id
+  Scenario: Successful Merchant Registration
+   Given an unregistered user with CPR "050505-0505" and name "John" and lastname "Doe"
+   And a registered bank account for the user with balance 1000
+   When user is registered as a merchant in DTUPay
+   Then the merchant is registered with a non-empty merchant id
