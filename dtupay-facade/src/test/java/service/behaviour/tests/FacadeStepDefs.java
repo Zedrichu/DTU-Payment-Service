@@ -13,7 +13,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import messaging.Event;
 import messaging.MessageQueue;
-import org.jboss.resteasy.plugins.interceptors.MessageSanitizerContainerResponseFilter;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;

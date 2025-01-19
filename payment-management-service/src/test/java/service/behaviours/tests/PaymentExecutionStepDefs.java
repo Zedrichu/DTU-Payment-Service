@@ -5,17 +5,15 @@ import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
 import dtu.ws.fastmoney.User;
 import dtupay.services.payment.PaymentManager;
-import dtupay.services.payment.domain.models.BankTransferAggregator;
 import dtupay.services.payment.domain.models.Customer;
 import dtupay.services.payment.domain.models.Merchant;
 import dtupay.services.payment.domain.models.PaymentRequest;
 import dtupay.services.payment.utilities.Correlator;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import io.cucumber.java.After;
 import messaging.Event;
 import messaging.MessageQueue;
-import org.junit.After;
 import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;

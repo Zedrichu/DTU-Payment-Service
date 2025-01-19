@@ -28,7 +28,6 @@ public class AccountStepDefs {
 	AccountRepository<Customer> customerAccountRepository = new MemoryAccountRepository<>();
 	AccountRepository<Merchant> merchantAccountRepository = new MemoryAccountRepository<>();
 	AccountManager accountManagementService = new AccountManager(queue, customerAccountRepository, merchantAccountRepository);
-
 	Merchant merchant;
 
 	@When("a {string} event for a customer is received")
