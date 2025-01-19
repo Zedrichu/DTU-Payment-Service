@@ -38,8 +38,8 @@ public class PaymentStepDefs {
     @Given("a registered customer with DTUPay with balance {int} in the bank")
     public void aRegisteredCustomerWithDTUPayWithBalanceInTheBank(int balance) throws BankServiceException_Exception {
         user = new User();
-        user.setFirstName("jeppe");
-        user.setLastName("jeppeson");
+        user.setFirstName("Jeppe");
+        user.setLastName("Jeppeson");
         user.setCprNumber("141414-1414");
         BigDecimal newBalance = new BigDecimal(balance);
         bankAccountNo = bankService.createAccountWithBalance(user, newBalance);
@@ -57,8 +57,8 @@ public class PaymentStepDefs {
     @And("a registered merchant with DTUPay with balance {int} in the bank")
     public void aRegisteredMerchantWithDTUPayWithBalanceInTheBank(int balance) throws BankServiceException_Exception {
         user = new User();
-        user.setFirstName("simp");
-        user.setLastName("jeppeson");
+        user.setFirstName("Simp");
+        user.setLastName("Jeppeson");
         user.setCprNumber("141414-1415");
         BigDecimal newBalance = BigDecimal.valueOf(balance);
         bankAccountNo = bankService.createAccountWithBalance(user, newBalance);

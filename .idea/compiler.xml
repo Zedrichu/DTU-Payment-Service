@@ -17,6 +17,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="account-management-service" options="-parameters" />
       <module name="dtupay-facade" options="-parameters" />
     </option>
   </component>

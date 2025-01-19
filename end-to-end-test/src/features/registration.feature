@@ -1,4 +1,4 @@
-Feature: DTUPay Registration
+Feature: .End2End DTUPay Registration
 
   Scenario: Successful Customer Registration
     Given an unregistered user with CPR "050505-0505" and name "Andrew" and lastname "Jones"

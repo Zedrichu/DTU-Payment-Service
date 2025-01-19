@@ -15,9 +15,12 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import messaging.Event;
 import messaging.MessageQueue;
+import org.junit.After;
 import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,6 +38,7 @@ public class PaymentExecutionStepDefs {
     Merchant merchant;
     ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
     BankService bankService = new BankServiceService().getBankServicePort();
+    List<String> bankAccounts = new ArrayList<>();
 
     @When("the {string} event for a request is received")
     public void theEventForARequestIsReceived(String eventType) {
@@ -52,6 +56,7 @@ public class PaymentExecutionStepDefs {
         bankUser.setLastName("Smith");
         bankUser.setCprNumber("020202-0202");
         String customerBankAccountNumber = bankService.createAccountWithBalance(bankUser, BigDecimal.valueOf(1000));
+        bankAccounts.add(customerBankAccountNumber);
 
         customer = new Customer(
                 bankUser.getFirstName(), bankUser.getLastName(),
@@ -67,6 +72,7 @@ public class PaymentExecutionStepDefs {
         bankUser.setLastName("Dove");
         bankUser.setCprNumber("050505-0202");
         String merchantBankAccountNumber = bankService.createAccountWithBalance(bankUser, BigDecimal.valueOf(1000));
+        bankAccounts.add(merchantBankAccountNumber);
 
         merchant = new Merchant(
                 bankUser.getFirstName(), bankUser.getLastName(),
@@ -84,5 +90,12 @@ public class PaymentExecutionStepDefs {
         receivedEvent = eventCaptor.getValue();
         assertEquals(eventType, receivedEvent.getTopic());
         assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
+    }
+
+    @After
+    public void tearDown() throws BankServiceException_Exception {
+        for (String bankAccount: bankAccounts) {
+            bankService.retireAccount(bankAccount);
+        }
     }
 }

@@ -75,8 +75,8 @@ public class PayValidationStepDefs {
         customerId = customerAccountRepository.createAccount(customer);
     }
 
-    @When("the {string} event for the customerid is received")
-    public void theEventForTheCustomeridIsReceived(String arg0) {
+    @When("the {string} event for the customer id is received")
+    public void theEventForTheCustomerIdIsReceived(String arg0) {
         correlator = Correlator.random();
         accountManagementService.handleTokenVerified(new Event(arg0, new Object[] { customerId, correlator }));
 

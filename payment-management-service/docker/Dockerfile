@@ -9,7 +9,7 @@ ENV LANGUAGE="en_US:en"
 COPY target/lib /service/lib
 
 # Copy the compiled service runner
-COPY target/account-management-service-*.jar /service/service-runner.jar
+COPY target/payment-management-service-*.jar /service/service-runner.jar
 
 ENV JAVA_OPTS_APPEND="-Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 
