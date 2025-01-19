@@ -1,4 +1,4 @@
-#Feature: DTUPay Deregistration
+#Feature: dtupay.E2E DTUPay Deregistration
 #
   # Scenario: Successful Deregistraion Customer (Potentially)
   #   Given a customer registered in DTUPay

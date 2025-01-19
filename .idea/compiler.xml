@@ -12,6 +12,7 @@
         <module name="payment-management-service" />
         <module name="end-to-end-test" />
         <module name="messaging-utilities" />
+        <module name="token-management-service" />
       </profile>
     </annotationProcessing>
   </component>

@@ -1,4 +1,4 @@
-Feature: DTUPay Payment
+Feature: dtupay.E2E DTUPay Payment
     Scenario: Successful Payment
       Given a registered customer with DTUPay with balance 1000 in the bank
       And a registered merchant with DTUPay with balance 1000 in the bank

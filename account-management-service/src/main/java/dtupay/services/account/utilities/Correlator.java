@@ -1,10 +1,12 @@
 package dtupay.services.account.utilities;
 
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 import java.util.UUID;
 
 @Value
+@EqualsAndHashCode
 public class Correlator {
 
 	public UUID getId() {

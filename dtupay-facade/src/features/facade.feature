@@ -1,4 +1,4 @@
-Feature: DTUPay Facade Feature
+Feature: dtupay.services.facade DTUPay Facade Feature
 
   # Jonas (s204713)
   Scenario: Successful Customer Registration

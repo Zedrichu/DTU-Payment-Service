@@ -1,6 +1,6 @@
 services:
-  payment-management:
-    image: payment-mgmt-service
+  token-management:
+    image: token-mgmt-service
     build:
       context: .
       dockerfile: docker/Dockerfile

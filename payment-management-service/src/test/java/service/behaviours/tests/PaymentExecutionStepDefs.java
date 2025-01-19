@@ -9,6 +9,7 @@ import dtupay.services.payment.domain.models.Customer;
 import dtupay.services.payment.domain.models.Merchant;
 import dtupay.services.payment.domain.models.PaymentRequest;
 import dtupay.services.payment.utilities.Correlator;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.java.After;
@@ -37,6 +38,7 @@ public class PaymentExecutionStepDefs {
     ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
     BankService bankService = new BankServiceService().getBankServicePort();
     List<String> bankAccounts = new ArrayList<>();
+    final int initialBalance = 1000;
 
     @When("the {string} event for a request is received")
     public void theEventForARequestIsReceived(String eventType) {
@@ -53,7 +55,7 @@ public class PaymentExecutionStepDefs {
         bankUser.setFirstName("John");
         bankUser.setLastName("Smith");
         bankUser.setCprNumber("020202-0202");
-        String customerBankAccountNumber = bankService.createAccountWithBalance(bankUser, BigDecimal.valueOf(1000));
+        String customerBankAccountNumber = bankService.createAccountWithBalance(bankUser, BigDecimal.valueOf(initialBalance));
         bankAccounts.add(customerBankAccountNumber);
 
         customer = new Customer(
@@ -69,7 +71,7 @@ public class PaymentExecutionStepDefs {
         bankUser.setFirstName("Anne");
         bankUser.setLastName("Dove");
         bankUser.setCprNumber("050505-0202");
-        String merchantBankAccountNumber = bankService.createAccountWithBalance(bankUser, BigDecimal.valueOf(1000));
+        String merchantBankAccountNumber = bankService.createAccountWithBalance(bankUser, BigDecimal.valueOf(initialBalance));
         bankAccounts.add(merchantBankAccountNumber);
 
         merchant = new Merchant(
@@ -96,4 +98,14 @@ public class PaymentExecutionStepDefs {
             bankService.retireAccount(bankAccount);
         }
     }
+
+    @And("the amount in the payment request has been debited from the customer's bank account")
+    public void theAmountInThePaymentRequestHasBeenDebitedFromTheCustomerSBankAccount() throws BankServiceException_Exception {
+        var customerBalance = bankService.getAccount(customer.bankAccountNo()).getBalance();
+        var merchantBalance = bankService.getAccount(merchant.bankAccountNo()).getBalance();
+
+        assertEquals(0, customerBalance.compareTo(BigDecimal.valueOf(initialBalance - paymentRequest.amount())));
+        assertEquals(0, merchantBalance.compareTo(BigDecimal.valueOf(initialBalance + paymentRequest.amount())));
+    }
 }
+

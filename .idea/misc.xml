@@ -9,6 +9,7 @@
         <option value="$PROJECT_DIR$/end-to-end-test/pom.xml" />
         <option value="$PROJECT_DIR$/messaging-utilities/pom.xml" />
         <option value="$PROJECT_DIR$/payment-management-service/pom.xml" />
+        <option value="$PROJECT_DIR$/token-management-service/pom.xml" />
       </list>
     </option>
   </component>

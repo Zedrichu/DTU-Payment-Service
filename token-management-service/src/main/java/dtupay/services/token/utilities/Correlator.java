@@ -1,4 +1,4 @@
-package dtupay.services.payment.utilities;
+package dtupay.services.token.utilities;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
