@@ -2,12 +2,16 @@ package dtupay.services;
 
 import dtupay.AccountCreationException;
 import dtupay.model.Customer;
+import dtupay.model.Token;
+import dtupay.model.TokenRequest;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.util.ArrayList;
 
 public class CustomerService {
 
@@ -25,5 +29,17 @@ public class CustomerService {
     }
     return response.readEntity(Customer.class);
   }
+
+    public ArrayList<Token> requestTokens(TokenRequest tokenRequest) {
+      /*
+      Response response = baseURL
+              .path("/tokens")
+              .request()
+              .get(Entity.entity(tokenRequest, MediaType.APPLICATION_JSON));
+
+      return response.readEntity(ArrayList.class);
+       */
+      return null;
+    }
 }
 

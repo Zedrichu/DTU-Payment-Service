@@ -4,9 +4,7 @@ import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
 import dtu.ws.fastmoney.User;
-import dtupay.model.Customer;
-import dtupay.model.Merchant;
-import dtupay.model.PaymentRequest;
+import dtupay.model.*;
 import dtupay.services.CustomerService;
 import dtupay.services.MerchantService;
 import io.cucumber.java.en.And;
@@ -19,8 +17,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class PaymentStepDefs {
     private User user;
@@ -100,5 +97,27 @@ public class PaymentStepDefs {
         for (String bankAccountNo : bankAccounts) {
             bankService.retireAccount(bankAccountNo);
         }
+    }
+
+    @Given("a registered customer with DTUPay with {int} tokens")
+    public void aRegisteredCustomerWithDTUPayWithTokens(int noTokens) throws BankServiceException_Exception {
+        aRegisteredCustomerWithDTUPayWithBalanceInTheBank(1000);
+    }
+
+    ArrayList<Token> tokens;
+    TokenRequest tokenRequest;
+
+    @When("the customer requests {int} tokens")
+    public void theCustomerRequestsTokens(int noTokens) {
+        tokenRequest = new TokenRequest(registeredCustomer.payId(),noTokens);
+        tokens = customerService.requestTokens(tokenRequest);
+    }
+
+    @Then("the customer receives {int} tokens")
+    public void theCustomerReceivesTokens(int noTokens) {
+        assertEquals(tokens.size(), noTokens);
+        assertNotEquals(tokens.get(0),tokens.get(1));
+        assertNotEquals(tokens.get(1),tokens.get(2));
+        assertNotEquals(tokens.get(0),tokens.get(2));
     }
 }
