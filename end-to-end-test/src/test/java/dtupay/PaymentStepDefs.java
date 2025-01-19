@@ -13,6 +13,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.junit.After;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class PaymentStepDefs {
     public void aRegisteredMerchantWithDTUPayWithBalanceInTheBank(int balance) throws BankServiceException_Exception {
         user = new User();
         user.setFirstName("Simp");
-        user.setLastName("Jeppeson");
+        user.setLastName("Jeppesen");
         user.setCprNumber("141414-1415");
         BigDecimal newBalance = BigDecimal.valueOf(balance);
         bankAccountNo = bankService.createAccountWithBalance(user, newBalance);
@@ -92,5 +93,12 @@ public class PaymentStepDefs {
     @And("the merchants balance in the bank is {int}")
     public void theMerchantsBalanceInTheBankIs(int balance) throws BankServiceException_Exception {
         assertEquals(bankService.getAccount(registeredMerchant.bankAccountNo()).getBalance(), BigDecimal.valueOf(balance));
+    }
+
+    @After
+    public void after() throws BankServiceException_Exception {
+        for (String bankAccountNo : bankAccounts) {
+            bankService.retireAccount(bankAccountNo);
+        }
     }
 }
