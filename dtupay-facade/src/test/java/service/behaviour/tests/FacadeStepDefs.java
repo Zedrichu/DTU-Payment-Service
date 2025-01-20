@@ -371,7 +371,7 @@ public class FacadeStepDefs {
 		}
 		assertNotNull(correlator);
 		tokenService.handleTokensGenerated(new Event(eventType, new Object[]{
-				tokenList, noTokens, tCorrelators.get(registeredCustomer.payId() + "-T" + noTokens)}));
+				tokenList, tCorrelators.get(registeredCustomer.payId() + "-T" + noTokens)}));
 	}
 
 	@Then("the customer has {int} valid tokens")

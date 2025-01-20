@@ -64,8 +64,7 @@ public class CustomerService {
   public void handleTokensGenerated(Event e) {
     logger.debug("Received TokensGenerated event: {}", e);
     ArrayList<LinkedTreeMap<String, Object>> list = e.getArgument(0, ArrayList.class);
-    var noTokens = e.getArgument(1, Integer.class);
-    var correlationId = e.getArgument(2, Correlator.class);
+    var correlationId = e.getArgument(1, Correlator.class);
     Gson gson = new Gson();
     List<Token> tokenList = list.stream()
             .map(token -> gson.fromJson(gson.toJson(token), Token.class))
