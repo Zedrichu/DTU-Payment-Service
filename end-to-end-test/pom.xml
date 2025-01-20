@@ -85,6 +85,14 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                        <argLine>-Djava.security.manager -Djava.security.policy=mypolicy.policy</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-maven-plugin</artifactId>
                 <version>4.0.0</version>
