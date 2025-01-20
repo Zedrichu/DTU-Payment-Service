@@ -27,14 +27,13 @@ public class TokenStepDefs {
     ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
     Correlator correlator = Correlator.random();
     String customerId;
-    int amount = 3;
-    ArrayList<Token> generatedTokens;
+    int amount = 3; //TODO: Should not be hard coded but in feature file maybe
     ArrayList<Token> receivedTokenList;
 
     @When("{string} event is received for a token request")
     public void eventIsReceivedForATokenRequest(String eventType) {
         customerId = "213014";
-        generatedTokens = tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
+        tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
     }
 
     @When("{string} event is received for a customer")
@@ -63,7 +62,6 @@ public class TokenStepDefs {
     @And("then {int} valid tokens are generated")
     public void thenValidTokensAreGenerated(int noTokens) {
         assertEquals(noTokens, receivedTokenList.size());
-        assertEquals(noTokens, generatedTokens.size());
     }
 
     private PaymentRequest paymentRequest;
@@ -102,8 +100,14 @@ public class TokenStepDefs {
         tokenManager.setTokens(tokens);
 
 
-        generatedTokens = tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
+        tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
 
 
+    }
+
+    @When("{string} event is received for a token request for new customer")
+    public void eventIsReceivedForATokenRequestForNewCustomer(String eventType) {
+        customerId = "121212121";
+        tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
     }
 }

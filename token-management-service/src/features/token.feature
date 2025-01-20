@@ -9,9 +9,15 @@ Feature: dtupay.services.token token management
   Scenario: Successful Token Validation
     When "PaymentInitiated" event is received for a payment request
     Then "PaymentTokenVerified" is sent with the same correlation id
+    #TODO: fix bad naming: "" is sent and "" event is sent to differentiate
 
   Scenario: Successful Token Generation for Existing Customer
     When "TokensRequested" event is received for a token request for existing customer
+    When "TokenAccountVerified" event is received for a customer
+    Then "TokensGenerated" event is sent with the same correlation id
+
+  Scenario: Successful Token Generation for New Customer
+    When "TokensRequested" event is received for a token request for new customer
     When "TokenAccountVerified" event is received for a customer
     Then "TokensGenerated" event is sent with the same correlation id
 

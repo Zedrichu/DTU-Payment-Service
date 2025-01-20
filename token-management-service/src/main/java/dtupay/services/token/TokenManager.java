@@ -3,7 +3,6 @@ package dtupay.services.token;
 import dtupay.services.token.annotations.MethodAuthor;
 import dtupay.services.token.models.PaymentRequest;
 import dtupay.services.token.models.Token;
-import dtupay.services.token.models.Customer;
 
 import dtupay.services.token.utilities.Correlator;
 import lombok.Setter;
@@ -20,10 +19,10 @@ public class TokenManager {
     private static final Logger logger = LoggerFactory.getLogger(TokenManager.class);
 
     private MessageQueue mque;
-    @Setter
+
     private HashMap<String, ArrayList<Token>> tokens = new HashMap<>();
 
-    private HashMap<Correlator, String> tokensIdRequested = new HashMap<>();
+    private HashMap<Correlator, Event> tokensRequested = new HashMap<>();
     private HashMap<Correlator, Boolean> customerVerified = new HashMap<>();
 
 
@@ -35,6 +34,9 @@ public class TokenManager {
         this.mque.addHandler("PaymentInitiated", this::handleTokenAccountVerified);
     }
 
+    public void setTokens(HashMap<String, ArrayList<Token>> tokens) {
+        this.tokens = tokens;
+    }
     public int getAmountOfTokens(String customerId) {
         if (tokens.containsKey(customerId)) {
             return tokens.get(customerId).size();
@@ -59,31 +61,30 @@ public class TokenManager {
             if (tokenList.size()<=1){
                 for(int i=0; i<noTokens; i++){
                     tokenList.add(Token.random());
-                    tokens.replace(customerId,tokenList);
                 }
+                tokens.replace(customerId,tokenList);
             }
         }
     }
 
     public void completeGeneration(Correlator correlator){
-        if (tokensIdRequested.containsKey(correlator) && customerVerified.containsKey(correlator)){
-            ArrayList<Token> tokenList = tokens.get(tokensIdRequested.get(correlator));
+        if (tokensRequested.containsKey(correlator) && customerVerified.containsKey(correlator)){
+            String customerId = tokensRequested.get(correlator).getArgument(0,String.class);
+            int noTokens = tokensRequested.get(correlator).getArgument(1,int.class);
+            generateTokens(customerId,noTokens);
+            ArrayList<Token> tokenList = tokens.get(customerId);
             Event responseEvent = new Event("TokensGenerated", new Object[]{tokenList, correlator});
             mque.publish(responseEvent);
         }
     }
 
-    public ArrayList<Token> handleTokensRequested(Event event){
+    public void handleTokensRequested(Event event){
         logger.debug("Received TokensRequest event: {}", event);
-        String customerId = event.getArgument(0,String.class);
-        int noTokens = event.getArgument(1,int.class);
         Correlator correlator = event.getArgument(2, Correlator.class);
-        generateTokens(customerId,noTokens);
-        if(!tokensIdRequested.containsKey(correlator)){
-            tokensIdRequested.put(correlator, customerId);
+        if(!tokensRequested.containsKey(correlator)){
+            tokensRequested.put(correlator, event);
         }
         completeGeneration(correlator);
-        return tokens.get(customerId);
     }
 
     public void handleTokenAccountVerified(Event event) {
