@@ -93,7 +93,7 @@
                         <index>true</index>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>dtupay.services.payment.StartUp</mainClass>
+                            <mainClass>dtupay.services.token.StartUp</mainClass>
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
                     </archive>

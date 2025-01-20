@@ -1,4 +1,4 @@
-Feature: dtupay.services.payment Payment Execution
+  Feature: dtupay.services.payment Payment Execution
 
   Scenario: Successful Transfer of Money
     When the "PaymentInitiated" event for a request is received

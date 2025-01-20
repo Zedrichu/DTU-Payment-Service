@@ -4,6 +4,7 @@ import dtupay.services.account.domain.AccountRepository;
 import dtupay.services.account.domain.MemoryAccountRepository;
 import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.domain.models.Merchant;
+import dtupay.services.account.domain.models.Wither;
 import messaging.implementations.RabbitMqQueue;
 
 public class StartUp {

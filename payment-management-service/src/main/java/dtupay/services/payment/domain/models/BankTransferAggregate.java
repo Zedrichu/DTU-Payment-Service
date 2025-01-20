@@ -29,4 +29,6 @@ public class BankTransferAggregate {
     public boolean isComplete(){
         return customer != null & merchant != null & paymentRequest != null;
     }
+
+
 }

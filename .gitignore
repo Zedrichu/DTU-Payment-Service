@@ -3,6 +3,7 @@
 obsolete/
 target/
 .idea/
+end-to-end-test/docker-compose.yml
 
 **/.DS_Store
 pom.xml.tag

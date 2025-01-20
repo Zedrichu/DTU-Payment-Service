@@ -3,7 +3,6 @@ package dtupay.services;
 import dtupay.AccountCreationException;
 import dtupay.model.Customer;
 import dtupay.model.Token;
-import dtupay.model.TokenRequest;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
@@ -30,16 +29,17 @@ public class CustomerService {
     return response.readEntity(Customer.class);
   }
 
-    public ArrayList<Token> requestTokens(TokenRequest tokenRequest) {
-      /*
+    public ArrayList<Token> requestTokens(String customerId, int noTokens) {
+
       Response response = baseURL
+              .path("/customers")
+              .path(customerId)
               .path("/tokens")
+              .queryParam("amount", noTokens)
               .request()
-              .get(Entity.entity(tokenRequest, MediaType.APPLICATION_JSON));
+              .get();
 
       return response.readEntity(ArrayList.class);
-       */
-      return null;
     }
 }
 

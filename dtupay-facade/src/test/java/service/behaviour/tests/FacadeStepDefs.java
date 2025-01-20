@@ -5,6 +5,7 @@ import dtupay.services.facade.domain.MerchantService;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Merchant;
 import dtupay.services.facade.domain.models.PaymentRequest;
+import dtupay.services.facade.domain.models.Token;
 import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.utilities.Correlator;
 import io.cucumber.java.en.And;
@@ -14,6 +15,7 @@ import io.cucumber.java.en.When;
 import messaging.Event;
 import messaging.MessageQueue;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -62,6 +64,20 @@ public class FacadeStepDefs {
 		public void addHandler(String topic, Consumer<Event> handler) {}
 	};
 
+	private MessageQueue tokensQ = new MessageQueue() {
+
+		@Override
+		public void publish(Event event) {
+			var arg1 = event.getArgument(0, String.class);
+			var arg2 = event.getArgument(1, Integer.class);
+			publishedEvents.get(arg1 + "-T" + arg2).complete(event);
+		}
+
+		@Override
+		public void addHandler(String topic, Consumer<Event> handler) {}
+	};
+
+	private CustomerService tokenService = new CustomerService(tokensQ);
 	private CustomerService customerService = new CustomerService(customerQ);
 	private MerchantService merchantService = new MerchantService(merchantQ);
 	private MerchantService payService = new MerchantService(paymentQ);
@@ -289,4 +305,78 @@ public class FacadeStepDefs {
 		assertTrue(success);
 	}
 
+	private CompletableFuture<Customer> futureRegisteredCustomer = new CompletableFuture<>();
+	private ArrayList<Token> tokens = new ArrayList<>();
+	private Customer registeredCustomer;
+	private CompletableFuture<ArrayList<Token>> futureTokenRequest = new CompletableFuture<>();
+	private Map<String, Correlator> tCorrelators = new ConcurrentHashMap<>();
+
+	@Given("a registered customer with {int} tokens")
+	public void aRegisteredCustomerWithTokens(int initialTokens) {
+		customer = new Customer("Lars", "", "011298-1136", "123", null);
+		publishedEvents.put(customer.firstName(), new CompletableFuture<>());
+		new Thread(() -> {
+			try {
+				var result = customerService.register(customer);
+				futureRegisteredCustomer.complete(result);
+			} catch (Exception e) {
+				futureRegisteredCustomer.completeExceptionally(e);
+			}
+		}).start();
+
+		// Mock
+		assertEquals(initialTokens, tokens.size());
+
+		Event event = publishedEvents.get(customer.firstName()).join();
+		assertEquals("CustomerRegistrationRequested", event.getTopic());
+		registeredCustomer = event.getArgument(0, Customer.class);
+		var correlator = event.getArgument(1, Correlator.class);
+		cCorrelators.put(registeredCustomer, correlator);
+
+		correlator = cCorrelators.get(registeredCustomer);
+		assertNotNull(correlator);
+		var newCustomer = new Customer("Lars", "", "011298-1136", "123", "2");
+		customerService.handleCustomerAccountCreated(new Event("CustomerAccountCreated",
+				new Object[] { newCustomer, cCorrelators.get(customer)} ));
+
+		registeredCustomer = futureRegisteredCustomer.join();
+	}
+
+	@When("the customer requests {int} tokens")
+	public void theCustomerRequestsTokens(int noTokens) {
+		publishedEvents.put(registeredCustomer.payId() + "-T" + noTokens, new CompletableFuture<>());
+		new Thread(() -> {
+			var tokenList = tokenService.requestTokens(noTokens,registeredCustomer.payId());
+			futureTokenRequest.complete(tokenList);
+		}).start();
+	}
+
+	@Then("the {string} event is sent asking {int} tokens for that customer id")
+	public void theEventIsSentWithTokensForThatCustomerId(String eventType, int noTokens) {
+		Event event = publishedEvents.get(registeredCustomer.payId() + "-T" + noTokens).join();
+		assertEquals(eventType, event.getTopic());
+		var customerId = event.getArgument(0, String.class);
+		var tokens = event.getArgument(1, Integer.class);
+		var correlator = event.getArgument(2, Correlator.class);
+		assertEquals(noTokens, tokens.intValue());
+		tCorrelators.put(customerId + "-T" + noTokens, correlator);
+	}
+
+	@When("the {string} event is received for the same customer with {int} tokens")
+	public void theEventIsReceivedForTheSameCustomerWithTokens(String eventType, int noTokens) {
+		var correlator = tCorrelators.get(registeredCustomer.payId() + "-T" + noTokens);
+		ArrayList<Token> tokenList = new ArrayList<>();
+		for (int i=0; i < noTokens; i++) {
+			tokenList.add(Token.random());
+		}
+		assertNotNull(correlator);
+		tokenService.handleTokensGenerated(new Event(eventType, new Object[]{
+				tokenList, noTokens, tCorrelators.get(registeredCustomer.payId() + "-T" + noTokens)}));
+	}
+
+	@Then("the customer has {int} valid tokens")
+	public void theCustomerHasValidTokens(int noTokens) {
+		var tokenList = futureTokenRequest.join();
+		assertEquals(noTokens, tokenList.size());
+	}
 }

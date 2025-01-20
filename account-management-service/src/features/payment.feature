@@ -12,3 +12,7 @@ Feature: dtupay.services.account Payment Feature
     Then the "CustomerAccountVerified" event is sent with the customer information
     And the customer account is verified
 
+  Scenario: Successful Customer Validation for Tokens
+    Given a registered customer
+    When the "TokensRequested" event for the customer id is received
+    Then the "TokenAccountVerified" event is sent with no content and same correlation id

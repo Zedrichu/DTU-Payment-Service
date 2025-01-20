@@ -19,6 +19,8 @@ services:
     depends_on:
       rabbitMq:
         condition: service_healthy
+    environment:
+      - JAVA_TOOL_OPTIONS="-XX:UseSVE=0"
 
 
   account-management:
@@ -27,3 +29,23 @@ services:
     depends_on:
       rabbitMq:
         condition: service_healthy
+    environment:
+      - JAVA_TOOL_OPTIONS="-XX:UseSVE=0"
+
+  token-management:
+    image: token-mgmt-service
+    container_name: token-manager
+    depends_on:
+      rabbitMq:
+        condition: service_healthy
+    environment:
+      - JAVA_TOOL_OPTIONS="-XX:UseSVE=0"
+
+  payment-management:
+    image: payment-mgmt-service
+    container_name: payment-manager
+    depends_on:
+      rabbitMq:
+        condition: service_healthy
+    environment:
+      - JAVA_TOOL_OPTIONS="-XX:UseSVE=0"

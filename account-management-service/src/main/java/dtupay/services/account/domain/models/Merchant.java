@@ -3,7 +3,9 @@ package dtupay.services.account.domain.models;
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbProperty;
 
-public record Merchant(String firstName, String lastName, String cpr, String bankAccountNo, String payId) {
+public record Merchant(String firstName, String lastName,
+					   String cpr, String bankAccountNo, String payId)
+		implements Wither<Merchant> {
 
 	/**
 	 * Main constructor of Merchant entity objects with JSON-B serialization tags for "value" properties
@@ -24,5 +26,11 @@ public record Merchant(String firstName, String lastName, String cpr, String ban
 		this.cpr = cpr;
 		this.bankAccountNo = bankAccountNo;
 		this.payId = payId;
+	}
+
+	// Wither approach for re-creating instances on property change
+	@Override
+	public Merchant withId(String id) {
+		return new Merchant(this.firstName, this.lastName, this.cpr, this.bankAccountNo, id);
 	}
 }

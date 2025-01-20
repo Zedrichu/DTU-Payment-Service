@@ -99,18 +99,16 @@ public class PaymentStepDefs {
         }
     }
 
-    @Given("a registered customer with DTUPay with {int} tokens")
+    @Given("a registered customer with DTUPay with {int} valid tokens")
     public void aRegisteredCustomerWithDTUPayWithTokens(int noTokens) throws BankServiceException_Exception {
         aRegisteredCustomerWithDTUPayWithBalanceInTheBank(1000);
     }
 
     ArrayList<Token> tokens;
-    TokenRequest tokenRequest;
 
     @When("the customer requests {int} tokens")
     public void theCustomerRequestsTokens(int noTokens) {
-        tokenRequest = new TokenRequest(registeredCustomer.payId(),noTokens);
-        tokens = customerService.requestTokens(tokenRequest);
+        tokens = customerService.requestTokens(registeredCustomer.payId(),noTokens);
     }
 
     @Then("the customer receives {int} tokens")

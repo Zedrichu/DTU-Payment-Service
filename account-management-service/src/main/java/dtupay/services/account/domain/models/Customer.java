@@ -13,7 +13,9 @@ import jakarta.json.bind.annotation.JsonbProperty;
  * @param payId
  */
 @ClassAuthor(author = "Adrian Zvizdenco", stdno = "s204683")
-public record Customer(String firstName, String lastName, String cpr, String bankAccountNo, String payId) {
+public record Customer(String firstName, String lastName,
+					   String cpr, String bankAccountNo, String payId)
+		implements Wither<Customer> {
 
 	/**
 	 * Main constructor of Customer entity objects with JSON-B serialization tags.
@@ -34,6 +36,12 @@ public record Customer(String firstName, String lastName, String cpr, String ban
 		this.cpr = cpr;
 		this.bankAccountNo = bankAccountNo;
 		this.payId = payId;
+	}
+
+	// Wither approach for re-creating instances on property change
+	@Override
+	public Customer withId(String id) {
+		return new Customer(this.firstName, this.lastName, this.cpr, this.bankAccountNo, id);
 	}
 
 }

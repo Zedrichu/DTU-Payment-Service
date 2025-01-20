@@ -33,6 +33,8 @@ public class AccountManager {
 		this.mque.addHandler("CustomerRegistrationRequested", this::handleCustomerRegistrationRequested);
 		this.mque.addHandler("MerchantRegistrationRequested", this::handleMerchantRegistrationRequested);
 		this.mque.addHandler("PaymentInitiated", this::handlePaymentInitiated);
+		this.mque.addHandler("TokensRequested", this::handleTokensRequested);
+		this.mque.addHandler("TokenVerified", this::handleTokenVerified);
 	}
 
 	public void handleCustomerRegistrationRequested(Event event) {
@@ -86,6 +88,11 @@ public class AccountManager {
 	public void handlePaymentInitiated(Event event) {
 		Merchant merchant = merchantRepository.getAccount(event.getArgument(0, PaymentRequest.class).merchantId());
 		var correlationId = event.getArgument(1, Correlator.class);
+
+		if (!merchantRepository.exists(merchant.payId())) {
+			return;
+		}
+
 		Event newEvent = new Event("MerchantAccountVerified", new Object[]{ merchant, correlationId });
 		logger.debug("New merchant verified: {}", newEvent);
 
@@ -94,13 +101,32 @@ public class AccountManager {
 	}
 
     public void handleTokenVerified(Event event) {
+		var customerId = event.getArgument(0, String.class);
 		Customer customer = customerRepository.getAccount(event.getArgument(0, String.class));
 		var correlationId = event.getArgument(1, Correlator.class);
+
+		if (!customerRepository.exists(customerId)) {
+			return;
+		}
+
 		Event newEvent = new Event("CustomerAccountVerified", new Object[]{ customer, correlationId });
 		logger.debug("New customer verified: {}", newEvent);
 
 		this.mque.publish(newEvent);
+	}
 
+	public void handleTokensRequested(Event event) {
+		logger.debug("Received TokensRequested event: {}", event);
+		var customerId = event.getArgument(0, String.class);
+		var correlationId = event.getArgument(2, Correlator.class);
+
+		if (!customerRepository.exists(customerId)) {
+			return;
+		};
+
+		Event newEvent = new Event("TokenAccountVerified",
+				new Object[]{correlationId});
+		this.mque.publish(newEvent);
 	}
 }
 

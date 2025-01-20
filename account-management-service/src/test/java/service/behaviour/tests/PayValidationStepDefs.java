@@ -7,6 +7,7 @@ import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.domain.models.PaymentRequest;
 import dtupay.services.account.utilities.Correlator;
+import io.cucumber.java.an.E;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -76,19 +77,22 @@ public class PayValidationStepDefs {
     }
 
     @When("the {string} event for the customer id is received")
-    public void theEventForTheCustomerIdIsReceived(String arg0) {
+    public void theEventForTheCustomerIdIsReceived(String eventType) {
         correlator = Correlator.random();
-        accountManagementService.handleTokenVerified(new Event(arg0, new Object[] { customerId, correlator }));
-
+        if (eventType.equals("TokensRequested")) {
+            accountManagementService.handleTokensRequested(new Event(eventType, new Object[] { customerId, 0, correlator }));
+        } else {
+            accountManagementService.handleTokenVerified(new Event(eventType, new Object[]{ customerId, correlator }));
+        }
     }
 
     @Then("the {string} event is sent with the customer information")
-    public void theEventIsSentWithTheCustomerInformation(String arg0) {
+    public void theEventIsSentWithTheCustomerInformation(String eventType) {
         eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(queue).publish(eventCaptor.capture());
         receivedEvent = eventCaptor.getValue();
         receivedCustomer = receivedEvent.getArgument(0, Customer.class);
-        assertEquals(receivedEvent.getTopic(),arg0);
+        assertEquals(receivedEvent.getTopic(), eventType);
         assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
     }
 
@@ -97,5 +101,14 @@ public class PayValidationStepDefs {
         assertEquals(customer.firstName(),receivedCustomer.firstName());
         assertEquals(customer.cpr(),receivedCustomer.cpr());
         assertEquals(customer.bankAccountNo(),receivedCustomer.bankAccountNo());
+    }
+
+    @Then("the {string} event is sent with no content and same correlation id")
+    public void theEventIsSentWithNoContent(String eventType) {
+        eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(queue).publish(eventCaptor.capture());
+        receivedEvent = eventCaptor.getValue();
+        assertEquals(receivedEvent.getTopic(), eventType);
+        assertEquals(correlator.getId(),receivedEvent.getArgument(0, Correlator.class).getId());
     }
 }

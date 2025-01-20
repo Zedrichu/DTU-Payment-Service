@@ -43,6 +43,12 @@ Feature: dtupay.services.facade DTUPay Facade Feature
     When the "BankTransferConfirmed" event is received
     Then the payment was successful
 
+  Scenario: Successful Token Request
+    Given a registered customer with 0 tokens
+    When the customer requests 2 tokens
+    Then the "TokensRequested" event is sent asking 2 tokens for that customer id
+    When the "TokensGenerated" event is received for the same customer with 2 tokens
+    Then the customer has 2 valid tokens
 
 #  Scenario: Unsuccessful Customer Registration
 #    Given an unregistered user with CPR "050505-0506" and name "John" and lastname "Doe"
