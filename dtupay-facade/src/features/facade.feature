@@ -36,6 +36,13 @@ Feature: dtupay.services.facade DTUPay Facade Feature
     When the "MerchantAccountCreated" event is received for merchant with non-empty id
     Then the merchant is registered and their id is set
 
+  Scenario: Successful Customer Account Deregistration
+    Given a registered customer with id opting to deregister
+    When the customer is being deregistered
+    Then the "CustomerDeregistrationRequested" event for the customer is sent with their id
+    When the "CustomerDeregistered" event is received for the customer id
+    Then the customer is deregistered
+
   Scenario: Successful Payment
     Given a valid payment request
     When the payment request is initiated

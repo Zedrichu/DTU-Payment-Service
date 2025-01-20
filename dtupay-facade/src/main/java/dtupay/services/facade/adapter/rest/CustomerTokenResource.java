@@ -8,10 +8,19 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 
 import java.util.ArrayList;
 
 @Path("/customers/{cid}/tokens")
+@Tag(name = "Customer Tokens", description = "APIs for managing customer tokens")
 public class CustomerTokenResource {
 
     private Logger logger = LoggerFactory.getLogger(CustomersResource.class);
@@ -20,8 +29,39 @@ public class CustomerTokenResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(
+            summary = "Request tokens for a customer",
+            description = "Allows a customer to request a specific number of tokens."
+    )
+    @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Successfully retrieved tokens",
+                    content = @Content(mediaType = MediaType.TEXT_PLAIN)
+            ),
+            @APIResponse(
+                    responseCode = "400",
+                    description = "Invalid input or customer ID",
+                    content = @Content(mediaType = MediaType.TEXT_PLAIN)
+            ),
+            @APIResponse(
+                    responseCode = "404",
+                    description = "Customer not found",
+                    content = @Content(mediaType = MediaType.TEXT_PLAIN)
+            )
+    })
     public Response requestTokens(
+            @Parameter(
+                    description = "Customer ID for which the tokens are requested",
+                    required = true,
+                    example = "12345"
+            )
             @PathParam("cid") String customerId,
+            @Parameter(
+                    description = "Number of tokens to request",
+                    required = true,
+                    example = "5"
+            )
             @QueryParam("amount") int amount) {
         logger.info("Received request of {} tokens for customer with id {}", amount, customerId);
         ArrayList<Token> tokenList = customerService.requestTokens(amount, customerId);

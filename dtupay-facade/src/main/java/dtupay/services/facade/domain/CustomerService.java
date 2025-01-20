@@ -7,6 +7,7 @@ import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Token;
 import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.utilities.Correlator;
+import io.cucumber.java.mk_latn.No;
 import messaging.Event;
 import messaging.MessageQueue;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ public class CustomerService {
   private MessageQueue mque;
   private Map<Correlator, CompletableFuture<Customer>> customerCorrelations = new ConcurrentHashMap<>();
   private Map<Correlator, CompletableFuture<ArrayList<Token>>> tokensCorrelations = new ConcurrentHashMap<>();
+  private Map<Correlator, CompletableFuture<String>> deregistrationCorrelations = new ConcurrentHashMap<>();
 
   public CustomerService(MessageQueue messageQueue) {
     logger.info("facade.CustomerService instantiated");
@@ -32,6 +34,7 @@ public class CustomerService {
     this.mque.addHandler("CustomerAccountCreated", this::handleCustomerAccountCreated);
     this.mque.addHandler("CustomerAccountCreationFailed", this::handleCustomerAccountCreationFailed);
     this.mque.addHandler("TokensGenerated", this::handleTokensGenerated);
+    this.mque.addHandler("CustomerDeregistered", this::handleCustomerDeregistered);
   }
 
   public Customer register(Customer customer) throws CompletionException {
@@ -73,6 +76,21 @@ public class CustomerService {
     tokensCorrelations.get(correlationId).complete(tokens);
   }
 
+  public String deregister(String customerId) {
+     logger.debug("Deregistering customer with ID: {}", customerId);
+     var correlationId = Correlator.random();
+     deregistrationCorrelations.put(correlationId, new CompletableFuture<>());
+     Event event = new Event("CustomerDeregistrationRequested", new Object[]{ customerId, correlationId });
+     mque.publish(event);
+     return deregistrationCorrelations.get(correlationId).join();
+  }
+
+  public void handleCustomerDeregistered(Event event) {
+    logger.debug("Received Customer Deregistered event: {}", event);
+    var reqCustomer = event.getArgument(0, String.class);
+    var correlationId = event.getArgument(1, Correlator.class);
+    deregistrationCorrelations.get(correlationId).complete(reqCustomer);
+  }
   public void handleCustomerAccountCreationFailed(Event event) {
     logger.debug("Received CustomerAccountCreationFailed event: {}", event);
     var errorMessage = event.getArgument(0, String.class);

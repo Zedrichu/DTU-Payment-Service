@@ -1,22 +1,12 @@
-package dtupay.services.facade.utilities;
+package dtupay.services.token.utilities;
 
 public enum EventTypes {
     TOKENS_REQUESTED("TokensRequested"),
     TOKEN_ACCOUNT_VERIFIED("TokenAccountVerified"),
     TOKENS_GENERATED("TokensGenerated"),
 
-    CUSTOMER_REGISTRATION_REQUESTED("CustomerRegistrationRequested"),
-    CUSTOMER_ACCOUNT_CREATED("CustomerAccountCreated"),
-    CUSTOMER_ACCOUNT_CREATION_FAILED("CustomerAccountCreationFailed"),
-    CUSTOMER_DEREGISTRATION_REQUESTED("CustomerDeregistrationRequested"),
-    CUSTOMER_DEREGISTRATION_COMPLETED("CustomerDeRegistrationCompleted"),
-
-    MERCHANT_REGISTRATION_REQUESTED("MerchantRegistrationRequested"),
-    MERCHANT_ACCOUNT_CREATED("MerchantAccountCreated"),
-
     PAYMENT_INITIATED("PaymentInitiated"),
-
-    BANK_TRANSFER_CONFIRMED("BankTransferConfirmed");
+    PAYMENT_TOKEN_VERIFIED("PaymentTokenVerified");
 
     private final String topic;
 

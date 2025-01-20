@@ -1,5 +1,6 @@
 package service.behaviour.tests;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import dtupay.services.facade.domain.CustomerService;
 import dtupay.services.facade.domain.MerchantService;
 import dtupay.services.facade.domain.models.Customer;
@@ -15,78 +16,93 @@ import io.cucumber.java.en.When;
 import messaging.Event;
 import messaging.MessageQueue;
 
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
 
 public class FacadeStepDefs {
 
+	private final Map<String, String> flags = new HashMap<>() {{
+		put("CustomerRegistrationRequested", "CRR");
+		put("CustomerDeregistrationRequested", "CDR");
+		put("PaymentInitiated", "PI");
+
+	}};
+
+	public class MockMessageQueue implements MessageQueue {
+
+		private final BiFunction<Event, String, String> idExtractor;
+
+		public MockMessageQueue(BiFunction<Event, String, String> mapping, Map<String, String> flags) {
+			this.idExtractor = mapping;
+		}
+
+		public String getFlag(String key) {
+			return flags.get(key);
+		}
+
+		@Override
+		public void publish(Event event) {
+			String id = idExtractor.apply(event, getFlag(event.getTopic()));
+			if (publishedEvents.containsKey(id)) {
+				publishedEvents.get(id).complete(event);
+			}
+		}
+
+		@Override
+		public void addHandler(String topic, Consumer<Event> handler) {}
+	}
+
+	private BiFunction<Event, String, String> customerKeyExtractor = (event, flag) ->
+			flag + "_|_" + event.getArgument(0, Customer.class).cpr();
+
+	private MessageQueue customerQ = new MockMessageQueue(customerKeyExtractor, flags);
+
+	private BiFunction<Event, String, String> customerIdKeyExtractor = (event, flag) ->
+			flag + "_|_" + event.getArgument(0, String.class);
+
+	private MessageQueue customerIdQ = new MockMessageQueue(customerIdKeyExtractor, flags);
+
+
+	private BiFunction<Event, String, String> merchantKeyExtractor = (event, flag) ->
+			flag + "_|_" + event.getArgument(0, Merchant.class).cpr();
+
+	private MessageQueue merchantQ = new MockMessageQueue(merchantKeyExtractor, flags);
+
+
+	private BiFunction<Event, String, String> tokenKeyExtractor = (event, flag) ->
+			flag + "_|_" + event.getArgument(0, String.class);
+
+	private MessageQueue tokensQ = new MockMessageQueue(tokenKeyExtractor, flags);
+
+	private BiFunction<Event, String, String> paymentKeyExtractor = (event, flag) ->
+			flag + "_|_" + event.getArgument(0, PaymentRequest.class).token().toString();
+
+	private MessageQueue paymentQ = new MockMessageQueue(paymentKeyExtractor, flags);
+
+
 	private Map<String, CompletableFuture<Event>> publishedEvents = new ConcurrentHashMap<>();
 	private Map<Customer, Correlator> cCorrelators = new ConcurrentHashMap<>();
 	private Map<Merchant, Correlator> mCorrelators = new ConcurrentHashMap<>();
 	private Map<PaymentRequest, Correlator> payCorrelators = new ConcurrentHashMap<>();
 
-	private MessageQueue customerQ = new MessageQueue() {
-		@Override
-		public void publish(Event event) {
-			var arg = event.getArgument(0, Customer.class);
-			publishedEvents.get(arg.firstName()).complete(event);
-		}
-
-		@Override
-		public void addHandler(String topic, Consumer<Event> handler) {}
-	};
-
-	private MessageQueue merchantQ = new MessageQueue() {
-		@Override
-		public void publish(Event event) {
-			var arg = event.getArgument(0, Merchant.class);
-			publishedEvents.get(arg.firstName()).complete(event);
-		}
-
-		@Override
-		public void addHandler(String topic, Consumer<Event> handler) {}
-	};
-
-	private MessageQueue paymentQ = new MessageQueue() {
-		@Override
-		public void publish(Event event) {
-			var arg = event.getArgument(0, PaymentRequest.class);
-			publishedEvents.get(arg.token()).complete(event);
-		}
-
-		@Override
-		public void addHandler(String topic, Consumer<Event> handler) {}
-	};
-
-	private MessageQueue tokensQ = new MessageQueue() {
-
-		@Override
-		public void publish(Event event) {
-			var arg1 = event.getArgument(0, String.class);
-			var arg2 = event.getArgument(1, Integer.class);
-			publishedEvents.get(arg1 + "-T" + arg2).complete(event);
-		}
-
-		@Override
-		public void addHandler(String topic, Consumer<Event> handler) {}
-	};
-
 	private CustomerService tokenService = new CustomerService(tokensQ);
 	private CustomerService customerService = new CustomerService(customerQ);
 	private MerchantService merchantService = new MerchantService(merchantQ);
 	private MerchantService payService = new MerchantService(paymentQ);
+	private CustomerService customerIdService = new CustomerService(customerIdQ);
 
 	private Customer customer;
 	private Customer customer2;
 	private CompletableFuture<Customer> futureCustomer = new CompletableFuture<>();
 	private CompletableFuture<Customer> futureCustomer2 = new CompletableFuture<>();
 	private CompletableFuture<Boolean> futurePaymentSuccess = new CompletableFuture<>();
+	private Event mockEvent;
 
 	@Given("a customer with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aCustomerWithNameACPRNumberABankAccountAndEmptyId(String firstName, String cpr) {
@@ -111,11 +127,11 @@ public class FacadeStepDefs {
 	public void theEventIsSent(String eventType) {
 		Event event = publishedEvents.get(customer.firstName()).join();
 		assertEquals(eventType, event.getTopic());
-
 		var cust = event.getArgument(0, Customer.class);
 		var correlator = event.getArgument(1, Correlator.class);
 		cCorrelators.put(cust, correlator);
-	}
+
+    }
 
 	@When("the {string} event is received for customer with non-empty id")
 	public void theEventIsReceivedWithNonEmptyId(String arg0) {
@@ -264,10 +280,15 @@ public class FacadeStepDefs {
 	@Given("a valid payment request")
 	public void aValidPaymentRequest() {
 		String merchantId = "123182752138-mid";
-		String token = "token";
+		UUID token = UUID.randomUUID();
 		int amount = 50;
-		paymentRequest = new PaymentRequest(merchantId, token, amount);
-		publishedEvents.put(paymentRequest.token(), new CompletableFuture<>());
+		paymentRequest = new PaymentRequest(merchantId, new Token(token), amount);
+
+		String eventType = "PaymentInitiated";
+		mockEvent = new Event(eventType, new Object[]{ paymentRequest });
+		String id = paymentKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
 		assertNotNull(paymentRequest.merchantId());
 		assertTrue(paymentRequest.amount() > 0);
 	}
@@ -323,8 +344,10 @@ public class FacadeStepDefs {
 				futureRegisteredCustomer.completeExceptionally(e);
 			}
 		}).start();
-
 		// Mock
+		for (int i=0; i < initialTokens; i++) {
+			tokens.add(Token.random());
+		}
 		assertEquals(initialTokens, tokens.size());
 
 		Event event = publishedEvents.get(customer.firstName()).join();
@@ -344,7 +367,6 @@ public class FacadeStepDefs {
 
 	@When("the customer requests {int} tokens")
 	public void theCustomerRequestsTokens(int noTokens) {
-		publishedEvents.put(registeredCustomer.payId() + "-T" + noTokens, new CompletableFuture<>());
 		new Thread(() -> {
 			var tokenList = tokenService.requestTokens(noTokens,registeredCustomer.payId());
 			futureTokenRequest.complete(tokenList);
@@ -379,4 +401,52 @@ public class FacadeStepDefs {
 		var tokenList = futureTokenRequest.join();
 		assertEquals(noTokens, tokenList.size());
 	}
+
+	@Given("a registered customer with id opting to deregister")
+	public void aRegisteredCustomerWithTokensOptingToDeregister() {
+		customer = new Customer("Lars", "", "011298-1136", "123", "reqid");
+
+		String eventType = "CustomerDeregistrationRequested";
+		mockEvent = new Event(eventType, new Object[]{ customer.payId() });
+		String id = customerIdKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
+		assertNotNull(customer.payId());
+	}
+
+	private CompletableFuture<String> futureCustomerDeregister = new CompletableFuture();
+	//private CompletableFuture<Customer> futureRegisteredCustomer = new CompletableFuture<>();
+	@When("the customer is being deregistered")
+	public void theCustomerIsBeingDeregistered() {
+		new Thread(() -> {
+			var result = customerIdService.deregister(customer.payId());
+			futureCustomerDeregister.complete(result);
+		}).start();
+	}
+
+	private Map<String, Correlator> cStringCorrelators = new ConcurrentHashMap<>();
+	@Then("the {string} event for the customer is sent with their id")
+	public void theEventForTheCustomerIsSentWithTheirId(String eventType) {
+		String id = customerIdKeyExtractor.apply(mockEvent, flags.get(eventType));
+
+		Event event = publishedEvents.get(id).join();
+		assertEquals(eventType, event.getTopic());
+		var cust = event.getArgument(0, String.class);
+		var correlator = event.getArgument(1, Correlator.class);
+		cStringCorrelators.put(cust, correlator);
+	}
+
+	@When("the {string} event is received for the customer id")
+	public void theEventIsReceivedForTheCustomerId(String eventType) {
+		var correlator = cStringCorrelators.get(customer.payId());
+		assertNotNull(correlator);
+	 	customerIdService.handleCustomerDeregistered(new Event(eventType, new Object[]{ customer.payId(), correlator }));
+	}
+
+	@Then("the customer is deregistered")
+	public void theCustomerIsDeregisteredAndTheirTokensAreRemoved() {
+		var customerId = futureCustomerDeregister.join();
+		assertEquals(customer.payId(), customerId);
+	}
 }
+
