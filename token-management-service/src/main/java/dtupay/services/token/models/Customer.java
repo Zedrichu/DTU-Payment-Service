@@ -1,6 +1,6 @@
 package dtupay.services.token.models;
 
-import dtupay.services.account.annotations.ClassAuthor;
+import dtupay.services.token.annotations.ClassAuthor;
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbProperty;
 
