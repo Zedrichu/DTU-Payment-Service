@@ -3,6 +3,7 @@ package service.behaviours.tests;
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import dtupay.services.token.TokenManager;
+import dtupay.services.token.models.PaymentRequest;
 import dtupay.services.token.models.Token;
 import dtupay.services.token.utilities.Correlator;
 import io.cucumber.java.en.And;
@@ -12,10 +13,12 @@ import messaging.Event;
 import messaging.MessageQueue;
 import org.mockito.ArgumentCaptor;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class TokenStepDefs {
@@ -36,7 +39,7 @@ public class TokenStepDefs {
 
     @When("{string} event is received for a customer")
     public void eventIsReceivedForACustomer(String eventType) {
-        tokenManager.handleTokenAccountVerified(new Event(eventType, new Object[]{ correlator }));
+        tokenManager.handleTokenAccountVerified(new Event(eventType, new Object[]{ correlator}));
     }
 
     @Then("{string} event is sent with the same correlation id")
@@ -61,5 +64,46 @@ public class TokenStepDefs {
     public void thenValidTokensAreGenerated(int noTokens) {
         assertEquals(noTokens, receivedTokenList.size());
         assertEquals(noTokens, generatedTokens.size());
+    }
+
+    private PaymentRequest paymentRequest;
+    private Token token;
+    private Correlator correlator2 = Correlator.random();
+    private ArrayList<Token> tokensLeft;
+    private Event receivedEvent;
+
+    @When("{string} event is received for a payment request")
+    public void eventIsReceivedForAPaymentRequest(String eventType) {
+        token = Token.random();
+        customerId = "111111111";
+        ArrayList<Token> tempTokens = new ArrayList<>(Arrays.asList(token));
+        HashMap<String, ArrayList<Token>> tokens = new HashMap<>(){{put(customerId,tempTokens);}};
+        tokenManager.setTokens(tokens);
+        paymentRequest = new PaymentRequest("12312341", token, 100);
+        tokensLeft = tokenManager.handlePaymentInitiated(new Event(eventType, new Object[]{paymentRequest, correlator2}));
+        assertFalse(tokensLeft.contains(token));
+    }
+
+    @Then("{string} is sent with the same correlation id")
+    public void isSentWithTheSameCorrelationId(String eventType) {
+        eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(messageQueue).publish(eventCaptor.capture());
+        receivedEvent = eventCaptor.getValue();
+        assertEquals(eventType, receivedEvent.getTopic());
+        assertEquals(correlator2.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
+    }
+
+    @When("{string} event is received for a token request for existing customer")
+    public void eventIsReceivedForATokenRequestForExistingCustomer(String eventType) {
+        token = Token.random();
+        customerId = "121212121";
+        ArrayList<Token> tempTokens = new ArrayList<>(Arrays.asList(token));
+        HashMap<String, ArrayList<Token>> tokens = new HashMap<>(){{put(customerId,tempTokens);}};
+        tokenManager.setTokens(tokens);
+
+
+        generatedTokens = tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
+
+
     }
 }
