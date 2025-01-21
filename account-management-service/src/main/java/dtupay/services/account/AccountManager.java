@@ -158,12 +158,12 @@ public class AccountManager {
 		var customerId = event.getArgument(0, String.class);
 		var correlationId = event.getArgument(2, Correlator.class);
 
-		if (!customerRepository.exists(customerId)) {
-			return;
-		};
-
 		Event newEvent = new Event(EventTypes.TOKEN_ACCOUNT_VERIFIED.getTopic(),
 				new Object[]{correlationId});
+		if (!customerRepository.exists(customerId)) {
+			newEvent = new Event(EventTypes.TOKEN_ACCOUNT_INVALID.getTopic(), new Object[]{correlationId});
+		};
+
 		this.mque.publish(newEvent);
 	}
 }

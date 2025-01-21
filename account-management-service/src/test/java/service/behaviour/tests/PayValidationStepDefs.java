@@ -84,7 +84,7 @@ public class PayValidationStepDefs {
     public void theEventForTheCustomerIdIsReceived(String eventType) {
         eventTypeName = EventTypes.fromTopic(eventType);
         correlator = Correlator.random();
-        if (eventType.equals("TokensRequested")) {
+        if (eventTypeName.equals(EventTypes.TOKENS_REQUESTED)) {
             accountManagementService.handleTokensRequested(new Event(eventTypeName.getTopic(), new Object[] { customerId, 0, correlator }));
         } else {
             accountManagementService.handleTokenVerified(new Event(eventTypeName.getTopic(), new Object[]{ customerId, correlator }));
@@ -117,5 +117,16 @@ public class PayValidationStepDefs {
         receivedEvent = eventCaptor.getValue();
         assertEquals(receivedEvent.getTopic(), eventTypeName.getTopic());
         assertEquals(correlator.getId(),receivedEvent.getArgument(0, Correlator.class).getId());
+    }
+
+    @When("the {string} event for unknown customer id is received")
+    public void theEventForUnknownCustomerIdIsReceived(String arg0) {
+        eventTypeName = EventTypes.fromTopic(arg0);
+        correlator = Correlator.random();
+        if (eventTypeName.equals(EventTypes.TOKENS_REQUESTED)) {
+            accountManagementService.handleTokensRequested(new Event(eventTypeName.getTopic(), new Object[] { "<none>", 0, correlator }));
+        } else {
+            accountManagementService.handleTokenVerified(new Event(eventTypeName.getTopic(), new Object[]{ "<none>", correlator }));
+        }
     }
 }

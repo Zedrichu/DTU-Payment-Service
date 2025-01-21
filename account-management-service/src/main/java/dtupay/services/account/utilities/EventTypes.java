@@ -19,6 +19,8 @@ public enum EventTypes {
     PAYMENT_INITIATED("PaymentInitiated"),
     PAYMENT_TOKEN_VERIFIED("PaymentTokenVerified"),
 
+    TOKEN_ACCOUNT_INVALID("TokenAccountInvalid"),
+
     TOKENS_REQUESTED("TokensRequested"),
     TOKEN_VERIFIED("TokenVerified"),
     TOKEN_ACCOUNT_VERIFIED("TokenAccountVerified");
