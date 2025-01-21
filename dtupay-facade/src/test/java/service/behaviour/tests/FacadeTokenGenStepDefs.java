@@ -4,6 +4,7 @@ import dtupay.services.facade.domain.CustomerService;
 import dtupay.services.facade.domain.models.Token;
 import dtupay.services.facade.exception.InvalidAccountException;
 import dtupay.services.facade.utilities.Correlator;
+import dtupay.services.facade.utilities.EventTypes;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -146,11 +147,12 @@ public class FacadeTokenGenStepDefs {
 		publishedEvents.put(regCustomerId, new CompletableFuture<>());
 	}
 
-	@When("the {string} event is received for the same correlation id")
-	public void theEventIsReceivedForTheSameCorrelationId(String eventType) {
+	@When("the TokenGenerationFailure event is received for the same correlation id")
+	public void theEventIsReceivedForTheSameCorrelationId() {
 		var correlator = tCorrelators.get(regCustomerId);
-		tokenService.handleTokenGenerationFailure(new Event(eventType,
-				new Object[] {"No tokens generated: Invalid customer id.", correlator}));
+		tokenService.handleTokenGenerationFailure(new Event(
+					EventTypes.TOKEN_GENERATION_FAILURE.getTopic(),
+					"No tokens generated: Invalid customer id.", correlator));
 	}
 
 	@Then("an InvalidAccount exception with message {string} is raised")

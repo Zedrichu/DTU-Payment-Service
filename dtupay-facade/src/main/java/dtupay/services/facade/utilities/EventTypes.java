@@ -24,7 +24,8 @@ public enum EventTypes {
 
     PAYMENT_INITIATED("PaymentInitiated"),
 
-    BANK_TRANSFER_CONFIRMED("BankTransferConfirmed");
+    BANK_TRANSFER_CONFIRMED("BankTransferConfirmed"),
+    BANK_TRANSFER_FAILED("BankTransferFailed");
 
     private final String topic;
 

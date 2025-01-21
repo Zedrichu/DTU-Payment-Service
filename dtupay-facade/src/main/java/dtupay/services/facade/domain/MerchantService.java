@@ -3,6 +3,7 @@ package dtupay.services.facade.domain;
 import dtupay.services.facade.domain.models.Merchant;
 import dtupay.services.facade.domain.models.PaymentRequest;
 import dtupay.services.facade.exception.AccountCreationException;
+import dtupay.services.facade.exception.BankFailureException;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
 import messaging.MessageQueue;
@@ -39,12 +40,12 @@ public class MerchantService {
     return registerCorrelations.get(correlationId).join();
   }
 
-  public boolean pay(PaymentRequest paymentRequest) {
+  public boolean pay(PaymentRequest paymentRequest) throws CompletionException {
     logger.debug("Pay request received: {}", paymentRequest);
     var correlationId = Correlator.random();
     payCorrelations.put(correlationId, new CompletableFuture<>());
 
-    Event event = new Event(EventTypes.PAYMENT_INITIATED.getTopic(), new Object[] { paymentRequest, correlationId });
+    Event event = new Event(EventTypes.PAYMENT_INITIATED.getTopic(), paymentRequest, correlationId);
     mque.publish(event);
 
     return payCorrelations.get(correlationId).join();
@@ -69,5 +70,12 @@ public class MerchantService {
     var errorMessage = event.getArgument(0, String.class);
     var core = event.getArgument(1, Correlator.class);
     registerCorrelations.get(core).completeExceptionally(new CompletionException(new AccountCreationException(errorMessage)));
+  }
+
+  public void handleBankTransferFailed(Event event) {
+    logger.debug("Received BankTransferFailed event: {}", event);
+    var errorMessage = event.getArgument(0, String.class);
+    var correlationId = event.getArgument(1, Correlator.class);
+    payCorrelations.get(correlationId).completeExceptionally(new BankFailureException(errorMessage));
   }
 }
