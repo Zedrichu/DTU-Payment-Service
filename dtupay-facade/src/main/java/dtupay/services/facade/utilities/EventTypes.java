@@ -17,6 +17,7 @@ public enum EventTypes {
 
     MERCHANT_REGISTRATION_REQUESTED("MerchantRegistrationRequested"),
     MERCHANT_ACCOUNT_CREATED("MerchantAccountCreated"),
+    MERCHANT_ACCOUNT_CREATION_FAILED("MerchantAccountCreationFailed"),
 
     PAYMENT_INITIATED("PaymentInitiated"),
 

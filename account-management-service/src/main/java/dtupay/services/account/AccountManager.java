@@ -2,7 +2,6 @@ package dtupay.services.account;
 
 import dtupay.services.account.annotations.MethodAuthor;
 import dtupay.services.account.domain.AccountRepository;
-import dtupay.services.account.domain.MemoryAccountRepository;
 import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.domain.models.PaymentRequest;
@@ -44,12 +43,28 @@ public class AccountManager {
 		var correlationId = event.getArgument(1, Correlator.class);
 
 		Event newEvent;
-		if (validateCustomerInfo(customer)) {
+		if (validateAccountInfo(customer)) {
 			newEvent = acceptCustomer(customer, correlationId);
 			logger.debug("New customer registered: {}", newEvent);
 		} else {
 			newEvent = declineCustomer(customer, correlationId);
 			logger.debug("New customer declined: {}", newEvent);
+		}
+		this.mque.publish(newEvent);
+	}
+
+	public void handleMerchantRegistrationRequested(Event event) {
+		logger.debug("Received MerchantRegistrationRequested event: {}", event);
+		var merchant = event.getArgument(0, Merchant.class);
+		var correlationId = event.getArgument(1, Correlator.class);
+
+		Event newEvent;
+		if (validateAccountInfo(merchant)) {
+			newEvent = acceptMerchant(merchant, correlationId);
+			logger.debug("New merchant registered: {}", newEvent);
+		} else {
+			newEvent = declineMerchant(merchant, correlationId);
+			logger.debug("New merchant declined: {}", newEvent);
 		}
 		this.mque.publish(newEvent);
 	}
@@ -67,24 +82,29 @@ public class AccountManager {
 		});
 	}
 
-	private boolean validateCustomerInfo(Customer customer) {
+	private Event acceptMerchant(Merchant merchant, Correlator correlationId) {
+		String id = merchantRepository.createAccount(merchant);
+		var registeredMerchant = new Merchant(merchant.firstName(), merchant.lastName(), merchant.cpr(), merchant.bankAccountNo(), id);
+		return new Event(EventTypes.MERCHANT_ACCOUNT_CREATED.getTopic(), new Object[]{ registeredMerchant, correlationId });
+	}
+
+	private Event declineMerchant(Merchant merchant, Correlator correlationId) {
+		return new Event(EventTypes.MERCHANT_ACCOUNT_CREATION_FAILED.getTopic(), new Object[]{
+				"Account creation failed: Provided merchant must have a valid bank account number and CPR", correlationId
+		});
+	}
+
+	private boolean validateAccountInfo(Customer customer) {
 		boolean cprInvalid = customer.cpr() == null || customer.cpr().isEmpty();
 		boolean bankAccountInvalid = customer.bankAccountNo() == null || customer.bankAccountNo().isEmpty();
 		return ! (cprInvalid || bankAccountInvalid);
 	}
-
-	public void handleMerchantRegistrationRequested(Event event) {
-		logger.debug("Received MerchantRegistrationRequested event: {}", event);
-		var merchant = event.getArgument(0, Merchant.class);
-		var correlationId = event.getArgument(1, Correlator.class);
-
-		String id = merchantRepository.createAccount(merchant);
-		var registeredMerchant = new Merchant(merchant.firstName(), merchant.lastName(), merchant.cpr(), merchant.bankAccountNo(), id);
-		Event newEvent = new Event(EventTypes.MERCHANT_ACCOUNT_CREATED.getTopic(), new Object[] { registeredMerchant, correlationId });
-		logger.debug("New merchant registered: {}", newEvent);
-
-		this.mque.publish(newEvent);
+	private boolean validateAccountInfo(Merchant merchant){
+		boolean cprInvalid = merchant.cpr() == null || merchant.cpr().isEmpty();
+		boolean bankAccountInvalid = merchant.bankAccountNo() == null || merchant.bankAccountNo().isEmpty();
+		return ! (cprInvalid || bankAccountInvalid);
 	}
+
 
 	public void handlePaymentInitiated(Event event) {
 		Merchant merchant = merchantRepository.getAccount(event.getArgument(0, PaymentRequest.class).merchantId());

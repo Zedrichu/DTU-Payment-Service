@@ -33,7 +33,8 @@ public class FacadeStepDefs {
 		put(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), "CDR");
 		put(EventTypes.PAYMENT_INITIATED.getTopic(), "PIN");
 		put(EventTypes.TOKENS_REQUESTED.getTopic(), "TKR");
-
+		put(EventTypes.MERCHANT_REGISTRATION_REQUESTED.getTopic(), "MRR");
+		put(EventTypes.MERCHANT_ACCOUNT_CREATION_FAILED.getTopic(), "MAF");
 	}};
 
 	public class MockMessageQueue implements MessageQueue {
@@ -256,6 +257,7 @@ public class FacadeStepDefs {
 
 	private Merchant merchant;
 	private CompletableFuture<Merchant> futureMerchant = new CompletableFuture<>();
+	private String futureMerchantId;
 
 	@Given("a merchant with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aMerchantWithNameACPRNumberABankAccountAndEmptyId(String name, String cpr) {
@@ -271,15 +273,19 @@ public class FacadeStepDefs {
 	@When("the merchant is being registered")
 	public void theMerchantIsBeingRegistered() {
 		new Thread(() -> {
-			var result = merchantService.register(merchant);
-			futureMerchant.complete(result);
+			try {
+				var result = merchantService.register(merchant);
+				futureMerchant.complete(result);
+			} catch (Exception e) {
+				futureMerchant.completeExceptionally(e);
+			}
 		}).start();
 	}
 
 	@Then("the {string} event for the merchant is sent")
 	public void theEventForTheMerchantIsSent(String eventType) {
 		eventTypeName = EventTypes.fromTopic(eventType);
-		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+		String id = merchantKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
 
 		Event event = publishedEvents.get(id).join();
 		assertEquals(eventTypeName.getTopic(), event.getTopic());
@@ -498,6 +504,38 @@ public class FacadeStepDefs {
 	public void theCustomerIsDeregisteredAndTheirTokensAreRemoved() {
 		var customerId = futureCustomerDeregister.join();
 		assertEquals(customer.payId(), customerId);
+	}
+
+
+	@Given("a merchant with name {string}, a CPR number {string}, no bank account and empty id")
+	public void aMerchantWithNameACPRNumberNoBankAccountAndEmptyId(String firstName, String cpr) {
+		merchant = new Merchant(firstName, "FAILING", cpr, "123", null);
+		mockEvent = new Event(EventTypes.MERCHANT_REGISTRATION_REQUESTED.getTopic(), new Object[]{ merchant });
+		String id = merchantKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
+		assertNull(merchant.payId());
+	}
+
+	@When("the {string} event is received for the merchant")
+	public void theEventIsReceivedForTheMerchant(String eventType) {
+		eventTypeName = EventTypes.fromTopic(eventType);
+		var correlator = mCorrelators.get(merchant);
+		var errorMessage = "Account creation failed: Provided merchant must have a valid bank account number and CPR";
+		assertNotNull(correlator);
+		merchantService.handleMerchantAccountCreationFailed(new Event(eventTypeName.getTopic(),
+				new Object[] {errorMessage, mCorrelators.get(merchant)}));
+	}
+
+	@Then("an exception raises with the merchant declined error message {string}")
+	public void anExceptionRaisesWithTheMerchantDeclinedErrorMessage(String message) {
+		try {
+		 futureMerchantId = futureMerchant.join().payId();
+		} catch (CompletionException exception) {
+			assertNotNull(exception);
+			assertTrue(exception.getCause() instanceof AccountCreationException);
+			assertEquals(message, exception.getCause().getMessage());
+		}
 	}
 }
 

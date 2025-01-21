@@ -35,7 +35,7 @@ public class CustomerService {
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATED.getTopic(), this::handleCustomerAccountCreated);
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), this::handleCustomerAccountCreationFailed);
     this.mque.addHandler(EventTypes.TOKENS_GENERATED.getTopic(), this::handleTokensGenerated);
-    this.mque.addHandler( EventTypes.CUSTOMER_DEREGISTERED.getTopic(), this::handleCustomerDeregistered);
+    this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTERED.getTopic(), this::handleCustomerDeregistered);
   }
 
   public Customer register(Customer customer) throws CompletionException {

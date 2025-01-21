@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.CompletionException;
 
 @Path("/merchants")
 public class MerchantsResource {
@@ -27,12 +28,19 @@ public class MerchantsResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response register(Merchant merchant) throws URISyntaxException {
     logger.info("Merchant registration resource accessed: {}", merchant);
-    Merchant registeredMerchant = merchantService.register(merchant);
-    String id = registeredMerchant.payId();
-    return Response
-          .created(new URI("http://localhost:8080/merchants/"+id))
-          .entity(registeredMerchant)
-          .build();
+    try {
+      Merchant registeredMerchant = merchantService.register(merchant);
+      String id = registeredMerchant.payId();
+      return Response
+            .created(new URI("http://localhost:8080/merchants/"+id))
+            .entity(registeredMerchant)
+            .build();
+  } catch (CompletionException exception) {
+      return Response
+            .status(Response.Status.BAD_REQUEST)
+            .entity(exception.getCause().getMessage())
+            .build();
+    }
   }
 
 

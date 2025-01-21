@@ -2,6 +2,7 @@ package dtupay.services.facade.domain;
 
 import dtupay.services.facade.domain.models.Merchant;
 import dtupay.services.facade.domain.models.PaymentRequest;
+import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
 import messaging.MessageQueue;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MerchantService {
@@ -25,9 +27,10 @@ public class MerchantService {
     this.mque = messageQueue;
 
     this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_CREATED.getTopic(), this::handleMerchantAccountCreated);
+    this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_CREATION_FAILED.getTopic(), this::handleMerchantAccountCreationFailed);
   }
 
-  public Merchant register(Merchant merchant) {
+  public Merchant register(Merchant merchant) throws CompletionException {
     logger.debug("Registration request for: {}", merchant);
     var correlationId = Correlator.random();
     registerCorrelations.put(correlationId, new CompletableFuture<>());
@@ -59,5 +62,12 @@ public class MerchantService {
     var core = event.getArgument(1, Correlator.class);
 
     payCorrelations.get(core).complete(true);
+  }
+
+  public void handleMerchantAccountCreationFailed(Event event) {
+    logger.debug("Received MerchantAccountCreationFailed event: {}", event);
+    var errorMessage = event.getArgument(0, String.class);
+    var core = event.getArgument(1, Correlator.class);
+    registerCorrelations.get(core).completeExceptionally(new CompletionException(new AccountCreationException(errorMessage)));
   }
 }

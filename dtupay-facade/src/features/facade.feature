@@ -36,6 +36,13 @@ Feature: dtupay.services.facade DTUPay Facade Feature
     When the "MerchantAccountCreated" event is received for merchant with non-empty id
     Then the merchant is registered and their id is set
 
+  Scenario: Unsuccessful Merchant Registration
+    Given a merchant with name "Tom", a CPR number "213124-1234", no bank account and empty id
+    When the merchant is being registered
+    Then the "MerchantRegistrationRequested" event for the merchant is sent
+    When the "MerchantAccountCreationFailed" event is received for the merchant
+    Then an exception raises with the merchant declined error message "Account creation failed: Provided merchant must have a valid bank account number and CPR"
+
   Scenario: Successful Customer Account Deregistration
     Given a registered customer with id opting to deregister
     When the customer is being deregistered
