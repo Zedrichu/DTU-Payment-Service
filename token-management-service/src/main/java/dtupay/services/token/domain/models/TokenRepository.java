@@ -8,4 +8,5 @@ public interface TokenRepository {
 	String extractId(Token token);
 	void removeId(String id);
 	void addTokens(String id, ArrayList<Token> tokens);
+	boolean exists(String id);
 }

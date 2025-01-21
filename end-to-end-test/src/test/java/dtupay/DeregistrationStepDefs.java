@@ -16,7 +16,7 @@ public class DeregistrationStepDefs {
 	@Given("a customer registered in DTUPay")
 	public void a_customer_registered_in_DTUPay() {
 			registeredCustomer = customerService.register(new Customer("John",
-						"Doe", "123456-1234", "1234", "regId123"));
+						"Doe", "123456-1234", "1234", null));
 	}
 
 	@When("the customer is deregistered in DTUPay")
@@ -28,7 +28,7 @@ public class DeregistrationStepDefs {
 		}
 	}
 
-	@Then("the customer receives a confirmation message {}")
+	@Then("the customer receives a confirmation message {string}")
 	public void the_customer_receives_a_event(String message) {
 		assertEquals(message, response);
 	}

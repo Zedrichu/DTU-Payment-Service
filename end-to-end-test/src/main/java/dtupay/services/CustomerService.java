@@ -53,7 +53,7 @@ public class CustomerService {
           .request()
           .delete();
 
-    if (response.getStatus() != Response.Status.NO_CONTENT.getStatusCode()) {
+    if (response.getStatus() != Response.Status.OK.getStatusCode()) {
       throw new DeregisterException(response.readEntity(String.class));
     }
     return response.readEntity(String.class);

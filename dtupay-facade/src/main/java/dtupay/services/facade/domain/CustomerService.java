@@ -28,6 +28,7 @@ public class CustomerService {
   private Map<Correlator, CompletableFuture<Customer>> customerCorrelations = new ConcurrentHashMap<>();
   private Map<Correlator, CompletableFuture<ArrayList<Token>>> tokensCorrelations = new ConcurrentHashMap<>();
   private Map<Correlator, CompletableFuture<String>> deregistrationCorrelations = new ConcurrentHashMap<>();
+  private Map<Correlator, List<Event>> eventMap = new ConcurrentHashMap<>();
 
   public CustomerService(MessageQueue messageQueue) {
     logger.info("facade.CustomerService instantiated");
@@ -35,7 +36,9 @@ public class CustomerService {
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATED.getTopic(), this::handleCustomerAccountCreated);
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), this::handleCustomerAccountCreationFailed);
     this.mque.addHandler(EventTypes.TOKENS_GENERATED.getTopic(), this::handleTokensGenerated);
-    this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTERED.getTopic(), this::handleCustomerDeregistered);
+    //this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTERED.getTopic(), this::handleCustomerDeregistered);
+    this.mque.addHandler(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), this::handleCustomerDeregistered);
+    this.mque.addHandler(EventTypes.CUSTOMER_DELETED.getTopic(), this::handleCustomerDeregistered);
   }
 
   public Customer register(Customer customer) throws CompletionException {
@@ -88,14 +91,36 @@ public class CustomerService {
 
   public void handleCustomerDeregistered(Event event) {
     logger.debug("Received Customer Deregistered event: {}", event);
-    var reqCustomer = event.getArgument(0, String.class);
-    var correlationId = event.getArgument(1, Correlator.class);
-    deregistrationCorrelations.get(correlationId).complete(reqCustomer);
+    var correlationId = event.getArgument(0, Correlator.class);
+
+    if (eventMap.containsKey(correlationId)) {
+      eventMap.get(correlationId).add(event);
+    } else {
+        eventMap.put(correlationId, new ArrayList<Event>());
+        eventMap.get(correlationId).add(event);
+    }
+
+    if (eventMap.get(correlationId).size() < 2) {
+        return;
+    }
+
+    if (checkForSuccessfulDeletion(correlationId)) {
+      deregistrationCorrelations.get(correlationId).complete("Customer Successful Deregistration");
+    } else {
+        deregistrationCorrelations.get(correlationId).completeExceptionally(new AccountCreationException("Customer Deregistration Failed"));
+    };
   }
+
+  private boolean checkForSuccessfulDeletion(Correlator correlationId) {
+    return eventMap.get(correlationId).stream().allMatch(event -> event.getTopic().equals(EventTypes.CUSTOMER_DELETED.getTopic()) ||
+            event.getTopic().equals(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic()));
+  }
+
   public void handleCustomerAccountCreationFailed(Event event) {
     logger.debug("Received CustomerAccountCreationFailed event: {}", event);
     var errorMessage = event.getArgument(0, String.class);
     var correlationId = event.getArgument(1, Correlator.class);
     customerCorrelations.get(correlationId).completeExceptionally(new AccountCreationException(errorMessage));
   }
+
 }

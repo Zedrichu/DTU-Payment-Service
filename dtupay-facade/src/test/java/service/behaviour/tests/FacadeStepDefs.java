@@ -459,26 +459,6 @@ public class FacadeStepDefs {
 		assertEquals(noTokens, tokenList.size());
 	}
 
-	@Given("a registered customer with id opting to deregister")
-	public void aRegisteredCustomerWithTokensOptingToDeregister() {
-		customer = new Customer("Lars", "", "011298-1136", "123", "reqid");
-
-		mockEvent = new Event(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), new Object[]{ customer.payId() });
-		String id = customerIdKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
-
-		publishedEvents.put(id, new CompletableFuture<>());
-		assertNotNull(customer.payId());
-	}
-
-	private CompletableFuture<String> futureCustomerDeregister = new CompletableFuture();
-	@When("the customer is being deregistered")
-	public void theCustomerIsBeingDeregistered() {
-		new Thread(() -> {
-			var result = customerIdService.deregister(customer.payId());
-			futureCustomerDeregister.complete(result);
-		}).start();
-	}
-
 	private Map<String, Correlator> cStringCorrelators = new ConcurrentHashMap<>();
 	@Then("the {string} event for the customer is sent with their id")
 	public void theEventForTheCustomerIsSentWithTheirId(String eventType) {
@@ -536,6 +516,28 @@ public class FacadeStepDefs {
 			assertTrue(exception.getCause() instanceof AccountCreationException);
 			assertEquals(message, exception.getCause().getMessage());
 		}
+	}
+
+	// <---------------------------------- Costumer Derigistration ---------------------------------->
+
+	@Given("a registered customer with id opting to deregister")
+	public void aRegisteredCustomerWithTokensOptingToDeregister() {
+		customer = new Customer("Lars", "", "011298-1136", "123", "reqid");
+
+		mockEvent = new Event(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), new Object[]{ customer.payId() });
+		String id = customerIdKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
+		assertNotNull(customer.payId());
+	}
+
+	private CompletableFuture<String> futureCustomerDeregister = new CompletableFuture();
+	@When("the customer is being deregistered")
+	public void theCustomerIsBeingDeregistered() {
+		new Thread(() -> {
+			var result = customerIdService.deregister(customer.payId());
+			futureCustomerDeregister.complete(result);
+		}).start();
 	}
 }
 

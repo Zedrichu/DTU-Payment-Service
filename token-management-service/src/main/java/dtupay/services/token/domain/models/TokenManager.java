@@ -30,7 +30,9 @@ public class TokenManager {
         this.mque.addHandler(EventTypes.TOKEN_ACCOUNT_VERIFIED.getTopic(), this::handleTokenAccountVerified);
         this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);
         this.mque.addHandler(EventTypes.TOKEN_ACCOUNT_INVALID.getTopic(), this::handleTokenAccountInvalid );
+        this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), this::handleCustomerDeregistrationRequested);
     }
+
 
     @MethodAuthor(author = "Jonas Kjeldsen", stdno = "s204713")
     public ArrayList<Token> generateTokens(int noTokens){
@@ -128,5 +130,20 @@ public class TokenManager {
         aggregate.setCustomerVerified(false);
         aggregate.setCustomerHandled(true);
         completeGeneration(aggregate);
+    }
+    
+    private void handleCustomerDeregistrationRequested(Event event) {
+        logger.debug("Received CustomerDeregistrationRequested event: {}", event);
+        String customerId = event.getArgument(0, String.class);
+        Correlator correlator = event.getArgument(1, Correlator.class);
+
+        if (!repo.exists(customerId)) {
+            Event responseEvent = new Event(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), new Object[]{ correlator });
+            mque.publish(responseEvent);
+        } else {
+            repo.removeId(customerId);
+            Event responseEvent = new Event(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), new Object[]{ correlator });
+            mque.publish(responseEvent);
+        }
     }
 }

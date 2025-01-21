@@ -133,7 +133,4 @@ public class RegistrationStepDef {
   public void theMerchantIsRegisteredWithANonEmptyMerchantId() {
     assertNotNull(registeredMerchant.payId());
   }
-
-
-
 }

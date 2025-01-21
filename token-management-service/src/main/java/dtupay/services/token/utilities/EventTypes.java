@@ -10,6 +10,10 @@ public enum EventTypes {
     TOKEN_ACCOUNT_VERIFIED("TokenAccountVerified"),
     TOKEN_ACCOUNT_INVALID("TokenAccountInvalid"),
 
+    CUSTOMER_DEREGISTRATION_REQUESTED("CustomerDeregistrationRequested"),
+    CUSTOMER_DEREGISTRATION_FAILURE("CustomerDeregistrationFailure"),
+    CUSTOMER_TOKENS_DELETED("CustomerTokensDeleted"),
+
     TOKENS_GENERATED("TokensGenerated"),
     TOKEN_GENERATION_FAILURE("TokenGenerationFailure"),
 

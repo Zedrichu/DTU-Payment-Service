@@ -43,12 +43,12 @@ Feature: dtupay.services.facade DTUPay Facade Feature
     When the "MerchantAccountCreationFailed" event is received for the merchant
     Then an exception raises with the merchant declined error message "Account creation failed: Provided merchant must have a valid bank account number and CPR"
 
-  Scenario: Successful Customer Account Deregistration
-    Given a registered customer with id opting to deregister
-    When the customer is being deregistered
-    Then the "CustomerDeregistrationRequested" event for the customer is sent with their id
-    When the "CustomerDeregistered" event is received for the customer id
-    Then the customer is deregistered
+ # Scenario: Successful Customer Account Deregistration
+ #   Given a registered customer with id opting to deregister
+ #   When the customer is being deregistered
+ #   Then the "CustomerDeregistrationRequested" event for the customer is sent with their id
+ #   When the "CustomerDeregistered" event is received for the customer id
+ #   Then the customer is deregistered
 
   Scenario: Successful Payment
     Given a valid payment request

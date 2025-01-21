@@ -4,10 +4,7 @@ import dtupay.services.facade.adapter.mq.CustomerServiceFactory;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.CustomerService;
 import dtupay.services.facade.exception.AccountCreationException;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -64,6 +61,22 @@ public class CustomersResource {
       return Response
               .status(Response.Status.BAD_REQUEST)
               .entity(exception.getCause().getMessage())
+              .build();
+    }
+  }
+
+  @DELETE
+  @Path("/{customerId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deregister(@PathParam("customerId") String customerId) {
+    logger.info("Customer deregistration resource accessed: {}", customerId);
+    try {
+      String response = customerService.deregister(customerId);
+      return Response.ok().entity(response).build();
+    } catch (AccountCreationException exception) {
+      return Response
+              .status(Response.Status.BAD_REQUEST)
+              .entity(exception.getMessage())
               .build();
     }
   }

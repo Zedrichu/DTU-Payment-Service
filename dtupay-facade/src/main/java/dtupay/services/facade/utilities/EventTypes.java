@@ -14,6 +14,8 @@ public enum EventTypes {
     CUSTOMER_DEREGISTRATION_REQUESTED("CustomerDeregistrationRequested"),
     CUSTOMER_DEREGISTRATION_COMPLETED("CustomerDeRegistrationCompleted"),
     CUSTOMER_DEREGISTERED("CustomerDeregistered"),
+    CUSTOMER_TOKENS_DELETED("CustomerTokensDeleted"),
+    CUSTOMER_DELETED("CustomerDeleted"),
 
     MERCHANT_REGISTRATION_REQUESTED("MerchantRegistrationRequested"),
     MERCHANT_ACCOUNT_CREATED("MerchantAccountCreated"),
