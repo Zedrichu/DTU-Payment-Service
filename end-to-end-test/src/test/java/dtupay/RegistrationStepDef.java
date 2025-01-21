@@ -85,7 +85,7 @@ public class RegistrationStepDef {
 
   @Then("the customer IDs are different")
   public void theCustomerIDsAreDifferent() {
-    assertNotEquals(registeredCustomer.payId(),registeredCustomer2.payId());
+    assertNotEquals(registeredCustomer.payId(), registeredCustomer2.payId());
   }
 
   @And("the user does not have a bank account")

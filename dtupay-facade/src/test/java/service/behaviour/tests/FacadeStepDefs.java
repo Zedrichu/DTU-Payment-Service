@@ -30,7 +30,8 @@ public class FacadeStepDefs {
 	private final Map<String, String> flags = new HashMap<>() {{
 		put("CustomerRegistrationRequested", "CRR");
 		put("CustomerDeregistrationRequested", "CDR");
-		put("PaymentInitiated", "PI");
+		put("PaymentInitiated", "PIN");
+		put("TokensRequested", "TKR");
 
 	}};
 
@@ -107,7 +108,12 @@ public class FacadeStepDefs {
 	@Given("a customer with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aCustomerWithNameACPRNumberABankAccountAndEmptyId(String firstName, String cpr) {
 		customer = new Customer(firstName, "", cpr, "123", null);
-		publishedEvents.put(customer.firstName(), new CompletableFuture<>());
+
+		String eventType = "CustomerRegistrationRequested";
+		mockEvent = new Event(eventType, new Object[]{ customer });
+		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
 		assertNull(customer.payId());
 	}
 
@@ -125,7 +131,9 @@ public class FacadeStepDefs {
 
 	@Then("the {string} event for the customer is sent")
 	public void theEventIsSent(String eventType) {
-		Event event = publishedEvents.get(customer.firstName()).join();
+		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		Event event = publishedEvents.get(id).join();
 		assertEquals(eventType, event.getTopic());
 		var cust = event.getArgument(0, Customer.class);
 		var correlator = event.getArgument(1, Correlator.class);
@@ -156,7 +164,12 @@ public class FacadeStepDefs {
 	@Given("a second customer with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aSecondCustomerWithNameACPRNumberABankAccountAndEmptyId(String name, String cpr) {
 		customer2 = new Customer(name, "", cpr, "104", null);
-		publishedEvents.put(customer2.firstName(), new CompletableFuture<>());
+
+		String eventType = "CustomerRegistrationRequested";
+		mockEvent = new Event(eventType, new Object[]{ customer2 });
+		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
 		assertNull(customer2.payId());
 	}
 
@@ -170,7 +183,9 @@ public class FacadeStepDefs {
 
 	@Then("the {string} event for the second customer is sent")
 	public void theEventForTheSecondCustomerIsSent(String eventType) {
-		Event event = publishedEvents.get(customer2.firstName()).join();
+		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		Event event = publishedEvents.get(id).join();
 		assertEquals(eventType, event.getTopic());
 
 		var cust = event.getArgument(0, Customer.class);
@@ -203,7 +218,13 @@ public class FacadeStepDefs {
 	@Given("a customer with name {string}, a CPR number {string}, no bank account and empty id")
 	public void aCustomerWithNameACPRNumberNoBankAccountAndEmptyId(String name, String cpr) {
 		customer = new Customer(name, "", cpr, null, null);
-		publishedEvents.put(customer.firstName(), new CompletableFuture<>());
+
+		String eventType = "CustomerRegistrationRequested";
+		mockEvent = new Event(eventType, new Object[]{ customer });
+		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
+
 		assertNull(customer.payId());
 	}
 
@@ -234,7 +255,12 @@ public class FacadeStepDefs {
 	@Given("a merchant with name {string}, a CPR number {string}, a bank account and empty id")
 	public void aMerchantWithNameACPRNumberABankAccountAndEmptyId(String name, String cpr) {
 		merchant = new Merchant(name, "", cpr, "123124", null);
-		publishedEvents.put(merchant.firstName(), new CompletableFuture<>());
+
+		String eventType = "MerchantRegistrationRequested";
+		mockEvent = new Event(eventType, new Object[]{ merchant });
+		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
 		assertNull(merchant.payId());
 	}
 
@@ -248,7 +274,9 @@ public class FacadeStepDefs {
 
 	@Then("the {string} event for the merchant is sent")
 	public void theEventForTheMerchantIsSent(String eventType) {
-		Event event = publishedEvents.get(merchant.firstName()).join();
+		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		Event event = publishedEvents.get(id).join();
 		assertEquals(eventType, event.getTopic());
 		var merch = event.getArgument(0, Merchant.class);
 		var correlator = event.getArgument(1, Correlator.class);
@@ -271,7 +299,7 @@ public class FacadeStepDefs {
 
     @Then("the merchant is registered and their id is set")
 	public void theMerchantIsRegisteredAndTheirIdIsSet() {
-        String futureMerchantId = futureMerchant.join().payId();
+    String futureMerchantId = futureMerchant.join().payId();
 		assertNotNull(futureMerchantId);
 	}
 
@@ -303,7 +331,9 @@ public class FacadeStepDefs {
 
 	@Then("the {string} event for the payment request is sent")
 	public void theEventForThePaymentRequestIsSent(String eventType) {
-		Event event = publishedEvents.get(paymentRequest.token()).join();
+		String id = paymentKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		Event event = publishedEvents.get(id).join();
 		assertEquals(eventType, event.getTopic());
 		var payment = event.getArgument(0, PaymentRequest.class);
 		var correlator = event.getArgument(1, Correlator.class);
@@ -335,7 +365,13 @@ public class FacadeStepDefs {
 	@Given("a registered customer with {int} tokens")
 	public void aRegisteredCustomerWithTokens(int initialTokens) {
 		customer = new Customer("Lars", "", "011298-1136", "123", null);
-		publishedEvents.put(customer.firstName(), new CompletableFuture<>());
+
+		String eventType = "CustomerRegistrationRequested";
+		mockEvent = new Event(eventType, new Object[]{ customer });
+		String id = customerKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
+
 		new Thread(() -> {
 			try {
 				var result = customerService.register(customer);
@@ -350,7 +386,7 @@ public class FacadeStepDefs {
 		}
 		assertEquals(initialTokens, tokens.size());
 
-		Event event = publishedEvents.get(customer.firstName()).join();
+		Event event = publishedEvents.get(id).join();
 		assertEquals("CustomerRegistrationRequested", event.getTopic());
 		registeredCustomer = event.getArgument(0, Customer.class);
 		var correlator = event.getArgument(1, Correlator.class);
@@ -367,6 +403,12 @@ public class FacadeStepDefs {
 
 	@When("the customer requests {int} tokens")
 	public void theCustomerRequestsTokens(int noTokens) {
+		String eventType = "TokensRequested";
+		mockEvent = new Event(eventType, new Object[]{ registeredCustomer.payId(), noTokens });
+		String id = tokenKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		publishedEvents.put(id, new CompletableFuture<>());
+
 		new Thread(() -> {
 			var tokenList = tokenService.requestTokens(noTokens,registeredCustomer.payId());
 			futureTokenRequest.complete(tokenList);
@@ -375,7 +417,9 @@ public class FacadeStepDefs {
 
 	@Then("the {string} event is sent asking {int} tokens for that customer id")
 	public void theEventIsSentWithTokensForThatCustomerId(String eventType, int noTokens) {
-		Event event = publishedEvents.get(registeredCustomer.payId() + "-T" + noTokens).join();
+		String id = tokenKeyExtractor.apply(mockEvent, flags.get(mockEvent.getTopic()));
+
+		Event event = publishedEvents.get(id).join();
 		assertEquals(eventType, event.getTopic());
 		var customerId = event.getArgument(0, String.class);
 		var tokens = event.getArgument(1, Integer.class);
@@ -415,7 +459,6 @@ public class FacadeStepDefs {
 	}
 
 	private CompletableFuture<String> futureCustomerDeregister = new CompletableFuture();
-	//private CompletableFuture<Customer> futureRegisteredCustomer = new CompletableFuture<>();
 	@When("the customer is being deregistered")
 	public void theCustomerIsBeingDeregistered() {
 		new Thread(() -> {
