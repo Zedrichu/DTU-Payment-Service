@@ -38,19 +38,21 @@ public class AccountManager {
 		this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), this::handleCustomerDeregistrationRequested);
 	}
 
-	private void handleCustomerDeregistrationRequested(Event event) {
+	public void handleCustomerDeregistrationRequested(Event event) {
 		logger.debug("Received CustomerDeregistrationRequested event: {}", event);
 		var customerId = event.getArgument(0, String.class);
 		var correlationId = event.getArgument(1, Correlator.class);
 
+		Event newEvent;
 		if (!customerRepository.exists(customerId)) {
-			return; // TODO send event to indicate that the customer does not exist
+			newEvent = new Event(EventTypes.CUSTOMER_DELETED_FAILED.getTopic(), new Object[]{ correlationId });
+			logger.debug("Customer deregistration failed: {}", newEvent);
+
+		} else {
+			customerRepository.removeAccount(customerId);
+			newEvent = new Event(EventTypes.CUSTOMER_DELETED.getTopic(), new Object[]{ correlationId });
+			logger.debug("Customer deregistered: {}", newEvent);
 		}
-		customerRepository.removeAccount(customerId);
-
-		Event newEvent = new Event(EventTypes.CUSTOMER_DELETED.getTopic(), new Object[]{ correlationId });
-		logger.debug("New customer deregistered: {}", newEvent);
-
 		this.mque.publish(newEvent);
 	}
 

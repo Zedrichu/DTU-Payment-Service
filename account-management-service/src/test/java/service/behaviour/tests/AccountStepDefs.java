@@ -8,6 +8,7 @@ import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.utilities.Correlator;
 import dtupay.services.account.utilities.EventTypes;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import messaging.Event;
@@ -24,11 +25,14 @@ public class AccountStepDefs {
 	Correlator correlator;
 	Customer customer;
 	Customer customerNoBank;
+	Customer registeredCustomer;
 	ArgumentCaptor<Event> eventCaptor;
 	ArgumentCaptor<Event> badEventCaptor;
 	AccountRepository<Customer> customerAccountRepository = new MemoryAccountRepository<>();
+	AccountRepository<Customer> registeredCustomerAccountRepository = new MemoryAccountRepository<>();
 	AccountRepository<Merchant> merchantAccountRepository = new MemoryAccountRepository<>();
 	AccountManager accountManagementService = new AccountManager(queue, customerAccountRepository, merchantAccountRepository);
+	AccountManager registeredAccountManagementService;
 	Merchant merchant;
 	EventTypes eventTypeName;
 
@@ -46,7 +50,7 @@ public class AccountStepDefs {
 	@Then("the {string} event is sent with the same correlation id")
 	public void theEventIsSentWithTheSameCorrelationId(String eventName) {
 		eventTypeName = EventTypes.fromTopic(eventName);
-		if (eventName.contains("Failure")) {
+		if (eventName.contains("Failure") || eventName.contains("Failed")) {
 			badEventCaptor = ArgumentCaptor.forClass(Event.class);
 			verify(queue).publish(badEventCaptor.capture());
 			receivedEvent = badEventCaptor.getValue();
@@ -56,7 +60,11 @@ public class AccountStepDefs {
 			receivedEvent = eventCaptor.getValue();
 		}
 		assertEquals(eventTypeName.getTopic(), receivedEvent.getTopic());
-		assertEquals(correlator.getId(), receivedEvent.getArgument(1, Correlator.class).getId());
+		if (eventName.contains("Delete")) {
+			assertEquals(correlator.getId(), receivedEvent.getArgument(0, Correlator.class).getId());
+		} else{
+			assertEquals(correlator.getId(), receivedEvent.getArgument(1, Correlator.class).getId());
+		}
 	}
 
 	@And("the customer account is assigned a customer id")
@@ -99,5 +107,29 @@ public class AccountStepDefs {
 		assertEquals(merchant.cpr(), recMerchant.cpr());
 		assertEquals(merchant.bankAccountNo(), recMerchant.bankAccountNo());
 		assertNotNull(recMerchant.payId());
+	}
+
+	@Given("a customer stored in the account repository")
+	public void aCustomerStoredInTheAccountRepository() {
+		customer = new Customer("test", "test", "123131-1243", "bank1", null);
+		String Id = registeredCustomerAccountRepository.createAccount(customer);
+		registeredAccountManagementService = new AccountManager(queue, registeredCustomerAccountRepository, merchantAccountRepository);
+		registeredCustomer = new Customer(customer.firstName(), customer.lastName(), customer.cpr(), customer.bankAccountNo(), Id);
+	}
+
+	@When("a {string} event for the same customer id is received opting to deregister with a correlation id")
+	public void aEventForTheSameCustomerIdIsReceivedOptingToDeregisterWithACorrelationId(String eventName) {
+		eventTypeName = EventTypes.fromTopic(eventName);
+		correlator = Correlator.random();
+		assertNotNull(registeredCustomer.payId());
+		registeredAccountManagementService.handleCustomerDeregistrationRequested(new Event(eventTypeName.getTopic(), new Object[]{registeredCustomer.payId(), correlator}));
+	}
+
+	@When("a {string} event for a customer id is received opting to deregister with a correlation id")
+	public void aEventForACustomerIdIsReceivedOptingToDeregisterWithACorrelationId(String eventName) {
+		customer = new Customer("test", "test", "123131-1243", "bank1", "1123");
+		eventTypeName = EventTypes.fromTopic(eventName);
+		correlator = Correlator.random();
+		accountManagementService.handleCustomerDeregistrationRequested(new Event(eventTypeName.getTopic(), new Object[]{customer.payId(), correlator}));
 	}
 }
