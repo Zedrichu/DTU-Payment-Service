@@ -1,4 +1,4 @@
-package dtupay.services.token.models;
+package dtupay.services.token.domain.models;
 
 import lombok.Value;
 

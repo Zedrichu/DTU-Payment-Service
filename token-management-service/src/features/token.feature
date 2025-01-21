@@ -1,29 +1,38 @@
 Feature: dtupay.services.token token management
 
-  Scenario: Successful Token Generation
-    When "TokensRequested" event is received for a token request
-    When "TokenAccountVerified" event is received for a customer
-    Then "TokensGenerated" event is sent with the same correlation id
-    And then 3 valid tokens are generated
-
-  Scenario: Successful Token Validation
-    When "PaymentInitiated" event is received for a payment request
-    Then "PaymentTokenVerified" is sent with the same correlation id
-    #TODO: fix bad naming: "" is sent and "" event is sent to differentiate
-
-  Scenario: Successful Token Generation for Existing Customer
-    When "TokensRequested" event is received for a token request for existing customer
-    When "TokenAccountVerified" event is received for a customer
-    Then "TokensGenerated" event is sent with the same correlation id
+  Scenario: Successful Payment Token Validation
+    Given an existing customer with 1 tokens assigned
+    When PaymentInitiated event is received for a payment request
+    Then PaymentTokenVerified event is sent for the payment with the customer id and the same correlation id
+    Then the token is no longer valid
 
   Scenario: Successful Token Generation for New Customer
-    When "TokensRequested" event is received for a token request for new customer
-    When "TokenAccountVerified" event is received for a customer
-    Then "TokensGenerated" event is sent with the same correlation id
+    When TokensRequested event is received for 3 tokens
+    When TokenAccountVerified event is received for a customer
+    Then TokensGenerated event is sent with the same correlation id
+    And 3 valid tokens are generated
+    And the customer has 3 valid tokens
 
+  Scenario: Successful Token Generation for Existing Customer
+    Given an existing customer with 1 tokens assigned
+    When TokensRequested event is received for 3 tokens for the same customer id
+    When TokenAccountVerified event is received for a customer
+    Then TokensGenerated event is sent with the same correlation id
+    And 3 valid tokens are generated
+    And the customer has 4 valid tokens
 
+  Scenario: Unsuccessful Token Generation Token Limit
+    Given an existing customer with 3 tokens assigned
+    When TokensRequested event is received for 3 tokens for the same customer id
+    When TokenAccountVerified event is received for a customer
+    Then TokensGenerationFailure event is sent with the same correlation id
+    And error message "No tokens generated: Too many tokens."
+    And the customer has 3 valid tokens
 
-#  Scenario: Successful Token Generation for Existing Customer
-#    When "TokensRequested" event is received for a token request
-#    When "TokenAccountVerified" event is received for a customer
-#    Then "TokensGenerated" event is sent with the same correlation id
+  Scenario: Unsuccessful Token Generation Token Limit
+    Given an existing customer with 1 tokens assigned
+    When TokensRequested event is received for 3 tokens for the same customer id
+    When TokenAccountInvalid event is received for a customer
+    Then TokensGenerationFailure event is sent with the same correlation id
+    And error message "No tokens generated: Invalid customer id."
+    And the customer has 1 valid tokens

@@ -12,17 +12,18 @@ import messaging.MessageQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.naming.ldap.PagedResultsResponseControl;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PaymentManager {
     private static final Logger logger = LoggerFactory.getLogger(PaymentManager.class);
 
     private MessageQueue mque;
-    private Map<Correlator, BankTransferAggregate> aggregators = new HashMap<>();
+    private Map<Correlator, BankTransferAggregate> aggregators = new ConcurrentHashMap<>();
     private BankService bankService = new BankServiceService().getBankServicePort();
+
 
     public PaymentManager(MessageQueue messageQueue) {
         logger.debug("Initializing Payment Manager");
@@ -35,7 +36,7 @@ public class PaymentManager {
         this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), this::handleMerchantAccountVerified);
     }
 
-    public BankTransferAggregate createAggregate(Correlator correlator) {
+    public BankTransferAggregate getOrCreateAggregate(Correlator correlator) {
         if (!aggregators.containsKey(correlator)) {
             aggregators.put(correlator,new BankTransferAggregate(correlator));
         }
@@ -72,7 +73,7 @@ public class PaymentManager {
         logger.debug("Received PaymentInitiated event: {}", event);
         PaymentRequest paymentRequest = event.getArgument(0, PaymentRequest.class);
         Correlator correlator = event.getArgument(1,Correlator.class);
-        BankTransferAggregate aggregate = createAggregate(correlator);
+        BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
         aggregate.setPaymentRequest(paymentRequest);
         completePayment(aggregate);
     }
@@ -81,7 +82,7 @@ public class PaymentManager {
         logger.debug("Received CustomerAccountVerified event: {}", event);
         Customer customer = event.getArgument(0, Customer.class);
         Correlator correlator = event.getArgument(1,Correlator.class);
-        BankTransferAggregate aggregate = createAggregate(correlator);
+        BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
         aggregate.setCustomer(customer);
         completePayment(aggregate);
     }
@@ -90,11 +91,8 @@ public class PaymentManager {
         logger.debug("Received MerchantAccountVerified event: {}", event);
         Merchant merchant = event.getArgument(0, Merchant.class);
         Correlator correlator = event.getArgument(1,Correlator.class);
-        BankTransferAggregate aggregate = createAggregate(correlator);
+        BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
         aggregate.setMerchant(merchant);
         completePayment(aggregate);
     }
 }
-
-
-//    bankService.transferMoneyFromTo(customer.bankAccountNo(), merchant.bankAccountNo(), BigDecimal.valueOf(paymentRequest.amount()));

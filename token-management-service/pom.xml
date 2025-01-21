@@ -13,6 +13,9 @@
         <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <surefire-plugin.version>3.5.0</surefire-plugin.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven.compiler.proc>full</maven.compiler.proc>
+        <java.version>23</java.version>
     </properties>
 
     <dependencies>
@@ -84,6 +87,15 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
