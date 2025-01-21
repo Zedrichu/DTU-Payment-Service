@@ -6,6 +6,7 @@ import dtupay.services.facade.annotations.MethodAuthor;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Token;
 import dtupay.services.facade.exception.AccountCreationException;
+import dtupay.services.facade.exception.InvalidAccountException;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
 import io.cucumber.java.mk_latn.No;
