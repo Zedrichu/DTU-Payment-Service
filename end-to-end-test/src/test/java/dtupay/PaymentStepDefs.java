@@ -131,8 +131,9 @@ public class PaymentStepDefs {
         assertEquals(customersTokens.size(), endTokens);
     }
 
-    @Then("the token request is declined")
-    public void theTokenRequestIsDeclined() {
+    @Then("the token request is declined with error message {string}")
+    public void theTokenRequestIsDeclined(String errorMessage) {
+        assertEquals(errorMessage, exception.getMessage());
         assertEquals(0, tokens.size());
     }
 
