@@ -9,6 +9,7 @@ import dtupay.services.payment.domain.models.Customer;
 import dtupay.services.payment.domain.models.Merchant;
 import dtupay.services.payment.domain.models.PaymentRequest;
 import dtupay.services.payment.utilities.Correlator;
+import dtupay.services.payment.utilities.EventTypes;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -39,18 +40,21 @@ public class PaymentExecutionStepDefs {
     BankService bankService = new BankServiceService().getBankServicePort();
     List<String> bankAccounts = new ArrayList<>();
     final int initialBalance = 1000;
+    EventTypes eventTypeName;
 
     @When("the {string} event for a request is received")
     public void theEventForARequestIsReceived(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         token = "token";
         paymentRequest = new PaymentRequest("1231245", "token",100);
         assertTrue(paymentRequest.amount() > 0);
-        paymentManager.handlePaymentInitiated(new Event(eventType,
+        paymentManager.handlePaymentInitiated(new Event(eventTypeName.getTopic(),
                 new Object[] { paymentRequest, correlator }));
     }
 
     @When("the {string} event for a customer is received")
     public void theEventForACustomerIsReceived(String eventType) throws BankServiceException_Exception {
+        eventTypeName = EventTypes.fromTopic(eventType);
         User bankUser = new User();
         bankUser.setFirstName("John");
         bankUser.setLastName("Smith");
@@ -62,11 +66,12 @@ public class PaymentExecutionStepDefs {
                 bankUser.getFirstName(), bankUser.getLastName(),
                 bankUser.getCprNumber(), customerBankAccountNumber, "21312512");
 
-        paymentManager.handleCustomerAccountVerified(new Event(eventType, new Object[] { customer, correlator }));
+        paymentManager.handleCustomerAccountVerified(new Event(eventTypeName.getTopic(), new Object[] { customer, correlator }));
     }
 
     @When("the {string} event for a merchant is received")
     public void theEventForAMerchantIsReceived(String eventType) throws BankServiceException_Exception {
+        eventTypeName = EventTypes.fromTopic(eventType);
         User bankUser = new User();
         bankUser.setFirstName("Anne");
         bankUser.setLastName("Dove");
@@ -78,17 +83,18 @@ public class PaymentExecutionStepDefs {
                 bankUser.getFirstName(), bankUser.getLastName(),
                 bankUser.getCprNumber(), merchantBankAccountNumber, "21312512");
 
-        paymentManager.handleMerchantAccountVerified(new Event(eventType, new Object[] { merchant, correlator }));
+        paymentManager.handleMerchantAccountVerified(new Event(eventTypeName.getTopic(), new Object[] { merchant, correlator }));
     }
 
     private Event receivedEvent;
 
     @Then("the {string} event is sent with the same correlation id")
     public void theEventIsSentWithTheSameCorrelationId(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(queue).publish(eventCaptor.capture());
         receivedEvent = eventCaptor.getValue();
-        assertEquals(eventType, receivedEvent.getTopic());
+        assertEquals(eventTypeName.getTopic(), receivedEvent.getTopic());
         assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
     }
 

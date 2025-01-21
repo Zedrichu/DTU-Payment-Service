@@ -3,6 +3,7 @@ package dtupay.services.facade.domain;
 import dtupay.services.facade.domain.models.Merchant;
 import dtupay.services.facade.domain.models.PaymentRequest;
 import dtupay.services.facade.utilities.Correlator;
+import dtupay.services.facade.utilities.EventTypes;
 import messaging.MessageQueue;
 import messaging.Event;
 import org.slf4j.Logger;
@@ -23,14 +24,14 @@ public class MerchantService {
     logger.info("facade.MerchantService instantiated");
     this.mque = messageQueue;
 
-    this.mque.addHandler("MerchantAccountCreated", this::handleMerchantAccountCreated);
+    this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_CREATED.getTopic(), this::handleMerchantAccountCreated);
   }
 
   public Merchant register(Merchant merchant) {
     logger.debug("Registration request for: {}", merchant);
     var correlationId = Correlator.random();
     registerCorrelations.put(correlationId, new CompletableFuture<>());
-    Event event = new Event("MerchantRegistrationRequested", new Object[] { merchant, correlationId });
+    Event event = new Event(EventTypes.MERCHANT_REGISTRATION_REQUESTED.getTopic(), new Object[] { merchant, correlationId });
     mque.publish(event);
     return registerCorrelations.get(correlationId).join();
   }
@@ -40,7 +41,7 @@ public class MerchantService {
     var correlationId = Correlator.random();
     payCorrelations.put(correlationId, new CompletableFuture<>());
 
-    Event event = new Event("PaymentInitiated", new Object[] { paymentRequest, correlationId });
+    Event event = new Event(EventTypes.PAYMENT_INITIATED.getTopic(), new Object[] { paymentRequest, correlationId });
     mque.publish(event);
 
     return payCorrelations.get(correlationId).join();

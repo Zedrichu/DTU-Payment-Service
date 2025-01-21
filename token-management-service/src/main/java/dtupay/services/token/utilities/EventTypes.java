@@ -1,5 +1,8 @@
 package dtupay.services.token.utilities;
 
+import dtupay.services.token.annotations.ClassAuthor;
+
+@ClassAuthor(author = "Adrian Ursu", stdno = "s240160")
 public enum EventTypes {
     TOKENS_REQUESTED("TokensRequested"),
     TOKEN_ACCOUNT_VERIFIED("TokenAccountVerified"),

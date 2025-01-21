@@ -8,6 +8,7 @@ import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.domain.models.PaymentRequest;
 import dtupay.services.account.utilities.Correlator;
 
+import dtupay.services.account.utilities.EventTypes;
 import messaging.Event;
 import messaging.MessageQueue;
 
@@ -30,11 +31,11 @@ public class AccountManager {
 		this.mque = mque;
 
 		// Add event handlers
-		this.mque.addHandler("CustomerRegistrationRequested", this::handleCustomerRegistrationRequested);
-		this.mque.addHandler("MerchantRegistrationRequested", this::handleMerchantRegistrationRequested);
-		this.mque.addHandler("PaymentInitiated", this::handlePaymentInitiated);
-		this.mque.addHandler("TokensRequested", this::handleTokensRequested);
-		this.mque.addHandler("TokenVerified", this::handleTokenVerified);
+		this.mque.addHandler(EventTypes.CUSTOMER_REGISTRATION_REQUESTED.getTopic(), this::handleCustomerRegistrationRequested);
+		this.mque.addHandler(EventTypes.MERCHANT_REGISTRATION_REQUESTED.getTopic(), this::handleMerchantRegistrationRequested);
+		this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);
+		this.mque.addHandler(EventTypes.TOKENS_REQUESTED.getTopic(), this::handleTokensRequested);
+		this.mque.addHandler(EventTypes.TOKEN_VERIFIED.getTopic(), this::handleTokenVerified);
 	}
 
 	public void handleCustomerRegistrationRequested(Event event) {
@@ -57,11 +58,11 @@ public class AccountManager {
 	private Event acceptCustomer(Customer customer, Correlator correlationId) {
 		String id = customerRepository.createAccount(customer);
 		var registeredCustomer = new Customer(customer.firstName(), customer.lastName(), customer.cpr(), customer.bankAccountNo(), id);
-		return new Event("CustomerAccountCreated", new Object[]{ registeredCustomer, correlationId });
+		return new Event(EventTypes.CUSTOMER_ACCOUNT_CREATED.getTopic(), new Object[]{ registeredCustomer, correlationId });
 	}
 
 	private Event declineCustomer(Customer customer, Correlator correlationId) {
-		return new Event("CustomerAccountCreationFailed", new Object[]{
+		return new Event(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), new Object[]{
 					"Account creation failed: Provided customer must have a valid bank account number and CPR", correlationId
 		});
 	}
@@ -79,7 +80,7 @@ public class AccountManager {
 
 		String id = merchantRepository.createAccount(merchant);
 		var registeredMerchant = new Merchant(merchant.firstName(), merchant.lastName(), merchant.cpr(), merchant.bankAccountNo(), id);
-		Event newEvent = new Event("MerchantAccountCreated", new Object[] { registeredMerchant, correlationId });
+		Event newEvent = new Event(EventTypes.MERCHANT_ACCOUNT_CREATED.getTopic(), new Object[] { registeredMerchant, correlationId });
 		logger.debug("New merchant registered: {}", newEvent);
 
 		this.mque.publish(newEvent);
@@ -93,7 +94,7 @@ public class AccountManager {
 			return;
 		}
 
-		Event newEvent = new Event("MerchantAccountVerified", new Object[]{ merchant, correlationId });
+		Event newEvent = new Event(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), new Object[]{ merchant, correlationId });
 		logger.debug("New merchant verified: {}", newEvent);
 
 		this.mque.publish(newEvent);
@@ -109,7 +110,7 @@ public class AccountManager {
 			return;
 		}
 
-		Event newEvent = new Event("CustomerAccountVerified", new Object[]{ customer, correlationId });
+		Event newEvent = new Event(EventTypes.CUSTOMER_ACCOUNT_VERIFIED.getTopic(), new Object[]{ customer, correlationId });
 		logger.debug("New customer verified: {}", newEvent);
 
 		this.mque.publish(newEvent);
@@ -124,7 +125,7 @@ public class AccountManager {
 			return;
 		};
 
-		Event newEvent = new Event("TokenAccountVerified",
+		Event newEvent = new Event(EventTypes.TOKEN_ACCOUNT_VERIFIED.getTopic(),
 				new Object[]{correlationId});
 		this.mque.publish(newEvent);
 	}

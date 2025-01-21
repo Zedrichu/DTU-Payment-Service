@@ -6,6 +6,7 @@ import dtupay.services.token.TokenManager;
 import dtupay.services.token.models.PaymentRequest;
 import dtupay.services.token.models.Token;
 import dtupay.services.token.utilities.Correlator;
+import dtupay.services.token.utilities.EventTypes;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -29,20 +30,24 @@ public class TokenStepDefs {
     String customerId;
     int amount = 3; //TODO: Should not be hard coded but in feature file maybe
     ArrayList<Token> receivedTokenList;
+    EventTypes eventTypeName;
 
     @When("{string} event is received for a token request")
     public void eventIsReceivedForATokenRequest(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         customerId = "213014";
-        tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
+        tokenManager.handleTokensRequested(new Event(eventTypeName.getTopic(), new Object[]{ customerId, amount, correlator}));
     }
 
     @When("{string} event is received for a customer")
     public void eventIsReceivedForACustomer(String eventType) {
-        tokenManager.handleTokenAccountVerified(new Event(eventType, new Object[]{ correlator}));
+        eventTypeName = EventTypes.fromTopic(eventType);
+        tokenManager.handleTokenAccountVerified(new Event(eventTypeName.getTopic(), new Object[]{ correlator}));
     }
 
     @Then("{string} event is sent with the same correlation id")
     public void eventIsSentWithTheSameCorrelationId(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(messageQueue).publish(eventCaptor.capture());
 
@@ -55,7 +60,7 @@ public class TokenStepDefs {
                 .toList();
         receivedTokenList = new ArrayList<>(tokenList);
 
-        assertEquals(eventType, receivedEvent.getTopic());
+        assertEquals(eventTypeName.getTopic(), receivedEvent.getTopic());
         assertEquals(correlator.getId(), receivedEvent.getArgument(1, Correlator.class).getId());
     }
 
@@ -72,27 +77,30 @@ public class TokenStepDefs {
 
     @When("{string} event is received for a payment request")
     public void eventIsReceivedForAPaymentRequest(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         token = Token.random();
         customerId = "111111111";
         ArrayList<Token> tempTokens = new ArrayList<>(Arrays.asList(token));
         HashMap<String, ArrayList<Token>> tokens = new HashMap<>(){{put(customerId,tempTokens);}};
         tokenManager.setTokens(tokens);
         paymentRequest = new PaymentRequest("12312341", token, 100);
-        tokensLeft = tokenManager.handlePaymentInitiated(new Event(eventType, new Object[]{paymentRequest, correlator2}));
+        tokensLeft = tokenManager.handlePaymentInitiated(new Event(eventTypeName.getTopic(), new Object[]{paymentRequest, correlator2}));
         assertFalse(tokensLeft.contains(token));
     }
 
     @Then("{string} is sent with the same correlation id")
     public void isSentWithTheSameCorrelationId(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(messageQueue).publish(eventCaptor.capture());
         receivedEvent = eventCaptor.getValue();
-        assertEquals(eventType, receivedEvent.getTopic());
+        assertEquals(eventTypeName.getTopic(), receivedEvent.getTopic());
         assertEquals(correlator2.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
     }
 
     @When("{string} event is received for a token request for existing customer")
     public void eventIsReceivedForATokenRequestForExistingCustomer(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         token = Token.random();
         customerId = "121212121";
         ArrayList<Token> tempTokens = new ArrayList<>(Arrays.asList(token));
@@ -100,14 +108,15 @@ public class TokenStepDefs {
         tokenManager.setTokens(tokens);
 
 
-        tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
+        tokenManager.handleTokensRequested(new Event(eventTypeName.getTopic(), new Object[]{ customerId, amount, correlator}));
 
 
     }
 
     @When("{string} event is received for a token request for new customer")
     public void eventIsReceivedForATokenRequestForNewCustomer(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         customerId = "121212121";
-        tokenManager.handleTokensRequested(new Event(eventType, new Object[]{ customerId, amount, correlator}));
+        tokenManager.handleTokensRequested(new Event(eventTypeName.getTopic(), new Object[]{ customerId, amount, correlator}));
     }
 }

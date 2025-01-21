@@ -7,6 +7,7 @@ import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.domain.models.PaymentRequest;
 import dtupay.services.account.utilities.Correlator;
+import dtupay.services.account.utilities.EventTypes;
 import io.cucumber.java.an.E;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -34,6 +35,7 @@ public class PayValidationStepDefs {
     Customer customer;
     Customer receivedCustomer;
     String customerId;
+    EventTypes eventTypeName;
 
     @Given("a registered merchant")
     public void aRegisteredMerchant() {
@@ -46,18 +48,20 @@ public class PayValidationStepDefs {
 
     @When("the {string} event for the payment request is received")
     public void theEventForThePaymentRequestIsReceived(String arg0) {
+        eventTypeName = EventTypes.fromTopic(arg0);
         paymentRequest = new PaymentRequest(merchantId, "token", 100);
         correlator = Correlator.random();
-        accountManagementService.handlePaymentInitiated(new Event(arg0, new Object[] { paymentRequest, correlator }));
+        accountManagementService.handlePaymentInitiated(new Event(eventTypeName.getTopic(), new Object[] { paymentRequest, correlator }));
     }
 
     @Then("the {string} event is sent with the merchant information")
     public void theEventIsSentWithTheMerchantInformation(String arg0) {
+        eventTypeName = EventTypes.fromTopic(arg0);
         eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(queue).publish(eventCaptor.capture());
         receivedEvent = eventCaptor.getValue();
         receivedMerchant = receivedEvent.getArgument(0, Merchant.class);
-        assertEquals(receivedEvent.getTopic(),arg0);
+        assertEquals(receivedEvent.getTopic(),eventTypeName.getTopic());
         assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
 
     }
@@ -78,21 +82,23 @@ public class PayValidationStepDefs {
 
     @When("the {string} event for the customer id is received")
     public void theEventForTheCustomerIdIsReceived(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         correlator = Correlator.random();
         if (eventType.equals("TokensRequested")) {
-            accountManagementService.handleTokensRequested(new Event(eventType, new Object[] { customerId, 0, correlator }));
+            accountManagementService.handleTokensRequested(new Event(eventTypeName.getTopic(), new Object[] { customerId, 0, correlator }));
         } else {
-            accountManagementService.handleTokenVerified(new Event(eventType, new Object[]{ customerId, correlator }));
+            accountManagementService.handleTokenVerified(new Event(eventTypeName.getTopic(), new Object[]{ customerId, correlator }));
         }
     }
 
     @Then("the {string} event is sent with the customer information")
     public void theEventIsSentWithTheCustomerInformation(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(queue).publish(eventCaptor.capture());
         receivedEvent = eventCaptor.getValue();
         receivedCustomer = receivedEvent.getArgument(0, Customer.class);
-        assertEquals(receivedEvent.getTopic(), eventType);
+        assertEquals(receivedEvent.getTopic(), eventTypeName.getTopic());
         assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
     }
 
@@ -105,10 +111,11 @@ public class PayValidationStepDefs {
 
     @Then("the {string} event is sent with no content and same correlation id")
     public void theEventIsSentWithNoContent(String eventType) {
+        eventTypeName = EventTypes.fromTopic(eventType);
         eventCaptor = ArgumentCaptor.forClass(Event.class);
         verify(queue).publish(eventCaptor.capture());
         receivedEvent = eventCaptor.getValue();
-        assertEquals(receivedEvent.getTopic(), eventType);
+        assertEquals(receivedEvent.getTopic(), eventTypeName.getTopic());
         assertEquals(correlator.getId(),receivedEvent.getArgument(0, Correlator.class).getId());
     }
 }

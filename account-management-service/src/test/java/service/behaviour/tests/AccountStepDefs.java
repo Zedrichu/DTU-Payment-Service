@@ -6,6 +6,7 @@ import dtupay.services.account.domain.MemoryAccountRepository;
 import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.utilities.Correlator;
+import dtupay.services.account.utilities.EventTypes;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -29,19 +30,22 @@ public class AccountStepDefs {
 	AccountRepository<Merchant> merchantAccountRepository = new MemoryAccountRepository<>();
 	AccountManager accountManagementService = new AccountManager(queue, customerAccountRepository, merchantAccountRepository);
 	Merchant merchant;
+	EventTypes eventTypeName;
 
 	@When("a {string} event for a customer is received")
 	public void aEventForACustomerIsReceived(String arg0) {
+		eventTypeName = EventTypes.fromTopic(arg0);
 		customer = new Customer("test", "test", "123131-1243", "bank1", null);
 		assertNull(customer.payId());
 		correlator = Correlator.random();
-		accountManagementService.handleCustomerRegistrationRequested(new Event(arg0, new Object[] { customer, correlator }));
+		accountManagementService.handleCustomerRegistrationRequested(new Event(eventTypeName.getTopic(), new Object[] { customer, correlator }));
 	}
 
 	private Event receivedEvent;
 
 	@Then("the {string} event is sent with the same correlation id")
 	public void theEventIsSentWithTheSameCorrelationId(String eventName) {
+		eventTypeName = EventTypes.fromTopic(eventName);
 		if (eventName.contains("Failure")) {
 			badEventCaptor = ArgumentCaptor.forClass(Event.class);
 			verify(queue).publish(badEventCaptor.capture());
@@ -51,7 +55,7 @@ public class AccountStepDefs {
 			verify(queue).publish(eventCaptor.capture());
 			receivedEvent = eventCaptor.getValue();
 		}
-		assertEquals(eventName, receivedEvent.getTopic());
+		assertEquals(eventTypeName.getTopic(), receivedEvent.getTopic());
 		assertEquals(correlator.getId(), receivedEvent.getArgument(1, Correlator.class).getId());
 	}
 
@@ -67,9 +71,10 @@ public class AccountStepDefs {
 
 	@When("a {string} event for a customer is received with missing bank account number")
 	public void aEventForACustomerIsReceivedWithMissingBankAccountNumber(String arg0) {
+		eventTypeName = EventTypes.fromTopic(arg0);
 		customerNoBank = new Customer("test", "test", "123131-1243", "", null);
 		correlator = Correlator.random();
-		accountManagementService.handleCustomerRegistrationRequested(new Event(arg0, new Object[] { customerNoBank, correlator }));
+		accountManagementService.handleCustomerRegistrationRequested(new Event(eventTypeName.getTopic(), new Object[] { customerNoBank, correlator }));
 	}
 
 	@And("the customer receives a failure message {string}")
@@ -79,10 +84,11 @@ public class AccountStepDefs {
 
 	@When("a {string} event for a merchant is received")
 	public void aEventForAMerchantIsReceived(String arg0) {
+		eventTypeName = EventTypes.fromTopic(arg0);
 		merchant = new Merchant("test", "test", "123456-1234", "1", null);
 		assertNull(merchant.payId());
 		correlator = Correlator.random();
-		accountManagementService.handleMerchantRegistrationRequested(new Event(arg0, new Object[] { merchant, correlator }));
+		accountManagementService.handleMerchantRegistrationRequested(new Event(eventTypeName.getTopic(), new Object[] { merchant, correlator }));
 	}
 
 	@And("the merchant account is assigned a merchant id")

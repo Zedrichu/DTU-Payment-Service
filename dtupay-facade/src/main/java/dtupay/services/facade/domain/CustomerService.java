@@ -7,6 +7,7 @@ import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Token;
 import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.utilities.Correlator;
+import dtupay.services.facade.utilities.EventTypes;
 import io.cucumber.java.mk_latn.No;
 import messaging.Event;
 import messaging.MessageQueue;
@@ -31,17 +32,17 @@ public class CustomerService {
   public CustomerService(MessageQueue messageQueue) {
     logger.info("facade.CustomerService instantiated");
     this.mque = messageQueue;
-    this.mque.addHandler("CustomerAccountCreated", this::handleCustomerAccountCreated);
-    this.mque.addHandler("CustomerAccountCreationFailed", this::handleCustomerAccountCreationFailed);
-    this.mque.addHandler("TokensGenerated", this::handleTokensGenerated);
-    this.mque.addHandler("CustomerDeregistered", this::handleCustomerDeregistered);
+    this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATED.getTopic(), this::handleCustomerAccountCreated);
+    this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), this::handleCustomerAccountCreationFailed);
+    this.mque.addHandler(EventTypes.TOKENS_GENERATED.getTopic(), this::handleTokensGenerated);
+    this.mque.addHandler( EventTypes.CUSTOMER_DEREGISTERED.getTopic(), this::handleCustomerDeregistered);
   }
 
   public Customer register(Customer customer) throws CompletionException {
     logger.debug("Registration request for: {}", customer);
     var correlationId = Correlator.random();
     customerCorrelations.put(correlationId, new CompletableFuture<>());
-    Event event = new Event("CustomerRegistrationRequested", new Object[]{ customer, correlationId });
+    Event event = new Event(EventTypes.CUSTOMER_REGISTRATION_REQUESTED.getTopic(), new Object[]{ customer, correlationId });
     mque.publish(event);
     return customerCorrelations.get(correlationId).join();
   }
@@ -51,7 +52,7 @@ public class CustomerService {
     var correlationId = Correlator.random();
     tokensCorrelations.put(correlationId, new CompletableFuture<>());
 
-    Event event = new Event("TokensRequested", new Object[]{customerId, noTokens, correlationId});
+    Event event = new Event(EventTypes.TOKENS_REQUESTED.getTopic(), new Object[]{customerId, noTokens, correlationId});
     mque.publish(event);
     return tokensCorrelations.get(correlationId).join();
   }
@@ -80,7 +81,7 @@ public class CustomerService {
      logger.debug("Deregistering customer with ID: {}", customerId);
      var correlationId = Correlator.random();
      deregistrationCorrelations.put(correlationId, new CompletableFuture<>());
-     Event event = new Event("CustomerDeregistrationRequested", new Object[]{ customerId, correlationId });
+     Event event = new Event(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), new Object[]{ customerId, correlationId });
      mque.publish(event);
      return deregistrationCorrelations.get(correlationId).join();
   }

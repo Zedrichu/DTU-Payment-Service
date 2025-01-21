@@ -3,6 +3,7 @@ package dtupay.services.token;
 import dtupay.services.token.annotations.MethodAuthor;
 import dtupay.services.token.models.PaymentRequest;
 import dtupay.services.token.models.Token;
+import dtupay.services.token.utilities.EventTypes;
 
 import dtupay.services.token.utilities.Correlator;
 import lombok.Setter;
@@ -29,9 +30,9 @@ public class TokenManager {
     public TokenManager(MessageQueue messageQueue) {
         this.mque = messageQueue;
 
-        this.mque.addHandler("TokensRequested", this::handleTokensRequested);
-        this.mque.addHandler("TokenAccountVerified", this::handleTokenAccountVerified);
-        this.mque.addHandler("PaymentInitiated", this::handleTokenAccountVerified);
+        this.mque.addHandler(EventTypes.TOKENS_REQUESTED.getTopic(), this::handleTokensRequested);
+        this.mque.addHandler(EventTypes.TOKEN_ACCOUNT_VERIFIED.getTopic(), this::handleTokenAccountVerified);
+        this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handleTokenAccountVerified);
     }
 
     public void setTokens(HashMap<String, ArrayList<Token>> tokens) {
@@ -73,7 +74,7 @@ public class TokenManager {
             int noTokens = tokensRequested.get(correlator).getArgument(1,int.class);
             generateTokens(customerId,noTokens);
             ArrayList<Token> tokenList = tokens.get(customerId);
-            Event responseEvent = new Event("TokensGenerated", new Object[]{tokenList, correlator});
+            Event responseEvent = new Event(EventTypes.TOKENS_GENERATED.getTopic(), new Object[]{tokenList, correlator});
             mque.publish(responseEvent);
         }
     }
@@ -107,7 +108,7 @@ public class TokenManager {
                 String customerId = entry.getKey();
                 ArrayList<Token> retrievedTokens = entry.getValue();
                 retrievedTokens.remove(token);
-                Event responseEvent = new Event("PaymentTokenVerified", new Object[]{customerId ,correlator});
+                Event responseEvent = new Event(EventTypes.PAYMENT_TOKEN_VERIFIED.getTopic(), new Object[]{customerId ,correlator});
                 mque.publish(responseEvent);
                 return tokens.replace(customerId,retrievedTokens);
             }

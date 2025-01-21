@@ -1,5 +1,8 @@
 package dtupay.services.facade.utilities;
 
+import dtupay.services.facade.annotations.ClassAuthor;
+
+@ClassAuthor(author = "Adrian Ursu", stdno = "s240160")
 public enum EventTypes {
     TOKENS_REQUESTED("TokensRequested"),
     TOKEN_ACCOUNT_VERIFIED("TokenAccountVerified"),
@@ -10,6 +13,7 @@ public enum EventTypes {
     CUSTOMER_ACCOUNT_CREATION_FAILED("CustomerAccountCreationFailed"),
     CUSTOMER_DEREGISTRATION_REQUESTED("CustomerDeregistrationRequested"),
     CUSTOMER_DEREGISTRATION_COMPLETED("CustomerDeRegistrationCompleted"),
+    CUSTOMER_DEREGISTERED("CustomerDeregistered"),
 
     MERCHANT_REGISTRATION_REQUESTED("MerchantRegistrationRequested"),
     MERCHANT_ACCOUNT_CREATED("MerchantAccountCreated"),

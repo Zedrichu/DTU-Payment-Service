@@ -5,6 +5,7 @@ import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
 import dtupay.services.payment.domain.models.*;
 import dtupay.services.payment.utilities.Correlator;
+import dtupay.services.payment.utilities.EventTypes;
 
 import messaging.Event;
 import messaging.MessageQueue;
@@ -29,9 +30,9 @@ public class PaymentManager {
         this.mque = messageQueue;
 
         // Add handlers
-        this.mque.addHandler("PaymentInitiated", this::handlePaymentInitiated);
-        this.mque.addHandler("CustomerAccountVerified", this::handleCustomerAccountVerified);
-        this.mque.addHandler("MerchantAccountVerified", this::handleMerchantAccountVerified);
+        this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);
+        this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_VERIFIED.getTopic(), this::handleCustomerAccountVerified);
+        this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), this::handleMerchantAccountVerified);
     }
 
     public BankTransferAggregate createAggregate(Correlator correlator) {
@@ -57,9 +58,9 @@ public class PaymentManager {
                         getPaymentRequest().amount(),
                         description,
                         aggregate.getPaymentRequest().token());
-                responseEvent = new Event("BankTransferConfirmed",new Object[]{ paymentRecord, aggregate.getCorrelator() });
+                responseEvent = new Event(EventTypes.BANK_TRANSFER_CONFIRMED.getTopic(),new Object[]{ paymentRecord, aggregate.getCorrelator() });
             } catch (BankServiceException_Exception e) {
-                responseEvent = new Event("BankTransferFailed", new Object[] { e.getMessage(), aggregate.getCorrelator() });
+                responseEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(), new Object[] { e.getMessage(), aggregate.getCorrelator() });
             }
 
             mque.publish(responseEvent);

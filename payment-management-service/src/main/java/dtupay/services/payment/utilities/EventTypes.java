@@ -1,5 +1,8 @@
 package dtupay.services.payment.utilities;
 
+import dtupay.services.payment.annotations.ClassAuthor;
+
+@ClassAuthor(author = "Adrian Ursu", stdno = "s240160")
 public enum EventTypes {
     PAYMENT_INITIATED("PaymentInitiated"),
 
@@ -8,7 +11,6 @@ public enum EventTypes {
     MERCHANT_ACCOUNT_VERIFIED("MerchantAccountVerified"),
 
     BANK_TRANSFER_CONFIRMED("BankTransferConfirmed"),
-
     BANK_TRANSFER_FAILED("BankTransferFailed");
 
     private final String topic;

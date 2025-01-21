@@ -1,5 +1,8 @@
 package dtupay.services.account.utilities;
 
+import dtupay.services.account.annotations.ClassAuthor;
+
+@ClassAuthor(author = "Adrian Ursu", stdno = "s240160")
 public enum EventTypes {
     CUSTOMER_REGISTRATION_REQUESTED("CustomerRegistrationRequested"),
     CUSTOMER_ACCOUNT_CREATED("CustomerAccountCreated"),
@@ -14,6 +17,7 @@ public enum EventTypes {
     PAYMENT_TOKEN_VERIFIED("PaymentTokenVerified"),
 
     TOKENS_REQUESTED("TokensRequested"),
+    TOKEN_VERIFIED("TokenVerified"),
     TOKEN_ACCOUNT_VERIFIED("TokenAccountVerified");
 
     private final String topic;
