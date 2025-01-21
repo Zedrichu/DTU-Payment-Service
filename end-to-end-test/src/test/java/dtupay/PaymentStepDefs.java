@@ -57,7 +57,7 @@ public class PaymentStepDefs {
         user = new User();
         user.setFirstName("Simp");
         user.setLastName("Jeppesen");
-        user.setCprNumber("141414-1415");
+        user.setCprNumber("141414-1412");
         BigDecimal newBalance = BigDecimal.valueOf(balance);
         bankAccountNo = bankService.createAccountWithBalance(user, newBalance);
         bankAccounts.add(bankAccountNo);
@@ -73,7 +73,7 @@ public class PaymentStepDefs {
 
     @When("the merchant initiates a payment of {int}")
     public void theMerchantInitiatesAPaymentOf(int amount) {
-        paymentRequest = new PaymentRequest(registeredMerchant.payId(),"",amount);
+        paymentRequest = new PaymentRequest(registeredMerchant.payId(),customersTokens.getFirst().getId().toString(),amount);
         paymentSucceeded = merchantService.pay(paymentRequest);
     }
 
@@ -92,16 +92,14 @@ public class PaymentStepDefs {
         assertEquals(bankService.getAccount(registeredMerchant.bankAccountNo()).getBalance(), BigDecimal.valueOf(balance));
     }
 
-    @After
-    public void after() throws BankServiceException_Exception {
-        for (String bankAccountNo : bankAccounts) {
-            bankService.retireAccount(bankAccountNo);
-        }
-    }
 
-    @Given("a registered customer with DTUPay with {int} valid tokens")
-    public void aRegisteredCustomerWithDTUPayWithTokens(int noTokens) throws BankServiceException_Exception {
-        aRegisteredCustomerWithDTUPayWithBalanceInTheBank(1000);
+
+    ArrayList<Token> customersTokens;
+
+    @Given("a registered customer with DTUPay with tokens with balance {int} in the bank")
+    public void aRegisteredCustomerWithDTUPayWithTokensWithBalanceInTheBank(int balance) throws BankServiceException_Exception {
+        aRegisteredCustomerWithDTUPayWithBalanceInTheBank(balance);
+        customersTokens = customerService.requestTokens(registeredCustomer.payId(), 2);
     }
 
     ArrayList<Token> tokens;
@@ -117,5 +115,23 @@ public class PaymentStepDefs {
         assertNotEquals(tokens.get(0),tokens.get(1));
         assertNotEquals(tokens.get(1),tokens.get(2));
         assertNotEquals(tokens.get(0),tokens.get(2));
+        assertNotNull(tokens.get(0));
+        assertNotNull(tokens.get(1));
+        assertNotNull(tokens.get(2));
+    }
+
+    @After
+    public void after() throws BankServiceException_Exception {
+        for (String bankAccountNo : bankAccounts) {
+            bankService.retireAccount(bankAccountNo);
+        }
+    }
+
+
+
+
+    @Given("a registered customer with DTUPay without valid tokens")
+    public void aRegisteredCustomerWithDTUPayWithoutValidTokens() throws BankServiceException_Exception {
+        aRegisteredCustomerWithDTUPayWithBalanceInTheBank(1000);
     }
 }

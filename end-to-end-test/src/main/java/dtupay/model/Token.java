@@ -12,7 +12,11 @@ public class Token {
         return id;
     }
 
+
     UUID id;
+    public Token() {
+        this.id = UUID.randomUUID();
+    }
 
     public Token(UUID id) { this.id = id; }
 

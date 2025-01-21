@@ -29,6 +29,8 @@ public class MerchantService {
 	public Boolean pay(PaymentRequest paymentRequest){
 
 		Response response = baseURL
+				.path("/merchants")
+				.path(paymentRequest.merchantId())
 				.path("/payments")
 				.request()
 				.post(Entity.entity(paymentRequest, MediaType.APPLICATION_JSON));

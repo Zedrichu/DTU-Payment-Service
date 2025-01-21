@@ -3,6 +3,7 @@ package dtupay.services.facade.adapter.rest;
 import dtupay.services.facade.adapter.mq.MerchantServiceFactory;
 import dtupay.services.facade.domain.MerchantService;
 import dtupay.services.facade.domain.models.Merchant;
+import dtupay.services.facade.domain.models.PaymentRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -33,4 +34,6 @@ public class MerchantsResource {
           .entity(registeredMerchant)
           .build();
   }
+
+
 }
