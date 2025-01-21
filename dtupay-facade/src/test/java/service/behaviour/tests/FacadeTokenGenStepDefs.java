@@ -61,7 +61,7 @@ public class FacadeTokenGenStepDefs {
 				var tokenList = tokenService.requestTokens(noTokens, regCustomerId);
 				futureTokenRequest.complete(tokenList);
 			} catch (CompletionException e) {
-				exception = e.getCause();
+				futureTokenRequest.completeExceptionally(e.getCause());
 			}
 		}).start();
 	}
@@ -73,7 +73,7 @@ public class FacadeTokenGenStepDefs {
 				var tokenList = tokenService.requestTokens(noTokens, secondRegCustomerId);
 				secondFutureTokenRequest.complete(tokenList);
 			} catch (CompletionException e) {
-				exception = e.getCause();
+				secondFutureTokenRequest.completeExceptionally(e.getCause());
 			}
 		}).start();
 	}
@@ -155,13 +155,14 @@ public class FacadeTokenGenStepDefs {
 
 	@Then("an InvalidAccount exception with message {string} is raised")
 	public void anExceptionWithMessageIsRaised(String errorMessage) {
+		try {
+			futureTokenRequest.join();
+		} catch (CompletionException e) {
+			exception = e.getCause();
+		}
 		assertNotNull(exception);
 		assertTrue(exception instanceof InvalidAccountException);
 		assertEquals(errorMessage, exception.getMessage());
 	}
-
-
-
-
 
 }
