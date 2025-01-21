@@ -83,6 +83,18 @@ public class RegistrationStepDef {
     }
   }
 
+  @When("the user is registered as a merchant in DTUPay")
+  public void theUserIsRegisteredAsAMerchantInDTUPay() {
+    try {
+      registeredMerchant = merchantService.register(new Merchant(user.getFirstName(),
+            user.getLastName(),
+            user.getCprNumber(),
+            bankAccountNo, null));
+    } catch (Exception e) {
+      exception = e;
+    }
+  }
+
   @Then("the customer IDs are different")
   public void theCustomerIDsAreDifferent() {
     assertNotEquals(registeredCustomer.payId(), registeredCustomer2.payId());

@@ -104,20 +104,46 @@ public class PaymentStepDefs {
 
     ArrayList<Token> tokens;
 
+    @Given("a registered customer with DTUPay with {int} valid tokens")
+    public void aRegisteredCustomerWithDTUPayWithValidTokens(int initTokens) throws BankServiceException_Exception {
+        aRegisteredCustomerWithDTUPayWithBalanceInTheBank(1000);
+        customersTokens = new ArrayList<>();
+        for (int i = 0; i < initTokens; i++) {
+            customersTokens.add(Token.random());
+        }
+        assertEquals(initTokens, customersTokens.size());
+    }
+
     @When("the customer requests {int} tokens")
     public void theCustomerRequestsTokens(int noTokens) {
-        tokens = customerService.requestTokens(registeredCustomer.payId(),noTokens);
+        tokens = customerService.requestTokens(registeredCustomer.payId(), noTokens);
     }
 
     @Then("the customer receives {int} tokens")
     public void theCustomerReceivesTokens(int noTokens) {
-        assertEquals(tokens.size(), noTokens);
-        assertNotEquals(tokens.get(0),tokens.get(1));
-        assertNotEquals(tokens.get(1),tokens.get(2));
-        assertNotEquals(tokens.get(0),tokens.get(2));
-        assertNotNull(tokens.get(0));
-        assertNotNull(tokens.get(1));
-        assertNotNull(tokens.get(2));
+        assertEquals(noTokens, tokens.size());
+        assertEquals(noTokens, tokens.stream().distinct().count());
+        customersTokens.addAll(tokens);
+    }
+
+    @And("the customer has a total of {int} valid tokens")
+    public void theCustomerHasATotalOfValidTokens(int endTokens) {
+        assertEquals(customersTokens.size(), endTokens);
+    }
+
+    @Then("the token request is declined")
+    public void theTokenRequestIsDeclined() {
+        assertEquals(0, tokens.size());
+    }
+
+    @Given("an unregistered customer with DTUPay with {int} valid tokens")
+    public void anUnregisteredCustomerWithDTUPayWithValidTokens(int initTokens) {
+        registeredCustomer = new Customer("Adrian", "", "090807-0605", "danske-bank", "123");
+        customersTokens = new ArrayList<>();
+        for (int i = 0; i < initTokens; i++) {
+            customersTokens.add(Token.random());
+        }
+        assertEquals(initTokens, customersTokens.size());
     }
 
     @After
@@ -125,13 +151,5 @@ public class PaymentStepDefs {
         for (String bankAccountNo : bankAccounts) {
             bankService.retireAccount(bankAccountNo);
         }
-    }
-
-
-
-
-    @Given("a registered customer with DTUPay without valid tokens")
-    public void aRegisteredCustomerWithDTUPayWithoutValidTokens() throws BankServiceException_Exception {
-        aRegisteredCustomerWithDTUPayWithBalanceInTheBank(1000);
     }
 }
