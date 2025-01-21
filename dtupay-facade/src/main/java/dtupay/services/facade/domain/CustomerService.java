@@ -32,7 +32,9 @@ public class CustomerService {
 
   public CustomerService(MessageQueue messageQueue) {
     logger.info("facade.CustomerService instantiated");
+
     this.mque = messageQueue;
+
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATED.getTopic(), this::handleCustomerAccountCreated);
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), this::handleCustomerAccountCreationFailed);
     this.mque.addHandler(EventTypes.TOKENS_GENERATED.getTopic(), this::handleTokensGenerated);
@@ -45,12 +47,13 @@ public class CustomerService {
     logger.debug("Registration request for: {}", customer);
     var correlationId = Correlator.random();
     customerCorrelations.put(correlationId, new CompletableFuture<>());
-    Event event = new Event(EventTypes.CUSTOMER_REGISTRATION_REQUESTED.getTopic(), new Object[]{ customer, correlationId });
+    Event event = new Event(EventTypes.CUSTOMER_REGISTRATION_REQUESTED.getTopic(),
+          new Object[]{ customer, correlationId });
     mque.publish(event);
     return customerCorrelations.get(correlationId).join();
   }
 
-  public ArrayList<Token> requestTokens(int noTokens, String customerId) {
+  public ArrayList<Token> requestTokens(int noTokens, String customerId) throws CompletionException {
     logger.debug("Requesting tokens for: {}", customerId);
     var correlationId = Correlator.random();
     tokensCorrelations.put(correlationId, new CompletableFuture<>());
@@ -123,4 +126,10 @@ public class CustomerService {
     customerCorrelations.get(correlationId).completeExceptionally(new AccountCreationException(errorMessage));
   }
 
+  public void handleTokenGenerationFailure(Event event) {
+    logger.debug("Received TokensGenerationFailure event: {}", event);
+    var errorMessage = event.getArgument(0, String.class);
+    var correlationId = event.getArgument(1, Correlator.class);
+    tokensCorrelations.get(correlationId).completeExceptionally(new InvalidAccountException(errorMessage));
+  }
 }

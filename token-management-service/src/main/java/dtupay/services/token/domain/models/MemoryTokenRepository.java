@@ -1,5 +1,7 @@
 package dtupay.services.token.domain.models;
 
+import dtupay.services.token.annotations.MethodAuthor;
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,11 +11,13 @@ public class MemoryTokenRepository implements TokenRepository {
 	private Map<String, ArrayList<Token>> tokenLists = new ConcurrentHashMap<>();
 	private Map<Token, String> customerIds = new ConcurrentHashMap<>();
 
+	@MethodAuthor(author = "Paul Becker")
 	@Override
 	public synchronized int getNumberOfTokens(String customerId){
 		return tokenLists.getOrDefault(customerId, new ArrayList<>()).size();
 	}
 
+	@MethodAuthor(author = "Adrian Zvizdenco", stdno = "s204683")
 	@Override
 	public synchronized String extractId(Token token) {
 		var cid = customerIds.get(token);
@@ -23,6 +27,7 @@ public class MemoryTokenRepository implements TokenRepository {
 		return cid;
 	}
 
+	@MethodAuthor(author = "Adrian Zvizdenco", stdno = "s204683")
 	@Override
 	public synchronized void removeId(String customerId) {
 		ArrayList<Token> tokens = tokenLists.get(customerId);
@@ -30,6 +35,7 @@ public class MemoryTokenRepository implements TokenRepository {
 		tokenLists.remove(customerId);
 	}
 
+	@MethodAuthor(author = "Paul Becker")
 	@Override
 	public synchronized void addTokens(String customerId, ArrayList<Token> tokens) {
 		if (!tokenLists.containsKey(customerId)) {
