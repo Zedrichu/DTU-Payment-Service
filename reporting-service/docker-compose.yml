@@ -1,0 +1,7 @@
+services:
+  payment-management:
+    image: reporting-service
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+

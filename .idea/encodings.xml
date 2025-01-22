@@ -11,6 +11,10 @@
     <file url="file://$PROJECT_DIR$/messaging-utilities/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/payment-management-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/payment-management-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/reporting-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/reporting-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-management-service/reporting-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/token-management-service/reporting-service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/token-management-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/token-management-service/src/main/resources" charset="UTF-8" />
   </component>
