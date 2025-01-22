@@ -75,8 +75,8 @@ public class TokenManager {
                 int requestNoTokens = aggregate.getNoToken();
                 int currentNoTokens = repo.getNumberOfTokens(aggregate.getCustomerId());
 
-                if (currentNoTokens + requestNoTokens > TOKEN_LIMIT) {
-                    declineGeneration(aggregate,"No tokens generated: Too many tokens assigned.");
+                if (currentNoTokens + requestNoTokens > TOKEN_LIMIT || requestNoTokens < 1) {
+                    declineGeneration(aggregate,"No tokens generated: Invalid token amount.");
                 } else {
                     acceptTokenGeneration(aggregate);
                 }
@@ -95,6 +95,7 @@ public class TokenManager {
         TokenGenerationAggregate aggregate = getOrCreateAggregate(correlator);
         aggregate.setNoToken(noTokens);
         aggregate.setCustomerId(customerId);
+        aggregate.setRequestReceived(true);
         completeGeneration(aggregate);
     }
 

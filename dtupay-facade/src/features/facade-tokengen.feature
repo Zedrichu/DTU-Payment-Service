@@ -31,4 +31,4 @@ Feature: dtupay.services.facade DTUPay Facade Token Generation Feature
     When the customer requests 4 tokens
     Then the "TokensRequested" event is sent asking 4 tokens for that customer id
     When the TokenGenerationFailed event is received for the same correlation and customer id
-    Then an InvalidAccount exception with message "No tokens generated: Too many tokens assigned." is raised
+    Then an InvalidAccount exception with message "No tokens generated: Invalid token amount." is raised

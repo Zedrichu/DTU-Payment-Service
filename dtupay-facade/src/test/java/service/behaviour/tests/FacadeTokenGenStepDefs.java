@@ -160,7 +160,7 @@ public class FacadeTokenGenStepDefs {
 		var correlator = tCorrelators.get(regCustomerId);
 		tokenService.handleTokenGenerationFailed(new Event(
 					EventTypes.TOKEN_GENERATION_FAILED.getTopic(),
-					"No tokens generated: Too many tokens assigned.", correlator));
+					"No tokens generated: Invalid token amount.", correlator));
 	}
 
 	@Then("an InvalidAccount exception with message {string} is raised")

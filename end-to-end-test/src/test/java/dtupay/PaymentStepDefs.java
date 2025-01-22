@@ -95,7 +95,7 @@ public class PaymentStepDefs {
 
 
 
-    ArrayList<Token> customersTokens;
+    ArrayList<Token> customersTokens = new ArrayList<>();
 
     @Given("a registered customer with DTUPay with tokens with balance {int} in the bank")
     public void aRegisteredCustomerWithDTUPayWithTokensWithBalanceInTheBank(int balance) throws BankServiceException_Exception {
@@ -108,7 +108,10 @@ public class PaymentStepDefs {
     @Given("a registered customer with DTUPay with {int} valid tokens")
     public void aRegisteredCustomerWithDTUPayWithValidTokens(int initTokens) throws BankServiceException_Exception {
         aRegisteredCustomerWithDTUPayWithBalanceInTheBank(1000);
-        customersTokens = customerService.requestTokens(registeredCustomer.payId(), initTokens);
+        if (initTokens > 0) {
+            customersTokens = customerService.requestTokens(registeredCustomer.payId(), initTokens);
+        }
+
         assertEquals(initTokens, customersTokens.size());
     }
 

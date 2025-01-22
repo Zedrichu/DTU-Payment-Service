@@ -11,6 +11,8 @@ public class TokenGenerationAggregate {
 
 	private Correlator correlator;
 	@Setter
+	private boolean requestReceived;
+	@Setter
 	private int noToken = 0;
 	@Setter
 	private String customerId;
@@ -23,6 +25,6 @@ public class TokenGenerationAggregate {
 	}
 
 	public boolean isComplete(){
-		return noToken != 0 && customerId != null && customerHandled;
+		return requestReceived && customerId != null && customerHandled;
 	}
 }
