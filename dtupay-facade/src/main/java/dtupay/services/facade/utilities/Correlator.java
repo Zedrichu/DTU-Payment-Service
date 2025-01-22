@@ -19,7 +19,6 @@ public class Correlator {
 
 	public static Correlator random() { return new Correlator(UUID.randomUUID()); }
 
-
 	@Override
 	public boolean equals(Object o) {
 		if (o == null || getClass() != o.getClass()) return false;
@@ -31,7 +30,6 @@ public class Correlator {
 	public int hashCode() {
 		return Objects.hashCode(id);
 	}
-
 
 	@Override
 	public String toString() {

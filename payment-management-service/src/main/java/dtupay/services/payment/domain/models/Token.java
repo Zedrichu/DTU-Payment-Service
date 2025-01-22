@@ -1,4 +1,4 @@
-package dtupay.model;
+package dtupay.services.payment.domain.models;
 
 import lombok.Value;
 
@@ -40,3 +40,4 @@ public class Token {
         return "Token{" + id +'}';
     }
 }
+

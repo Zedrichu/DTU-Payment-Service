@@ -8,6 +8,7 @@ import dtupay.services.payment.PaymentManager;
 import dtupay.services.payment.domain.models.Customer;
 import dtupay.services.payment.domain.models.Merchant;
 import dtupay.services.payment.domain.models.PaymentRequest;
+import dtupay.services.payment.domain.models.Token;
 import dtupay.services.payment.utilities.Correlator;
 import dtupay.services.payment.utilities.EventTypes;
 import io.cucumber.java.en.And;
@@ -32,7 +33,7 @@ public class PaymentExecutionStepDefs {
     MessageQueue queue = mock(MessageQueue.class);
     Correlator correlator = Correlator.random();
     PaymentRequest paymentRequest;
-    String token;
+    Token token;
     PaymentManager paymentManager = new PaymentManager(queue);
     Customer customer;
     Merchant merchant;
@@ -45,8 +46,8 @@ public class PaymentExecutionStepDefs {
     @When("the {string} event for a request is received")
     public void theEventForARequestIsReceived(String eventType) {
         eventTypeName = EventTypes.fromTopic(eventType);
-        token = "token";
-        paymentRequest = new PaymentRequest("1231245", "token",100);
+        token = Token.random();
+        paymentRequest = new PaymentRequest("1231245", token,100);
         assertTrue(paymentRequest.amount() > 0);
         paymentManager.handlePaymentInitiated(new Event(eventTypeName.getTopic(),
                 new Object[] { paymentRequest, correlator }));

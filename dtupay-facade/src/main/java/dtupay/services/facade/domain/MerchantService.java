@@ -29,6 +29,9 @@ public class MerchantService {
 
     this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_CREATED.getTopic(), this::handleMerchantAccountCreated);
     this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_CREATION_FAILED.getTopic(), this::handleMerchantAccountCreationFailed);
+    this.mque.addHandler(EventTypes.BANK_TRANSFER_CONFIRMED.getTopic(), this::handleBankTransferConfirmed);
+    this.mque.addHandler(EventTypes.BANK_TRANSFER_FAILED.getTopic(), this::handleBankTransferFailed);
+
   }
 
   public Merchant register(Merchant merchant) throws CompletionException {

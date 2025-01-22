@@ -34,7 +34,7 @@ public class AccountManager {
 		this.mque.addHandler(EventTypes.MERCHANT_REGISTRATION_REQUESTED.getTopic(), this::handleMerchantRegistrationRequested);
 		this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);
 		this.mque.addHandler(EventTypes.TOKENS_REQUESTED.getTopic(), this::handleTokensRequested);
-		this.mque.addHandler(EventTypes.TOKEN_VERIFIED.getTopic(), this::handleTokenVerified);
+		this.mque.addHandler(EventTypes.PAYMENT_TOKEN_VERIFIED.getTopic(), this::handlePaymentTokenVerified);
 		this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), this::handleCustomerDeregistrationRequested);
 	}
 
@@ -140,7 +140,7 @@ public class AccountManager {
 
 	}
 
-    public void handleTokenVerified(Event event) {
+    public void handlePaymentTokenVerified(Event event) {
 		var customerId = event.getArgument(0, String.class);
 		Customer customer = customerRepository.getAccount(event.getArgument(0, String.class));
 		var correlationId = event.getArgument(1, Correlator.class);

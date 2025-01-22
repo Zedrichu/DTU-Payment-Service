@@ -36,7 +36,7 @@ public class PaymentManager {
         this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), this::handleMerchantAccountVerified);
     }
 
-    public BankTransferAggregate getOrCreateAggregate(Correlator correlator) {
+    public synchronized BankTransferAggregate getOrCreateAggregate(Correlator correlator) {
         if (!aggregators.containsKey(correlator)) {
             aggregators.put(correlator,new BankTransferAggregate(correlator));
         }
@@ -44,7 +44,9 @@ public class PaymentManager {
     }
 
     public void completePayment(BankTransferAggregate aggregate){
+        logger.debug("Completing payment for aggregate: {}",aggregate);
         if (aggregate.isComplete()) {
+            logger.debug("Payment completed successfully");
             String merchantBankAccount = aggregate.getMerchant().bankAccountNo();
             String customerBankAccount = aggregate.getCustomer().bankAccountNo();
             String description = "DTUPay\n Used token |> " + aggregate.getPaymentRequest().token();
@@ -54,6 +56,7 @@ public class PaymentManager {
             // SOAP Bank call
             try {
                 bankService.transferMoneyFromTo(customerBankAccount, merchantBankAccount, amount, description);
+                logger.debug("Bank Transfer completed successfully");
                 PaymentRecord paymentRecord = new PaymentRecord(customerBankAccount,
                         merchantBankAccount,aggregate.
                         getPaymentRequest().amount(),

@@ -72,15 +72,21 @@ public class PaymentStepDefs {
         }
     }
 
+
     @When("the merchant initiates a payment of {int}")
     public void theMerchantInitiatesAPaymentOf(int amount) {
-        paymentRequest = new PaymentRequest(registeredMerchant.payId(),customersTokens.getFirst().getId().toString(),amount);
+        paymentRequest = new PaymentRequest(registeredMerchant.payId(),customersTokens.getFirst(),amount);
         paymentSucceeded = merchantService.pay(paymentRequest);
     }
 
     @Then("the payment is successful")
     public void thePaymentIsSuccessful() {
         assertTrue(paymentSucceeded);
+    }
+
+    @Then("the payment is unsuccessful")
+    public void thePaymentIsUnsuccessful() {
+        assertFalse(paymentSucceeded);
     }
 
     @And("the customers balance in the bank is {int}")
@@ -93,13 +99,26 @@ public class PaymentStepDefs {
         assertEquals(bankService.getAccount(registeredMerchant.bankAccountNo()).getBalance(), BigDecimal.valueOf(balance));
     }
 
-
-
     ArrayList<Token> customersTokens = new ArrayList<>();
 
     @Given("a registered customer with DTUPay with tokens with balance {int} in the bank")
     public void aRegisteredCustomerWithDTUPayWithTokensWithBalanceInTheBank(int balance) throws BankServiceException_Exception {
-        aRegisteredCustomerWithDTUPayWithBalanceInTheBank(balance);
+        user = new User();
+        user.setFirstName("Jeppe");
+        user.setLastName("Jeppeson");
+        user.setCprNumber("141414-1409");
+        BigDecimal newBalance = new BigDecimal(balance);
+        bankAccountNo = bankService.createAccountWithBalance(user, newBalance);
+        bankAccounts.add(bankAccountNo);
+        try {
+            registeredCustomer = customerService.register(new Customer(user.getFirstName(),
+                    user.getLastName(),
+                    user.getCprNumber(),
+                    bankAccountNo, null));
+        } catch (Exception e) {
+            exception = e;
+        }
+
         customersTokens = customerService.requestTokens(registeredCustomer.payId(), 2);
     }
 
@@ -158,5 +177,11 @@ public class PaymentStepDefs {
         for (String bankAccountNo : bankAccounts) {
             bankService.retireAccount(bankAccountNo);
         }
+    }
+
+
+    @And("an unregistered merchant with DTUPay")
+    public void anUnregisteredMerchantWithDTUPay() {
+        registeredMerchant = new Merchant("simon","jeppeson","214235","iasdkbfnakljsdf","sdf123");
     }
 }

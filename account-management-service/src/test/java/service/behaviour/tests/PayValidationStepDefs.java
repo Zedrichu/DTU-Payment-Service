@@ -6,9 +6,9 @@ import dtupay.services.account.domain.MemoryAccountRepository;
 import dtupay.services.account.domain.models.Customer;
 import dtupay.services.account.domain.models.Merchant;
 import dtupay.services.account.domain.models.PaymentRequest;
+import dtupay.services.account.domain.models.Token;
 import dtupay.services.account.utilities.Correlator;
 import dtupay.services.account.utilities.EventTypes;
-import io.cucumber.java.an.E;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -49,7 +49,7 @@ public class PayValidationStepDefs {
     @When("the {string} event for the payment request is received")
     public void theEventForThePaymentRequestIsReceived(String arg0) {
         eventTypeName = EventTypes.fromTopic(arg0);
-        paymentRequest = new PaymentRequest(merchantId, "token", 100);
+        paymentRequest = new PaymentRequest(merchantId, Token.random(), 100);
         correlator = Correlator.random();
         accountManagementService.handlePaymentInitiated(new Event(eventTypeName.getTopic(), new Object[] { paymentRequest, correlator }));
     }
@@ -87,7 +87,7 @@ public class PayValidationStepDefs {
         if (eventTypeName.equals(EventTypes.TOKENS_REQUESTED)) {
             accountManagementService.handleTokensRequested(new Event(eventTypeName.getTopic(), new Object[] { customerId, 0, correlator }));
         } else {
-            accountManagementService.handleTokenVerified(new Event(eventTypeName.getTopic(), new Object[]{ customerId, correlator }));
+            accountManagementService.handlePaymentTokenVerified(new Event(eventTypeName.getTopic(), new Object[]{ customerId, correlator }));
         }
     }
 
@@ -126,7 +126,7 @@ public class PayValidationStepDefs {
         if (eventTypeName.equals(EventTypes.TOKENS_REQUESTED)) {
             accountManagementService.handleTokensRequested(new Event(eventTypeName.getTopic(), new Object[] { "<none>", 0, correlator }));
         } else {
-            accountManagementService.handleTokenVerified(new Event(eventTypeName.getTopic(), new Object[]{ "<none>", correlator }));
+            accountManagementService.handlePaymentTokenVerified(new Event(eventTypeName.getTopic(), new Object[]{ "<none>", correlator }));
         }
     }
 }

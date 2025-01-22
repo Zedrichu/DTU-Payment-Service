@@ -4,18 +4,19 @@ import dtupay.services.payment.utilities.Correlator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Synchronized;
 
-@Getter
+@Getter(onMethod_={@Synchronized})
+@Setter(onMethod_={@Synchronized})
 @EqualsAndHashCode
 public class BankTransferAggregate {
 
     // Aggregate root - identifies the whole structure
     private Correlator correlator;
-    @Setter
+
+
     private Merchant merchant;
-    @Setter
     private Customer customer;
-    @Setter
     private PaymentRequest paymentRequest;
 
     BankTransferAggregate() {
@@ -26,9 +27,8 @@ public class BankTransferAggregate {
         this.correlator = id;
     }
 
+    @Synchronized
     public boolean isComplete(){
         return customer != null & merchant != null & paymentRequest != null;
     }
-
-
 }

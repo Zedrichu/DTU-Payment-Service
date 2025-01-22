@@ -23,7 +23,6 @@ public enum EventTypes {
     TOKEN_ACCOUNT_INVALID("TokenAccountInvalid"),
 
     TOKENS_REQUESTED("TokensRequested"),
-    TOKEN_VERIFIED("TokenVerified"),
     TOKEN_ACCOUNT_VERIFIED("TokenAccountVerified");
 
     private final String topic;
