@@ -1,7 +1,8 @@
 package dtupay.services;
 
-import dtupay.AccountCreationException;
+import dtupay.exceptions.AccountCreationException;
 import dtupay.exceptions.DeregisterException;
+import dtupay.exceptions.TokenRequestException;
 import dtupay.model.Customer;
 import dtupay.model.Token;
 import jakarta.ws.rs.client.Client;
@@ -11,7 +12,6 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.jboss.resteasy.spi.NotImplementedYetException;
 
 import java.util.ArrayList;
 
@@ -32,7 +32,7 @@ public class CustomerService {
     return response.readEntity(Customer.class);
   }
 
-    public ArrayList<Token> requestTokens(String customerId, int noTokens) {
+    public ArrayList<Token> requestTokens(String customerId, int noTokens) throws TokenRequestException {
 
       Response response = baseURL
               .path("/customers")
@@ -42,6 +42,9 @@ public class CustomerService {
               .request()
               .get();
 
+      if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+        throw new TokenRequestException(response.readEntity(String.class));
+      }
 
       return response.readEntity(new GenericType<ArrayList<Token>>() {});
     }

@@ -1,6 +1,6 @@
 package dtupay.services;
 
-import dtupay.AccountCreationException;
+import dtupay.exceptions.AccountCreationException;
 import dtupay.model.Merchant;
 import dtupay.model.PaymentRequest;
 import jakarta.ws.rs.client.Client;

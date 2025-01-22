@@ -1,4 +1,4 @@
-package dtupay;
+package dtupay.exceptions;
 
 public class AccountCreationException extends RuntimeException {
 

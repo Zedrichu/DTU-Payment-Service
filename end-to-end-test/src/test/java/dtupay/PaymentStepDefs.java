@@ -4,6 +4,7 @@ import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
 import dtu.ws.fastmoney.User;
+import dtupay.exceptions.TokenRequestException;
 import dtupay.model.*;
 import dtupay.services.CustomerService;
 import dtupay.services.MerchantService;
@@ -113,7 +114,11 @@ public class PaymentStepDefs {
 
     @When("the customer requests {int} tokens")
     public void theCustomerRequestsTokens(int noTokens) {
-        tokens = customerService.requestTokens(registeredCustomer.payId(), noTokens);
+        try {
+            tokens = customerService.requestTokens(registeredCustomer.payId(), noTokens);
+        } catch (Exception e) {
+            exception = e;
+        }
     }
 
     @Then("the customer receives {int} tokens")
@@ -128,10 +133,11 @@ public class PaymentStepDefs {
         assertEquals(customersTokens.size(), endTokens);
     }
 
-    @Then("the token request is declined with error message {string}")
+    @Then("the token request is declined with TokenRequest exception and error message {string}")
     public void theTokenRequestIsDeclined(String errorMessage) {
+        assertNotNull(exception);
+        assertTrue(exception instanceof TokenRequestException);
         assertEquals(errorMessage, exception.getMessage());
-        assertEquals(0, tokens.size());
     }
 
     @Given("an unregistered customer with DTUPay with {int} valid tokens")
