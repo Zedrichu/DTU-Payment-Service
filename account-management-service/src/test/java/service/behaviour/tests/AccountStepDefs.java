@@ -30,10 +30,11 @@ public class AccountStepDefs {
 	ArgumentCaptor<Event> badEventCaptor;
 	AccountRepository<Customer> customerAccountRepository = new MemoryAccountRepository<>();
 	AccountRepository<Customer> registeredCustomerAccountRepository = new MemoryAccountRepository<>();
-	AccountRepository<Merchant> merchantAccountRepository = new MemoryAccountRepository<>();
-	AccountManager accountManagementService = new AccountManager(queue, customerAccountRepository, merchantAccountRepository);
+	AccountRepository<Merchant> registeredMerchantAccountRepository = new MemoryAccountRepository<>();
+	AccountManager accountManagementService = new AccountManager(queue, customerAccountRepository, registeredMerchantAccountRepository);
 	AccountManager registeredAccountManagementService;
 	Merchant merchant;
+	Merchant registeredMerchant;
 	EventTypes eventTypeName;
 
 	@When("a {string} event for a customer is received")
@@ -113,8 +114,16 @@ public class AccountStepDefs {
 	public void aCustomerStoredInTheAccountRepository() {
 		customer = new Customer("test", "test", "123131-1243", "bank1", null);
 		String Id = registeredCustomerAccountRepository.createAccount(customer);
-		registeredAccountManagementService = new AccountManager(queue, registeredCustomerAccountRepository, merchantAccountRepository);
+		registeredAccountManagementService = new AccountManager(queue, registeredCustomerAccountRepository, registeredMerchantAccountRepository);
 		registeredCustomer = new Customer(customer.firstName(), customer.lastName(), customer.cpr(), customer.bankAccountNo(), Id);
+	}
+
+	@Given("a merchant stored in the account repository")
+	public void aMerchantStoredInTheAccountRepository() {
+		merchant = new Merchant("test", "test", "123131-1243", "bank1", null);
+		String Id = registeredMerchantAccountRepository.createAccount(merchant);
+		registeredAccountManagementService = new AccountManager(queue, registeredCustomerAccountRepository, registeredMerchantAccountRepository);
+		registeredMerchant = new Merchant(merchant.firstName(), merchant.lastName(), merchant.cpr(), merchant.bankAccountNo(), Id);
 	}
 
 	@When("a {string} event for the same customer id is received opting to deregister with a correlation id")
@@ -125,11 +134,27 @@ public class AccountStepDefs {
 		registeredAccountManagementService.handleCustomerDeregistrationRequested(new Event(eventTypeName.getTopic(), new Object[]{registeredCustomer.payId(), correlator}));
 	}
 
+	@When("a {string} event for the same merchant id is received opting to deregister with a correlation id")
+	public void aEventForTheSameMerchantIdIsReceivedOptingToDeregisterWithACorrelationId(String eventName) {
+		eventTypeName = EventTypes.fromTopic(eventName);
+		correlator = Correlator.random();
+		assertNotNull(registeredMerchant.payId());
+		registeredAccountManagementService.handleMerchantDeregistrationRequested(new Event(eventTypeName.getTopic(), new Object[]{registeredMerchant.payId(), correlator}));
+	}
+
 	@When("a {string} event for a customer id is received opting to deregister with a correlation id")
 	public void aEventForACustomerIdIsReceivedOptingToDeregisterWithACorrelationId(String eventName) {
 		customer = new Customer("test", "test", "123131-1243", "bank1", "1123");
 		eventTypeName = EventTypes.fromTopic(eventName);
 		correlator = Correlator.random();
 		accountManagementService.handleCustomerDeregistrationRequested(new Event(eventTypeName.getTopic(), new Object[]{customer.payId(), correlator}));
+	}
+
+	@When("a {string} event for a merchant id is received opting to deregister with a correlation id")
+	public void aEventForAMerchantIdIsReceivedOptingToDeregisterWithACorrelationId(String eventName) {
+		merchant = new Merchant("test", "test", "123131-1243", "bank1", "1123");
+		eventTypeName = EventTypes.fromTopic(eventName);
+		correlator = Correlator.random();
+		accountManagementService.handleMerchantDeregistrationRequested(new Event(eventTypeName.getTopic(), new Object[]{merchant.payId(), correlator}));
 	}
 }

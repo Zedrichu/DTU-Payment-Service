@@ -17,6 +17,7 @@ public enum EventTypes {
     CUSTOMER_DEREGISTERED("CustomerDeregistered"),
     CUSTOMER_TOKENS_DELETED("CustomerTokensDeleted"),
     CUSTOMER_DELETED("CustomerDeleted"),
+    CUSTOMER_DELETE_FAILED("CustomerDeleteFailed"),
 
     MERCHANT_REGISTRATION_REQUESTED("MerchantRegistrationRequested"),
     MERCHANT_ACCOUNT_CREATED("MerchantAccountCreated"),
@@ -25,7 +26,10 @@ public enum EventTypes {
     PAYMENT_INITIATED("PaymentInitiated"),
 
     BANK_TRANSFER_CONFIRMED("BankTransferConfirmed"),
-    BANK_TRANSFER_FAILED("BankTransferFailed");
+    BANK_TRANSFER_FAILED("BankTransferFailed"),
+    MERCHANT_DEREGISTRATION_REQUESTED("MerchantDeregistrationRequested"),
+    MERCHANT_DELETED("MerchantDeleted"),
+    MERCHANT_DELETED_FAILED("MerchantDeleteFailed"),;
 
     private final String topic;
 

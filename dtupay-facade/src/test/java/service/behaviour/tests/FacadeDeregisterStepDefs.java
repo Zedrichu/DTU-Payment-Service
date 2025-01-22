@@ -1,9 +1,12 @@
 package service.behaviour.tests;
 
 import dtupay.services.facade.domain.CustomerService;
+import dtupay.services.facade.domain.MerchantService;
 import dtupay.services.facade.domain.models.Customer;
+import dtupay.services.facade.domain.models.Merchant;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -43,15 +46,22 @@ public class FacadeDeregisterStepDefs {
 
 	private final Function<Event, String> customerIdKeyExtractor =
 				(event) -> event.getArgument(0, String.class);
+	private final Function<Event, String> merchantIdKeyExtractor =
+				(Event event) -> event.getArgument(0, String.class);
 
 	private final MessageQueue customerIdQ = new MockMessageQueue(customerIdKeyExtractor);
+	private final MessageQueue merchantIdQ = new MockMessageQueue(merchantIdKeyExtractor);
 	private CustomerService customerIdService = new CustomerService(customerIdQ);
+	private MerchantService merchantIdService = new MerchantService(merchantIdQ);
 
 	private Map<String, CompletableFuture<Event>> publishedEvents = new ConcurrentHashMap<>();
 	private CompletableFuture<String> futureCustomerDeregister = new CompletableFuture<>();
+	private CompletableFuture<String> futureMerchantDeregister = new CompletableFuture<>();
 	private Map<String, Correlator> cStringCorrelators = new ConcurrentHashMap<>();
+	private Map<String, Correlator> mStringCorrelators = new ConcurrentHashMap<>();
 	private Event mockEvent;
 	private Customer customer;
+	private Merchant merchant;
 	private EventTypes eventTypeName;
 	private EventTypes eventTypeName1;
 
@@ -66,11 +76,18 @@ public class FacadeDeregisterStepDefs {
 		assertNotNull(customer.payId());
 	}
 
+	Exception exception;
+
 	@When("the customer is being deregistered")
 	public void theCustomerIsBeingDeregistered() {
 		new Thread(() -> {
-			var result = customerIdService.deregister(customer.payId());
-			futureCustomerDeregister.complete(result);
+			try{
+				var result = customerIdService.deregister(customer.payId());
+				futureCustomerDeregister.complete(result);
+			}catch (Exception e){
+				exception = e;
+			}
+
 		}).start();
 	}
 
@@ -95,8 +112,68 @@ public class FacadeDeregisterStepDefs {
 	}
 
 	@Then("the customer is deregistered")
-	public void theCustomerIsDeregisteredAndTheirTokensAreRemoved() {
+	public void theCustomerIsDeregistered() {
 		var result = futureCustomerDeregister.join();
 		assertEquals("Customer Successful Deregistration", result);
+	}
+
+	@Then("the customer deregistration failed")
+	public void theCustomerDeregistrationFailed() {
+		assertNotNull(exception);
+		assertEquals("Customer Deregistration Failed", exception.getCause().getMessage());
+	}
+
+	@Given("a registered merchant with id opting to deregister")
+	public void aRegisteredMerchantWithIdOptingToDeregister() {
+		merchant = new Merchant("Elong", "Ma", "011298-1135", "13", "reqid");
+
+		mockEvent = new Event(EventTypes.MERCHANT_DEREGISTRATION_REQUESTED.getTopic(), new Object[]{ merchant.payId() });
+		String id = merchantIdKeyExtractor.apply(mockEvent);
+
+		publishedEvents.put(id, new CompletableFuture<>());
+		assertNotNull(merchant.payId());
+	}
+
+	@When("the merchant is being deregistered")
+	public void theMerchantIsBeingDeregistered() {
+		new Thread(() -> {
+			try{
+				var result = merchantIdService.deregister(merchant.payId());
+				futureMerchantDeregister.complete(result);
+			} catch (Exception e) {
+				exception = e;
+			}
+		}).start();
+	}
+
+	@Then("the {string} event for the merchant is sent with their id")
+	public void theEventForTheMerchantIsSentWithTheirId(String eventType) {
+		eventTypeName = EventTypes.fromTopic(eventType);
+		String id = merchantIdKeyExtractor.apply(mockEvent);
+		Event event = publishedEvents.get(id).join();
+		assertEquals(eventTypeName.getTopic(), event.getTopic());
+		var merc = event.getArgument(0, String.class);
+		var correlator = event.getArgument(1, Correlator.class);
+		mStringCorrelators.put(merc, correlator);
+	}
+
+	@When("the {string} event is received for the merchant id")
+	public void theEventIsReceivedForTheMerchantId(String eventType) {
+		eventTypeName = EventTypes.fromTopic(eventType);
+		var correlator = mStringCorrelators.get(merchant.payId());
+		assertNotNull(correlator);
+		merchantIdService.handleMerchantDeregistered(new Event(eventTypeName.getTopic(), new Object[]{  correlator }));
+	}
+
+	@Then("the merchant is deregistered")
+	public void theMerchantIsDeregistered() {
+		var result = futureMerchantDeregister.join();
+		assertEquals("Merchant Successful Deregistration", result);
+	}
+
+	@Then("the merchant deregistration failed")
+	public void theMerchantDeregistrationFailed() {
+		assertNotNull(exception);
+		assertEquals("Merchant Deregistration Failed", exception.getCause().getMessage());
 	}
 }

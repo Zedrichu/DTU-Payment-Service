@@ -6,6 +6,7 @@ import dtupay.services.facade.annotations.MethodAuthor;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Token;
 import dtupay.services.facade.exception.AccountCreationException;
+import dtupay.services.facade.exception.AccountDeletionException;
 import dtupay.services.facade.exception.InvalidAccountException;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
@@ -41,6 +42,7 @@ public class CustomerService {
     this.mque.addHandler(EventTypes.TOKEN_GENERATION_FAILED.getTopic(), this::handleTokenGenerationFailed);
     this.mque.addHandler(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_DELETED.getTopic(), this::handleCustomerDeregistered);
+    this.mque.addHandler(EventTypes.CUSTOMER_DELETE_FAILED.getTopic(),this::handleCustomerDeregistered);
   }
 
   public Customer register(Customer customer) throws CompletionException {
@@ -110,11 +112,12 @@ public class CustomerService {
     if (checkForSuccessfulDeletion(correlationId)) {
       deregistrationCorrelations.get(correlationId).complete("Customer Successful Deregistration");
     } else {
-        deregistrationCorrelations.get(correlationId).completeExceptionally(new AccountCreationException("Customer Deregistration Failed"));
+        deregistrationCorrelations.get(correlationId).completeExceptionally(new AccountDeletionException("Customer Deregistration Failed"));
     };
   }
 
   private boolean checkForSuccessfulDeletion(Correlator correlationId) {
+
     return eventMap.get(correlationId).stream().allMatch(event -> event.getTopic().equals(EventTypes.CUSTOMER_DELETED.getTopic()) ||
             event.getTopic().equals(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic()));
   }

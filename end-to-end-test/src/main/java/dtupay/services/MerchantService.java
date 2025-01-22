@@ -1,6 +1,7 @@
 package dtupay.services;
 
 import dtupay.exceptions.AccountCreationException;
+import dtupay.exceptions.DeregisterException;
 import dtupay.model.Merchant;
 import dtupay.model.PaymentRequest;
 import jakarta.ws.rs.client.Client;
@@ -35,5 +36,17 @@ public class MerchantService {
 				.request()
 				.post(Entity.entity(paymentRequest, MediaType.APPLICATION_JSON));
 		return response.getStatus() == Response.Status.OK.getStatusCode();
+	}
+
+	public String deregister(String merchantId) {
+		Response response = baseURL
+				.path("/merchants")
+				.path(merchantId)
+				.request()
+				.delete();
+		if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+			throw new DeregisterException(response.readEntity(String.class));
+		}
+		return response.readEntity(String.class);
 	}
 }

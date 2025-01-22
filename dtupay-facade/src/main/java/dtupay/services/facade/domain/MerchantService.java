@@ -22,6 +22,7 @@ public class MerchantService {
   private MessageQueue mque;
   private Map<Correlator, CompletableFuture<Merchant>> registerCorrelations = new ConcurrentHashMap<>();
   private Map<Correlator, CompletableFuture<Boolean>> payCorrelations = new ConcurrentHashMap<>();
+  private Map<Correlator, CompletableFuture<String>> deregistrationCorrelations = new ConcurrentHashMap<>();
 
   public MerchantService(MessageQueue messageQueue) {
     logger.info("facade.MerchantService instantiated");
@@ -31,7 +32,8 @@ public class MerchantService {
     this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_CREATION_FAILED.getTopic(), this::handleMerchantAccountCreationFailed);
     this.mque.addHandler(EventTypes.BANK_TRANSFER_CONFIRMED.getTopic(), this::handleBankTransferConfirmed);
     this.mque.addHandler(EventTypes.BANK_TRANSFER_FAILED.getTopic(), this::handleBankTransferFailed);
-
+    this.mque.addHandler(EventTypes.MERCHANT_DELETED.getTopic(), this::handleMerchantDeregistered);
+    this.mque.addHandler(EventTypes.MERCHANT_DELETED_FAILED.getTopic(), this::handleMerchantDeregistered);
   }
 
   public Merchant register(Merchant merchant) throws CompletionException {
@@ -80,5 +82,24 @@ public class MerchantService {
     var errorMessage = event.getArgument(0, String.class);
     var correlationId = event.getArgument(1, Correlator.class);
     payCorrelations.get(correlationId).completeExceptionally(new BankFailureException(errorMessage));
+  }
+
+  public String deregister(String merchantId) {
+    logger.debug("Deregister request for merchant: {}", merchantId);
+    var correlationId = Correlator.random();
+    deregistrationCorrelations.put(correlationId, new CompletableFuture<>());
+    Event event = new Event(EventTypes.MERCHANT_DEREGISTRATION_REQUESTED.getTopic(), new Object[]{ merchantId, correlationId });
+    mque.publish(event);
+    return String.valueOf(deregistrationCorrelations.get(correlationId).join());
+  }
+
+  public void handleMerchantDeregistered(Event event) {
+    logger.debug("Received Merchant Deregistered event: {}", event);
+    var correlationId = event.getArgument(0, Correlator.class);
+    if (event.getTopic().equals(EventTypes.MERCHANT_DELETED.getTopic())) {
+      deregistrationCorrelations.get(correlationId).complete("Merchant Successful Deregistration");
+    } else {
+      deregistrationCorrelations.get(correlationId).completeExceptionally(new AccountCreationException("Merchant Deregistration Failed"));
+    }
   }
 }

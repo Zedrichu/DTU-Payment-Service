@@ -4,10 +4,9 @@ import dtupay.services.facade.adapter.mq.MerchantServiceFactory;
 import dtupay.services.facade.domain.MerchantService;
 import dtupay.services.facade.domain.models.Merchant;
 import dtupay.services.facade.domain.models.PaymentRequest;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import dtupay.services.facade.exception.AccountCreationException;
+import dtupay.services.facade.exception.AccountDeletionException;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -43,5 +42,19 @@ public class MerchantsResource {
     }
   }
 
-
+  @DELETE
+  @Path("/{merchantId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response deregister(@PathParam("merchantId") String merchantId) {
+    logger.info("Merchant deregistration resource accessed: {}", merchantId);
+    try {
+      String response = merchantService.deregister(merchantId);
+      return Response.ok().entity(response).build();
+    } catch (AccountDeletionException exception) {
+      return Response
+              .status(Response.Status.BAD_REQUEST)
+              .entity(exception.getCause().getMessage())
+              .build();
+    }
+  }
 }

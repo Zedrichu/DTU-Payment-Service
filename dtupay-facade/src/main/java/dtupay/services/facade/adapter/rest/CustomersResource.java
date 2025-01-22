@@ -4,6 +4,7 @@ import dtupay.services.facade.adapter.mq.CustomerServiceFactory;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.CustomerService;
 import dtupay.services.facade.exception.AccountCreationException;
+import dtupay.services.facade.exception.AccountDeletionException;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -73,10 +74,10 @@ public class CustomersResource {
     try {
       String response = customerService.deregister(customerId);
       return Response.ok().entity(response).build();
-    } catch (AccountCreationException exception) {
+    } catch (AccountDeletionException exception) {
       return Response
               .status(Response.Status.BAD_REQUEST)
-              .entity(exception.getMessage())
+              .entity(exception.getCause().getMessage())
               .build();
     }
   }

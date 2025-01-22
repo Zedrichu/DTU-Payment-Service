@@ -36,6 +36,7 @@ public class AccountManager {
 		this.mque.addHandler(EventTypes.TOKENS_REQUESTED.getTopic(), this::handleTokensRequested);
 		this.mque.addHandler(EventTypes.PAYMENT_TOKEN_VERIFIED.getTopic(), this::handlePaymentTokenVerified);
 		this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), this::handleCustomerDeregistrationRequested);
+		this.mque.addHandler(EventTypes.MERCHANT_DEREGISTRATION_REQUESTED.getTopic(), this::handleMerchantDeregistrationRequested);
 	}
 
 	public void handleCustomerDeregistrationRequested(Event event) {
@@ -52,6 +53,24 @@ public class AccountManager {
 			customerRepository.removeAccount(customerId);
 			newEvent = new Event(EventTypes.CUSTOMER_DELETED.getTopic(), new Object[]{ correlationId });
 			logger.debug("Customer deregistered: {}", newEvent);
+		}
+		this.mque.publish(newEvent);
+	}
+
+	public void handleMerchantDeregistrationRequested(Event event) {
+		logger.debug("Received MerchantDeregistrationRequested event: {}", event);
+		var customerId = event.getArgument(0, String.class);
+		var correlationId = event.getArgument(1, Correlator.class);
+
+		Event newEvent;
+		if (!merchantRepository.exists(customerId)) {
+			newEvent = new Event(EventTypes.MERCHANT_DELETED_FAILED.getTopic(), new Object[]{ correlationId });
+			logger.debug("Merchant deregistration failed: {}", newEvent);
+
+		} else {
+			merchantRepository.removeAccount(customerId);
+			newEvent = new Event(EventTypes.MERCHANT_DELETED.getTopic(), new Object[]{ correlationId });
+			logger.debug("Merchant deregistered: {}", newEvent);
 		}
 		this.mque.publish(newEvent);
 	}
