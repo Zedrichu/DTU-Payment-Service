@@ -125,6 +125,9 @@ public class PaymentExecutionStepDefs {
         if (eventType.equals(EventTypes.MERCHANT_ACCOUNT_INVALID)) {
             paymentManager.handleMerchantAccountInvalid(new Event(EventTypes.MERCHANT_ACCOUNT_INVALID.getTopic(), new Object[] { "invalid merchant", correlator }));
         }
+        if (eventType.equals(EventTypes.PAYMENT_TOKEN_INVALID)){
+            paymentManager.handlePaymentTokenInvalid((new Event(EventTypes.PAYMENT_TOKEN_INVALID.getTopic(), new Object[] { "Invalid token.", correlator })));
+        }
 
     }
 }

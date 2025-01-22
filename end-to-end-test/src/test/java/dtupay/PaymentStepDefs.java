@@ -79,6 +79,8 @@ public class PaymentStepDefs {
         paymentSucceeded = merchantService.pay(paymentRequest);
     }
 
+
+
     @Then("the payment is successful")
     public void thePaymentIsSuccessful() {
         assertTrue(paymentSucceeded);
@@ -183,5 +185,11 @@ public class PaymentStepDefs {
     @And("an unregistered merchant with DTUPay")
     public void anUnregisteredMerchantWithDTUPay() {
         registeredMerchant = new Merchant("simon","jeppeson","214235","iasdkbfnakljsdf","sdf123");
+    }
+
+    @When("the merchant initiates a payment of {int} with an invalid token")
+    public void theMerchantInitiatesAPaymentOfWithAnInvalidToken(int amount) {
+        paymentRequest = new PaymentRequest(registeredMerchant.payId(),Token.random(),amount);
+        paymentSucceeded = merchantService.pay(paymentRequest);
     }
 }

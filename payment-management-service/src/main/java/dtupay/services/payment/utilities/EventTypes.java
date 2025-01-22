@@ -13,7 +13,8 @@ public enum EventTypes {
     MERCHANT_ACCOUNT_INVALID("MerchantAccountInvalid"),
 
     BANK_TRANSFER_CONFIRMED("BankTransferConfirmed"),
-    BANK_TRANSFER_FAILED("BankTransferFailed");
+    BANK_TRANSFER_FAILED("BankTransferFailed"),
+    PAYMENT_TOKEN_INVALID("PaymentTokenInvalid");
 
     private final String topic;
 

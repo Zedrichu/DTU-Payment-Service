@@ -6,6 +6,11 @@ Feature: dtupay.services.token token management
     Then PaymentTokenVerified event is sent for the payment with the customer id and the same correlation id
     Then the token is no longer valid
 
+  Scenario: Unsuccessful Payment Token Validation
+    Given an existing customer with 1 tokens assigned
+    When PaymentInitiated event is received for a payment request with an invalid token
+    Then PaymentTokenInvalid event is sent with error "Invalid token." with the same correlation id
+
   Scenario: Successful Token Generation for New Customer
     When TokensRequested event is received for 3 tokens
     When TokenAccountVerified event is received for a customer

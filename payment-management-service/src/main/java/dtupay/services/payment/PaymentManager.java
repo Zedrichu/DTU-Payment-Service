@@ -35,6 +35,7 @@ public class PaymentManager {
         this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);
         this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_VERIFIED.getTopic(), this::handleCustomerAccountVerified);
         this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), this::handleMerchantAccountVerified);
+        this.mque.addHandler(EventTypes.PAYMENT_TOKEN_INVALID.getTopic(), this::handlePaymentTokenInvalid);
         this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_INVALID.getTopic(), this::handleCustomerAccountInvalid);
         this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_INVALID.getTopic(), this::handleMerchantAccountInvalid);
     }
@@ -108,6 +109,13 @@ public class PaymentManager {
     public void raiseFailure(Correlator correlator) {
         hasFailure.put(correlator,true);
         aggregators.remove(correlator);
+    }
+    public void handlePaymentTokenInvalid(Event event) {
+        logger.debug("Received PaymentTokenInvalid event: {}", event);
+        Correlator correlator = event.getArgument(1,Correlator.class);
+        raiseFailure(correlator);
+        Event failureEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(),new Object[]{ "Invalid token.",correlator });
+        this.mque.publish(failureEvent);
     }
 
     public void handleCustomerAccountInvalid(Event event) {

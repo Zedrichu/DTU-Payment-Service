@@ -19,3 +19,10 @@
     When the "CustomerAccountVerified" event for a customer is received
     And the "MerchantAccountInvalid" event for an error is received
     Then the "BankTransferFailed" event is sent with the same correlation id
+
+
+  Scenario: Unsuccessful Transfer of Money due to invalid token
+    When the "PaymentInitiated" event for a request is received
+    When the "PaymentTokenInvalid" event for an error is received
+    And the "MerchantAccountVerified" event for an error is received
+    Then the "BankTransferFailed" event is sent with the same correlation id

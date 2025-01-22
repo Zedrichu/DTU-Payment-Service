@@ -48,10 +48,17 @@ public class TokenStepDefs {
 
 	@When("PaymentInitiated event is received for a payment request")
 	public void paymentInitiatedEvent_is_received_for_a_payment_request() {
-	  eventType = EventTypes.PAYMENT_INITIATED;
+	  	eventType = EventTypes.PAYMENT_INITIATED;
 		correlator = Correlator.random();
 		tokenUsed = tokens.getFirst();
 		PaymentRequest paymentRequest = new PaymentRequest("jeppe", tokenUsed,1000 );
+		tokenManager.handlePaymentInitiated(new Event(eventType.getTopic(),new Object[] {paymentRequest, correlator}));
+	}
+	@When("PaymentInitiated event is received for a payment request with an invalid token")
+	public void paymentinitiatedEventIsReceivedForAPaymentRequestWithAnInvalidToken() {
+		eventType = EventTypes.PAYMENT_INITIATED;
+		correlator = Correlator.random();
+		PaymentRequest paymentRequest = new PaymentRequest("jeppe", Token.random(),1000 );
 		tokenManager.handlePaymentInitiated(new Event(eventType.getTopic(),new Object[] {paymentRequest, correlator}));
 	}
 
@@ -67,6 +74,17 @@ public class TokenStepDefs {
 
 
 		assertEquals(customerId, receivedCustomerId);
+		assertEquals(correlator, receivedCorrelator);
+	}
+	@Then("PaymentTokenInvalid event is sent with error {string} with the same correlation id")
+	public void paymenttokeninvalidEventIsSentWithErrorWithTheSameCorrelationId(String errorMessage) {
+		eventType = EventTypes.PAYMENT_TOKEN_INVALID;
+		eventCaptor = ArgumentCaptor.forClass(Event.class);
+		verify(messageQueue).publish(eventCaptor.capture());
+		Event receivedEvent = eventCaptor.getValue();
+		String receivedErrorMessage = receivedEvent.getArgument(0,String.class);
+		Correlator receivedCorrelator = receivedEvent.getArgument(1,Correlator.class);
+		assertEquals(errorMessage, receivedErrorMessage);
 		assertEquals(correlator, receivedCorrelator);
 	}
 
@@ -177,4 +195,7 @@ public class TokenStepDefs {
 		correlator = Correlator.random();
 		tokenManager.handleCustomerDeregistrationRequested(new Event(eventType.getTopic(),new Object[] { customerId, correlator}));
 	}
+
+
+
 }

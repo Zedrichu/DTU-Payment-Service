@@ -18,7 +18,8 @@ public enum EventTypes {
     TOKEN_GENERATION_FAILED("TokenGenerationFailed"),
 
     PAYMENT_INITIATED("PaymentInitiated"),
-    PAYMENT_TOKEN_VERIFIED("PaymentTokenVerified");
+    PAYMENT_TOKEN_VERIFIED("PaymentTokenVerified"),
+    PAYMENT_TOKEN_INVALID("PaymentTokenInvalid");
 
 
     private final String topic;

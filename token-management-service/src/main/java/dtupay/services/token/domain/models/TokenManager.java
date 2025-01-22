@@ -117,9 +117,12 @@ public class TokenManager {
         Token token = paymentRequest.token();
 
         String customerId = repo.extractId(token);
-        if (customerId == null) { return; }
-
-        Event responseEvent = new Event(EventTypes.PAYMENT_TOKEN_VERIFIED.toString(), new Object[]{customerId ,correlator});
+        Event responseEvent;
+        if (customerId == null) {
+            responseEvent = new Event(EventTypes.PAYMENT_TOKEN_INVALID.getTopic(),new Object[]{"Invalid token.",correlator});
+        }else{
+            responseEvent = new Event(EventTypes.PAYMENT_TOKEN_VERIFIED.toString(), new Object[]{customerId ,correlator});
+        }
         mque.publish(responseEvent);
     }
 

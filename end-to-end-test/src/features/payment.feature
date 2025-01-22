@@ -19,3 +19,9 @@ Feature: dtupay.E2E DTUPay Payment
       And an unregistered merchant with DTUPay
       When the merchant initiates a payment of 100
       Then the payment is unsuccessful
+
+    Scenario: Unsuccessful Payment Invalid Token
+      Given a registered customer with DTUPay with tokens with balance 1000 in the bank
+      And a registered merchant with DTUPay with balance 1000 in the bank
+      When the merchant initiates a payment of 100 with an invalid token
+      Then the payment is unsuccessful
