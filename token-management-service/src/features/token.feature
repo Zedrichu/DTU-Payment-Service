@@ -36,3 +36,14 @@ Feature: dtupay.services.token token management
     Then TokensGenerationFailed event is sent with the same correlation id
     And error message "No tokens generated: Invalid customer id."
     And the customer has 1 valid tokens
+
+  Scenario: Successful Deregistration of Tokens
+    Given an existing customer with 5 tokens assigned
+    When CustomerDeregistrationRequested event is received for the same customer id
+    Then CustomerTokensDeleted event is sent with the same correlation id
+    And there is exist no customer in token memory repository
+
+  Scenario: Successful Deregistration of Token with No Customer Id
+    When CustomerDeregistrationRequested event is received for a customer id
+    Then CustomerTokensDeleted event is sent with the same correlation id
+    And there is exist no customer in token memory repository

@@ -132,18 +132,15 @@ public class TokenManager {
         completeGeneration(aggregate);
     }
     
-    private void handleCustomerDeregistrationRequested(Event event) {
+    public void handleCustomerDeregistrationRequested(Event event) {
         logger.debug("Received CustomerDeregistrationRequested event: {}", event);
         String customerId = event.getArgument(0, String.class);
         Correlator correlator = event.getArgument(1, Correlator.class);
 
-        if (!repo.exists(customerId)) {
-            Event responseEvent = new Event(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), new Object[]{ correlator });
-            mque.publish(responseEvent);
-        } else {
+        Event responseEvent = new Event(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), new Object[]{ correlator });
+        if (repo.exists(customerId)) {
             repo.removeId(customerId);
-            Event responseEvent = new Event(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), new Object[]{ correlator });
-            mque.publish(responseEvent);
         }
+        mque.publish(responseEvent);
     }
 }

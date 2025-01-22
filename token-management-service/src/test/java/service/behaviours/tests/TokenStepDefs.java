@@ -147,4 +147,34 @@ public class TokenStepDefs {
 		eventType = EventTypes.TOKEN_ACCOUNT_INVALID;
 		tokenManager.handleTokenAccountInvalid(new Event(eventType.getTopic(),new Object[] { correlator}));
 	}
+
+	@When("CustomerDeregistrationRequested event is received for the same customer id")
+	public void customerderegistrationrequestedEventIsReceivedForTheSameCustomerId() {
+		eventType = EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED;
+		tokenManager.handleCustomerDeregistrationRequested(new Event(eventType.getTopic(),new Object[] { customerId, correlator}));
+
+	}
+
+	@Then("CustomerTokensDeleted event is sent with the same correlation id")
+	public void customertokensdeletedEventIsSentWithTheSameCorrelationId() {
+		eventType = EventTypes.CUSTOMER_TOKENS_DELETED;
+		eventCaptor = ArgumentCaptor.forClass(Event.class);
+		verify(messageQueue).publish(eventCaptor.capture());
+		Event receivedEvent = eventCaptor.getValue();
+		assertEquals(eventType.getTopic(), receivedEvent.getTopic());
+		assertEquals(correlator, receivedEvent.getArgument(0, Correlator.class));
+	}
+
+	@And("there is exist no customer in token memory repository")
+	public void thereIsExistNoCustomerInTokenMemoryRepository() {
+		assertEquals(0, memoryTokenRepository.getNumberOfTokens(customerId));
+	}
+
+	@When("CustomerDeregistrationRequested event is received for a customer id")
+	public void customerderegistrationrequestedEventIsReceivedForACustomerId() {
+		eventType = EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED;
+		customerId = "noCustomer";
+		correlator = Correlator.random();
+		tokenManager.handleCustomerDeregistrationRequested(new Event(eventType.getTopic(),new Object[] { customerId, correlator}));
+	}
 }
