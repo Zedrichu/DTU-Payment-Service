@@ -77,7 +77,7 @@ public class FacadeDeregisterStepDefs {
 		assertNotNull(customer.payId());
 	}
 
-	Exception exception;
+	Throwable exception;
 
 	@When("the customer is being deregistered")
 	public void theCustomerIsBeingDeregistered() {
