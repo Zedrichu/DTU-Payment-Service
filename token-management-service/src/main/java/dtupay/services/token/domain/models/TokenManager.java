@@ -43,7 +43,7 @@ public class TokenManager {
         return list;
     }
 
-    public TokenGenerationAggregate getOrCreateAggregate(Correlator correlator) {
+    public synchronized TokenGenerationAggregate getOrCreateAggregate(Correlator correlator) {
         if (!aggregators.containsKey(correlator)) {
             aggregators.put(correlator,new TokenGenerationAggregate(correlator));
         }

@@ -4,27 +4,29 @@ import dtupay.services.token.utilities.Correlator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.Synchronized;
 
-@Getter
+@Getter(onMethod_={@Synchronized})
+@Setter(onMethod_={@Synchronized})
 @EqualsAndHashCode
 public class TokenGenerationAggregate {
 
 	private Correlator correlator;
-	@Setter
+
 	private boolean requestReceived;
-	@Setter
+
 	private int noToken = 0;
-	@Setter
+
 	private String customerId;
-	@Setter
+
 	private boolean customerVerified;
-	@Setter
+
 	private boolean customerHandled;
 	public TokenGenerationAggregate(Correlator correlator) {
 		this.correlator = correlator;
 	}
 
-	public boolean isComplete(){
+	public synchronized boolean isComplete(){
 		return requestReceived && customerId != null && customerHandled;
 	}
 }

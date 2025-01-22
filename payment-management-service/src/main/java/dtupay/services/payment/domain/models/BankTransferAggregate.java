@@ -28,7 +28,7 @@ public class BankTransferAggregate {
     }
 
     @Synchronized
-    public boolean isComplete(){
+    public synchronized boolean isComplete(){
         return customer != null & merchant != null & paymentRequest != null;
     }
 }

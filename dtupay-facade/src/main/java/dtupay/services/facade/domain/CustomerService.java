@@ -92,7 +92,7 @@ public class CustomerService {
      return deregistrationCorrelations.get(correlationId).join();
   }
 
-  public void handleCustomerDeregistered(Event event) {
+  public synchronized void handleCustomerDeregistered(Event event) {
     logger.debug("Received Customer Deregistered event: {}", event);
     var correlationId = event.getArgument(0, Correlator.class);
 
