@@ -5,6 +5,12 @@ Feature: dtupay.services.account Payment Feature
     Then the "MerchantAccountVerified" event is sent with the merchant information
     And the merchant account is verified
 
+  Scenario: Unsuccessful Merchant Validation
+    Given an unregistered merchant
+    When the "PaymentInitiated" event for the payment request is received
+    Then the "MerchantAccountInvalid" event is sent with the error message "Merchant not registered."
+
+
     # Author: Paul Becker (s194702)
   Scenario: Successful Customer Validation
     Given a registered customer
@@ -12,14 +18,13 @@ Feature: dtupay.services.account Payment Feature
     Then the "CustomerAccountVerified" event is sent with the customer information
     And the customer account is verified
 
-  Scenario: Successful Customer Validation for Tokens
-    Given a registered customer
-    When the "TokensRequested" event for the customer id is received
-    Then the "TokenAccountVerified" event is sent with no content and same correlation id
+  Scenario: Unsuccessful Customer Validation
+    Given an unregistered customer
+    When the "PaymentTokenVerified" event for the customer id is received
+    Then the "CustomerAccountInvalid" event is sent with the error message "Customer not registered."
 
-  Scenario: Unsuccessful Customer Validation for Tokens
-    When the "TokensRequested" event for unknown customer id is received
-    Then the "TokenAccountInvalid" event is sent with no content and same correlation id
+
+
 
 
 #  Scenario: Unsuccessful Customer Registration

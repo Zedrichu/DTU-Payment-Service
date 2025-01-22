@@ -7,8 +7,10 @@ public enum EventTypes {
     PAYMENT_INITIATED("PaymentInitiated"),
 
     CUSTOMER_ACCOUNT_VERIFIED("CustomerAccountVerified"),
+    CUSTOMER_ACCOUNT_INVALID("CustomerAccountInvalid"),
 
     MERCHANT_ACCOUNT_VERIFIED("MerchantAccountVerified"),
+    MERCHANT_ACCOUNT_INVALID("MerchantAccountInvalid"),
 
     BANK_TRANSFER_CONFIRMED("BankTransferConfirmed"),
     BANK_TRANSFER_FAILED("BankTransferFailed");

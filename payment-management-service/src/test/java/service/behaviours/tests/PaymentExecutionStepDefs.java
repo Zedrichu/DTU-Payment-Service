@@ -114,5 +114,18 @@ public class PaymentExecutionStepDefs {
         assertEquals(0, customerBalance.compareTo(BigDecimal.valueOf(initialBalance - paymentRequest.amount())));
         assertEquals(0, merchantBalance.compareTo(BigDecimal.valueOf(initialBalance + paymentRequest.amount())));
     }
+
+    @When("the {string} event for an error is received")
+    public void theEventForAnErrorIsReceived(String errorEvent) {
+        EventTypes eventType = EventTypes.fromTopic(errorEvent);
+
+        if (eventType.equals(EventTypes.CUSTOMER_ACCOUNT_INVALID)) {
+            paymentManager.handleCustomerAccountInvalid(new Event(EventTypes.CUSTOMER_ACCOUNT_INVALID.getTopic(), new Object[] { "invalid customer", correlator }));
+        }
+        if (eventType.equals(EventTypes.MERCHANT_ACCOUNT_INVALID)) {
+            paymentManager.handleMerchantAccountInvalid(new Event(EventTypes.MERCHANT_ACCOUNT_INVALID.getTopic(), new Object[] { "invalid merchant", correlator }));
+        }
+
+    }
 }
 

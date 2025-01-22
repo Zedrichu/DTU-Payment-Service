@@ -126,32 +126,31 @@ public class AccountManager {
 
 
 	public void handlePaymentInitiated(Event event) {
-		Merchant merchant = merchantRepository.getAccount(event.getArgument(0, PaymentRequest.class).merchantId());
+		String merchantId = event.getArgument(0, PaymentRequest.class).merchantId();
 		var correlationId = event.getArgument(1, Correlator.class);
-
-		if (!merchantRepository.exists(merchant.payId())) {
-			return;
+		Event newEvent;
+		if (!merchantRepository.exists(merchantId)) {
+			newEvent = new Event(EventTypes.MERCHANT_ACCOUNT_INVALID.getTopic(), new Object[]{ "Merchant not registered.", correlationId });
+		}else{
+			Merchant merchant = merchantRepository.getAccount(merchantId);
+			newEvent = new Event(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), new Object[]{ merchant, correlationId });
 		}
-
-		Event newEvent = new Event(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), new Object[]{ merchant, correlationId });
 		logger.debug("New merchant verified: {}", newEvent);
-
 		this.mque.publish(newEvent);
 
 	}
 
     public void handlePaymentTokenVerified(Event event) {
-		var customerId = event.getArgument(0, String.class);
-		Customer customer = customerRepository.getAccount(event.getArgument(0, String.class));
+		String customerId = event.getArgument(0, String.class);
 		var correlationId = event.getArgument(1, Correlator.class);
-
+		Event newEvent;
 		if (!customerRepository.exists(customerId)) {
-			return;
+			newEvent = new Event(EventTypes.CUSTOMER_ACCOUNT_INVALID.getTopic(), new Object[]{ "Customer not registered.", correlationId });
+		}else{
+			Customer customer = customerRepository.getAccount(customerId);
+			newEvent = new Event(EventTypes.CUSTOMER_ACCOUNT_VERIFIED.getTopic(), new Object[]{ customer, correlationId });
 		}
-
-		Event newEvent = new Event(EventTypes.CUSTOMER_ACCOUNT_VERIFIED.getTopic(), new Object[]{ customer, correlationId });
 		logger.debug("New customer verified: {}", newEvent);
-
 		this.mque.publish(newEvent);
 	}
 

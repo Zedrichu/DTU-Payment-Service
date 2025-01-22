@@ -14,8 +14,8 @@ Feature: dtupay.E2E DTUPay Payment
       Then the payment is unsuccessful
 
 
-#    Scenario: Unsuccessful Payment Unknown Merchant
-#      Given a registered customer with DTUPay with tokens with balance 0 in the bank
-#      And an unregistered merchant with DTUPay
-#      When the merchant initiates a payment of 100
-#      Then the payment is unsuccessful
+    Scenario: Unsuccessful Payment Unknown Merchant
+      Given a registered customer with DTUPay with tokens with balance 0 in the bank
+      And an unregistered merchant with DTUPay
+      When the merchant initiates a payment of 100
+      Then the payment is unsuccessful

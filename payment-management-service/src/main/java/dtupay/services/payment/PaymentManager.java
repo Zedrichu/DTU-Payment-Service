@@ -22,6 +22,7 @@ public class PaymentManager {
 
     private MessageQueue mque;
     private Map<Correlator, BankTransferAggregate> aggregators = new ConcurrentHashMap<>();
+    private Map<Correlator,Boolean> hasFailure = new ConcurrentHashMap<>();
     private BankService bankService = new BankServiceService().getBankServicePort();
 
 
@@ -34,9 +35,15 @@ public class PaymentManager {
         this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);
         this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_VERIFIED.getTopic(), this::handleCustomerAccountVerified);
         this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), this::handleMerchantAccountVerified);
+        this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_INVALID.getTopic(), this::handleCustomerAccountInvalid);
+        this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_INVALID.getTopic(), this::handleMerchantAccountInvalid);
     }
 
-    public synchronized BankTransferAggregate getOrCreateAggregate(Correlator correlator) {
+    public synchronized BankTransferAggregate getOrCreateAggregate(Correlator correlator) throws Exception {
+
+        if (hasFailure.containsKey(correlator)) {
+            throw new Exception("Correlator has Failure");
+        }
         if (!aggregators.containsKey(correlator)) {
             aggregators.put(correlator,new BankTransferAggregate(correlator));
         }
@@ -44,9 +51,7 @@ public class PaymentManager {
     }
 
     public void completePayment(BankTransferAggregate aggregate){
-        logger.debug("Completing payment for aggregate: {}",aggregate);
         if (aggregate.isComplete()) {
-            logger.debug("Payment completed successfully");
             String merchantBankAccount = aggregate.getMerchant().bankAccountNo();
             String customerBankAccount = aggregate.getCustomer().bankAccountNo();
             String description = "DTUPay\n Used token |> " + aggregate.getPaymentRequest().token();
@@ -56,7 +61,6 @@ public class PaymentManager {
             // SOAP Bank call
             try {
                 bankService.transferMoneyFromTo(customerBankAccount, merchantBankAccount, amount, description);
-                logger.debug("Bank Transfer completed successfully");
                 PaymentRecord paymentRecord = new PaymentRecord(customerBankAccount,
                         merchantBankAccount,aggregate.
                         getPaymentRequest().amount(),
@@ -76,26 +80,63 @@ public class PaymentManager {
         logger.debug("Received PaymentInitiated event: {}", event);
         PaymentRequest paymentRequest = event.getArgument(0, PaymentRequest.class);
         Correlator correlator = event.getArgument(1,Correlator.class);
-        BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
-        aggregate.setPaymentRequest(paymentRequest);
-        completePayment(aggregate);
+        try{
+            BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
+            aggregate.setPaymentRequest(paymentRequest);
+            completePayment(aggregate);
+        }catch (Exception e){
+            logger.debug("Payment failed: {}", e.getMessage());
+        }
     }
+
+
 
     public void handleCustomerAccountVerified(Event event) {
         logger.debug("Received CustomerAccountVerified event: {}", event);
         Customer customer = event.getArgument(0, Customer.class);
         Correlator correlator = event.getArgument(1,Correlator.class);
-        BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
-        aggregate.setCustomer(customer);
-        completePayment(aggregate);
+        try{
+            BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
+            aggregate.setCustomer(customer);
+            completePayment(aggregate);
+        }catch (Exception e){
+            logger.debug("Payment failed: {}", e.getMessage());
+        }
+
     }
 
-    public void handleMerchantAccountVerified(Event event) {
+    public void raiseFailure(Correlator correlator) {
+        hasFailure.put(correlator,true);
+        aggregators.remove(correlator);
+    }
+
+    public void handleCustomerAccountInvalid(Event event) {
+        logger.debug("Received CustomerAccountInvalid event: {}", event);
+        Correlator correlator = event.getArgument(1,Correlator.class);
+        raiseFailure(correlator);
+        Event failureEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(),new Object[]{ "Customer account invalid.",correlator });
+        this.mque.publish(failureEvent);
+    }
+
+    public void handleMerchantAccountVerified(Event event){
         logger.debug("Received MerchantAccountVerified event: {}", event);
         Merchant merchant = event.getArgument(0, Merchant.class);
         Correlator correlator = event.getArgument(1,Correlator.class);
-        BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
-        aggregate.setMerchant(merchant);
-        completePayment(aggregate);
+        try{
+            BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
+            aggregate.setMerchant(merchant);
+            completePayment(aggregate);
+        }catch (Exception e){
+            logger.debug("Payment failed: {}", e.getMessage());
+        }
+
+    }
+
+    public void handleMerchantAccountInvalid(Event event) {
+        logger.debug("Received MerchantAccountInvalid event: {}", event);
+        Correlator correlator = event.getArgument(1,Correlator.class);
+        raiseFailure(correlator);
+        Event failureEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(),new Object[]{ "Merchant account invalid.",correlator });
+        this.mque.publish(failureEvent);
     }
 }

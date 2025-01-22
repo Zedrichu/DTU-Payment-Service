@@ -37,9 +37,22 @@ public class PayValidationStepDefs {
     String customerId;
     EventTypes eventTypeName;
 
+    @Given("an unregistered customer")
+    public void anUnregisteredCustomer() {
+
+        customer = new Customer("Buyer", "Bajer", "12345", "deez", "nodder");
+        customerId = "kajdfnga";
+    }
+
+    @Given("an unregistered merchant")
+    public void anUnregisteredMerchant() {
+
+        merchant = new Merchant("Seller", "Ja", "1234", "111", "asdfas");
+        merchantId = "kjahsdflklja";
+    }
+
     @Given("a registered merchant")
     public void aRegisteredMerchant() {
-
         merchant = new Merchant("Seller", "Ja", "1234", "111", "asdfas");
         merchantId = merchantAccountRepository.createAccount(merchant);
     }
@@ -102,6 +115,18 @@ public class PayValidationStepDefs {
         assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
     }
 
+    @Then("the {string} event is sent with the error message {string}")
+    public void theEventIsSentWithTheErrorMessage(String eventType, String errorMessage) {
+        eventTypeName = EventTypes.fromTopic(eventType);
+        eventCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(queue).publish(eventCaptor.capture());
+        receivedEvent = eventCaptor.getValue();
+        String receivedErrorMessage = receivedEvent.getArgument(0, String.class);
+        assertEquals(errorMessage,receivedErrorMessage);
+        assertEquals(receivedEvent.getTopic(), eventTypeName.getTopic());
+        assertEquals(correlator.getId(),receivedEvent.getArgument(1, Correlator.class).getId());
+    }
+
     @And("the customer account is verified")
     public void theCustomerAccountIsVerified() {
         assertEquals(customer.firstName(),receivedCustomer.firstName());
@@ -129,4 +154,6 @@ public class PayValidationStepDefs {
             accountManagementService.handlePaymentTokenVerified(new Event(eventTypeName.getTopic(), new Object[]{ "<none>", correlator }));
         }
     }
+
+
 }
