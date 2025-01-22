@@ -126,9 +126,9 @@ public class TokenStepDefs {
 	}
 	String receivedErrorMessage;
 
-	@Then("TokensGenerationFailure event is sent with the same correlation id")
-	public void tokensGenerationFailureEventIsSentWithTheSameCorrelationId() {
-		eventType = EventTypes.TOKEN_GENERATION_FAILURE;
+	@Then("TokensGenerationFailed event is sent with the same correlation id")
+	public void tokensGenerationFailedEventIsSentWithTheSameCorrelationId() {
+		eventType = EventTypes.TOKEN_GENERATION_FAILED;
 		eventCaptor = ArgumentCaptor.forClass(Event.class);
 		verify(messageQueue).publish(eventCaptor.capture());
 		Event receivedEvent = eventCaptor.getValue();

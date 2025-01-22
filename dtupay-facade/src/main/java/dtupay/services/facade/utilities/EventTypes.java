@@ -6,7 +6,7 @@ import dtupay.services.facade.annotations.ClassAuthor;
 public enum EventTypes {
     TOKENS_REQUESTED("TokensRequested"),
     TOKEN_ACCOUNT_VERIFIED("TokenAccountVerified"),
-    TOKEN_GENERATION_FAILURE("TokenGenerationFailure"),
+    TOKEN_GENERATION_FAILED("TokenGenerationFailed"),
     TOKENS_GENERATED("TokensGenerated"),
 
     CUSTOMER_REGISTRATION_REQUESTED("CustomerRegistrationRequested"),

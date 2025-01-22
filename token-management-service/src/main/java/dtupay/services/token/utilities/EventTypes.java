@@ -15,7 +15,7 @@ public enum EventTypes {
     CUSTOMER_TOKENS_DELETED("CustomerTokensDeleted"),
 
     TOKENS_GENERATED("TokensGenerated"),
-    TOKEN_GENERATION_FAILURE("TokenGenerationFailure"),
+    TOKEN_GENERATION_FAILED("TokenGenerationFailed"),
 
     PAYMENT_INITIATED("PaymentInitiated"),
     PAYMENT_TOKEN_VERIFIED("PaymentTokenVerified");

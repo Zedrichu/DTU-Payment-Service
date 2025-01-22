@@ -9,7 +9,6 @@ import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.exception.InvalidAccountException;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
-import io.cucumber.java.mk_latn.No;
 import messaging.Event;
 import messaging.MessageQueue;
 import org.slf4j.Logger;
@@ -39,6 +38,7 @@ public class CustomerService {
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATED.getTopic(), this::handleCustomerAccountCreated);
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), this::handleCustomerAccountCreationFailed);
     this.mque.addHandler(EventTypes.TOKENS_GENERATED.getTopic(), this::handleTokensGenerated);
+    this.mque.addHandler(EventTypes.TOKEN_GENERATION_FAILED.getTopic(), this::handleTokenGenerationFailed);
     this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTERED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_DELETED.getTopic(), this::handleCustomerDeregistered);
@@ -127,8 +127,8 @@ public class CustomerService {
     customerCorrelations.get(correlationId).completeExceptionally(new AccountCreationException(errorMessage));
   }
 
-  public void handleTokenGenerationFailure(Event event) {
-    logger.debug("Received TokensGenerationFailure event: {}", event);
+  public void handleTokenGenerationFailed(Event event) {
+    logger.debug("Received TokensGenerationFailed event: {}", event);
     var errorMessage = event.getArgument(0, String.class);
     var correlationId = event.getArgument(1, Correlator.class);
     tokensCorrelations.get(correlationId).completeExceptionally(new InvalidAccountException(errorMessage));

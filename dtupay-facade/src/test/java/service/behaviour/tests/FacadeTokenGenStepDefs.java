@@ -147,19 +147,19 @@ public class FacadeTokenGenStepDefs {
 		publishedEvents.put(regCustomerId, new CompletableFuture<>());
 	}
 
-	@When("the TokenGenerationFailure event is received for the same correlation id")
+	@When("the TokenGenerationFailed event is received for the same correlation id")
 	public void theEventIsReceivedForTheSameCorrelationId() {
 		var correlator = tCorrelators.get(regCustomerId);
-		tokenService.handleTokenGenerationFailure(new Event(
-					EventTypes.TOKEN_GENERATION_FAILURE.getTopic(),
+		tokenService.handleTokenGenerationFailed(new Event(
+					EventTypes.TOKEN_GENERATION_FAILED.getTopic(),
 					"No tokens generated: Invalid customer id.", correlator));
 	}
 
-	@When("the TokenGenerationFailure event is received for the same correlation and customer id")
+	@When("the TokenGenerationFailed event is received for the same correlation and customer id")
 	public void theEventIsReceivedForTheSameCorrelationAndCustomerId() {
 		var correlator = tCorrelators.get(regCustomerId);
-		tokenService.handleTokenGenerationFailure(new Event(
-					EventTypes.TOKEN_GENERATION_FAILURE.getTopic(),
+		tokenService.handleTokenGenerationFailed(new Event(
+					EventTypes.TOKEN_GENERATION_FAILED.getTopic(),
 					"No tokens generated: Too many tokens assigned.", correlator));
 	}
 

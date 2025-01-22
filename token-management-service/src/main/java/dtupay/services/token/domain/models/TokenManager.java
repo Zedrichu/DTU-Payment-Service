@@ -62,7 +62,7 @@ public class TokenManager {
     }
 
     public void declineGeneration(TokenGenerationAggregate aggregate,String errorMessage) {
-        Event responseEvent = new Event(EventTypes.TOKEN_GENERATION_FAILURE.getTopic(),
+        Event responseEvent = new Event(EventTypes.TOKEN_GENERATION_FAILED.getTopic(),
               new Object[]{ errorMessage, aggregate.getCorrelator() });
         mque.publish(responseEvent);
     }

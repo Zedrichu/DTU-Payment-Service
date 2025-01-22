@@ -18,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 
 import java.util.ArrayList;
+import java.util.concurrent.CompletionException;
 
 @Path("/customers/{cid}/tokens")
 @Tag(name = "Customer Tokens", description = "APIs for managing customer tokens")
@@ -64,7 +65,14 @@ public class CustomerTokenResource {
             )
             @QueryParam("amount") int amount) {
         logger.info("Received request of {} tokens for customer with id {}", amount, customerId);
-        ArrayList<Token> tokenList = customerService.requestTokens(amount, customerId);
-        return Response.ok().entity(tokenList).build();
+        try {
+          ArrayList<Token> tokenList = customerService.requestTokens(amount, customerId);
+          return Response.ok().entity(tokenList).build();
+        } catch (CompletionException exception) {
+          return Response
+                .status(Response.Status.BAD_REQUEST)
+                .entity(exception.getCause().getMessage())
+                .build();
+        }
     }
 }
