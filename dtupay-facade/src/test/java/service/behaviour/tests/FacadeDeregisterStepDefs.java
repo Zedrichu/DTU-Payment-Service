@@ -53,6 +53,7 @@ public class FacadeDeregisterStepDefs {
 	private Event mockEvent;
 	private Customer customer;
 	private EventTypes eventTypeName;
+	private EventTypes eventTypeName1;
 
 	@Given("a registered customer with id opting to deregister")
 	public void aRegisteredCustomerWithTokensOptingToDeregister() {
@@ -95,7 +96,7 @@ public class FacadeDeregisterStepDefs {
 
 	@Then("the customer is deregistered")
 	public void theCustomerIsDeregisteredAndTheirTokensAreRemoved() {
-		var customerId = futureCustomerDeregister.join();
-		assertEquals(customer.payId(), customerId);
+		var result = futureCustomerDeregister.join();
+		assertEquals("Customer Successful Deregistration", result);
 	}
 }

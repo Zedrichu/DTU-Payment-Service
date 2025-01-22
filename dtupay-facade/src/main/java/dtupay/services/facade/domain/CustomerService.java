@@ -39,7 +39,6 @@ public class CustomerService {
     this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), this::handleCustomerAccountCreationFailed);
     this.mque.addHandler(EventTypes.TOKENS_GENERATED.getTopic(), this::handleTokensGenerated);
     this.mque.addHandler(EventTypes.TOKEN_GENERATION_FAILED.getTopic(), this::handleTokenGenerationFailed);
-    this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTERED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_DELETED.getTopic(), this::handleCustomerDeregistered);
   }
@@ -95,7 +94,7 @@ public class CustomerService {
 
   public void handleCustomerDeregistered(Event event) {
     logger.debug("Received Customer Deregistered event: {}", event);
-    var correlationId = event.getArgument(0, Correlator.class);
+    var correlationId = event.getArgument(1, Correlator.class);
 
     if (eventMap.containsKey(correlationId)) {
       eventMap.get(correlationId).add(event);
