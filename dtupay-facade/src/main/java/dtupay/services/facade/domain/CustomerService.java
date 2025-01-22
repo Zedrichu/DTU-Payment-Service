@@ -94,7 +94,7 @@ public class CustomerService {
 
   public void handleCustomerDeregistered(Event event) {
     logger.debug("Received Customer Deregistered event: {}", event);
-    var correlationId = event.getArgument(1, Correlator.class);
+    var correlationId = event.getArgument(0, Correlator.class);
 
     if (eventMap.containsKey(correlationId)) {
       eventMap.get(correlationId).add(event);

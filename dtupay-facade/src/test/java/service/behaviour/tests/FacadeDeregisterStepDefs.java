@@ -91,7 +91,7 @@ public class FacadeDeregisterStepDefs {
 		eventTypeName = EventTypes.fromTopic(eventType);
 		var correlator = cStringCorrelators.get(customer.payId());
 		assertNotNull(correlator);
-		customerIdService.handleCustomerDeregistered(new Event(eventTypeName.getTopic(), new Object[]{ customer.payId(), correlator }));
+		customerIdService.handleCustomerDeregistered(new Event(eventTypeName.getTopic(), new Object[]{  correlator }));
 	}
 
 	@Then("the customer is deregistered")
