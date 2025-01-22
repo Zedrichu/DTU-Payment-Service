@@ -15,6 +15,7 @@ import messaging.MessageQueue;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -85,7 +86,7 @@ public class FacadeDeregisterStepDefs {
 				var result = customerIdService.deregister(customer.payId());
 				futureCustomerDeregister.complete(result);
 			}catch (Exception e){
-				exception = e;
+				futureCustomerDeregister.completeExceptionally(e.getCause());
 			}
 
 		}).start();
@@ -119,8 +120,13 @@ public class FacadeDeregisterStepDefs {
 
 	@Then("the customer deregistration failed")
 	public void theCustomerDeregistrationFailed() {
+		try {
+			futureCustomerDeregister.join();
+		} catch (CompletionException e) {
+			exception = e.getCause();
+		}
 		assertNotNull(exception);
-		assertEquals("Customer Deregistration Failed", exception.getCause().getMessage());
+		assertEquals("Customer Deregistration Failed", exception.getMessage());
 	}
 
 	@Given("a registered merchant with id opting to deregister")
@@ -141,7 +147,7 @@ public class FacadeDeregisterStepDefs {
 				var result = merchantIdService.deregister(merchant.payId());
 				futureMerchantDeregister.complete(result);
 			} catch (Exception e) {
-				exception = e;
+				futureMerchantDeregister.completeExceptionally(e.getCause());
 			}
 		}).start();
 	}
@@ -173,7 +179,12 @@ public class FacadeDeregisterStepDefs {
 
 	@Then("the merchant deregistration failed")
 	public void theMerchantDeregistrationFailed() {
+		try {
+			futureMerchantDeregister.join();
+		} catch (CompletionException e) {
+			exception = e.getCause();
+		}
 		assertNotNull(exception);
-		assertEquals("Merchant Deregistration Failed", exception.getCause().getMessage());
+		assertEquals("Merchant Deregistration Failed", exception.getMessage());
 	}
 }
