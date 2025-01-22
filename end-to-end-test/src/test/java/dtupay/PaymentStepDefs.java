@@ -39,7 +39,7 @@ public class PaymentStepDefs {
         user = new User();
         user.setFirstName("Jeppe");
         user.setLastName("Jeppeson");
-        user.setCprNumber("141414-1414");
+        user.setCprNumber("141414-1409");
         BigDecimal newBalance = new BigDecimal(balance);
         bankAccountNo = bankService.createAccountWithBalance(user, newBalance);
         bankAccounts.add(bankAccountNo);
@@ -58,7 +58,7 @@ public class PaymentStepDefs {
         user = new User();
         user.setFirstName("Simp");
         user.setLastName("Jeppesen");
-        user.setCprNumber("141414-1412");
+        user.setCprNumber("141414-1419");
         BigDecimal newBalance = BigDecimal.valueOf(balance);
         bankAccountNo = bankService.createAccountWithBalance(user, newBalance);
         bankAccounts.add(bankAccountNo);
@@ -134,7 +134,7 @@ public class PaymentStepDefs {
     }
 
     @Then("the token request is declined with TokenRequest exception and error message {string}")
-    public void theTokenRequestIsDeclined(String errorMessage) {
+    public void theTokenRequestIsDeclinedWithTokenRequestExceptionAndErrorMessage(String errorMessage) {
         assertNotNull(exception);
         assertTrue(exception instanceof TokenRequestException);
         assertEquals(errorMessage, exception.getMessage());
