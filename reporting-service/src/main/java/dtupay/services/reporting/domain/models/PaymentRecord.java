@@ -6,7 +6,7 @@ public record PaymentRecord(
         String merchantBankAccount,
         int amount,
         String description,
-        String token,
+        Token token,
         String customerId,
         String merchantId) {}
 

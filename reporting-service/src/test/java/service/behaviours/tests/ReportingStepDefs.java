@@ -2,31 +2,32 @@ package service.behaviours.tests;
 
 import dtupay.services.reporting.domain.ReportingManager;
 import dtupay.services.reporting.domain.models.PaymentRecord;
+import dtupay.services.reporting.domain.models.Token;
 import dtupay.services.reporting.domain.repositories.ReadModelRepository;
-import dtupay.services.reporting.domain.repositories.PaymentLogRepository;
+import dtupay.services.reporting.domain.repositories.ReportRepository;
 import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
+import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 import messaging.Event;
-import messaging.MessageQueue;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.When;
 
 import static org.mockito.Mockito.mock;
 
 public class ReportingStepDefs {
     private ReportingManager reportingManager;
-    private ReadModelRepository readRepository;
-    private PaymentLogRepository writeRepository;
+    private ReadModelRepository readModelRepository;
+    private ReportRepository reportRepository;
     private PaymentRecord paymentRecord;
-    MessageQueue messageQueue = mock(MessageQueue.class);
+    messaging.MessageQueue messageQueue = mock(messaging.MessageQueue.class);
+    MessageQueue internalMQ = mock(MessageQueue.class);
 
 
   @Given("a reporting service")
   public void aReportingService() {
-    readRepository = new ReadModelRepository();
-    writeRepository = new PaymentLogRepository(messageQueue);
-    reportingManager = new ReportingManager(messageQueue, readRepository, writeRepository);
+    readModelRepository = new ReadModelRepository(internalMQ);
+    reportRepository = new ReportRepository(internalMQ);
+    reportingManager = new ReportingManager(messageQueue, readModelRepository, reportRepository);
   }
 
   @When("a BankTransferConfirmed event is received")
@@ -38,20 +39,19 @@ public class ReportingStepDefs {
             "mBankAccount",
             1000,
             "Payment happened",
-            "Token", // TODO: replace with updated token
+            Token.random(), // TODO: replace with updated token
             "cId",
             "mId"
             );
-    Event event = new Event(eventType.getTopic(),
-            new Object[]{paymentRecord, correlationId});
 
-     reportingManager.handleBankTransferConfirmed(event);
+
+    reportingManager.handleBankTransferConfirmed(new Event(eventType.getTopic(),new Object[] {paymentRecord, correlationId}));
   }
 
-  @Then("the payment history is updated")
-  public void thePaymentHistoryIsUpdated() {
-        //reportingManager.paymentByCustomerId("cId");
-  }
+//  @Then("the payment history is updated")
+//  public void thePaymentHistoryIsUpdated() {
+//    reportingManager.
+//  }
 
 
 }
