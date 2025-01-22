@@ -26,7 +26,7 @@ Feature: dtupay.services.token token management
     When TokensRequested event is received for 3 tokens for the same customer id
     When TokenAccountVerified event is received for a customer
     Then TokensGenerationFailure event is sent with the same correlation id
-    And error message "No tokens generated: Too many tokens."
+    And error message "No tokens generated: Too many tokens assigned."
     And the customer has 3 valid tokens
 
   Scenario: Unsuccessful Token Generation Token Limit

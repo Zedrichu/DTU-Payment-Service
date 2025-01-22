@@ -76,7 +76,7 @@ public class TokenManager {
                 int currentNoTokens = repo.getNumberOfTokens(aggregate.getCustomerId());
 
                 if (currentNoTokens + requestNoTokens > TOKEN_LIMIT) {
-                    declineGeneration(aggregate,"No tokens generated: Too many tokens.");
+                    declineGeneration(aggregate,"No tokens generated: Too many tokens assigned.");
                 } else {
                     acceptTokenGeneration(aggregate);
                 }

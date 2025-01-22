@@ -107,10 +107,7 @@ public class PaymentStepDefs {
     @Given("a registered customer with DTUPay with {int} valid tokens")
     public void aRegisteredCustomerWithDTUPayWithValidTokens(int initTokens) throws BankServiceException_Exception {
         aRegisteredCustomerWithDTUPayWithBalanceInTheBank(1000);
-        customersTokens = new ArrayList<>();
-        for (int i = 0; i < initTokens; i++) {
-            customersTokens.add(Token.random());
-        }
+        customersTokens = customerService.requestTokens(registeredCustomer.payId(), initTokens);
         assertEquals(initTokens, customersTokens.size());
     }
 

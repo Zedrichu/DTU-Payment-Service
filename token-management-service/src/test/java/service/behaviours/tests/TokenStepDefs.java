@@ -139,7 +139,7 @@ public class TokenStepDefs {
 
 	@And("error message {string}")
 	public void errorMessage(String expectedErrorMessage) {
-		assertEquals(expectedErrorMessage,receivedErrorMessage);
+		assertEquals(expectedErrorMessage, receivedErrorMessage);
 	}
 
 	@When("TokenAccountInvalid event is received for a customer")

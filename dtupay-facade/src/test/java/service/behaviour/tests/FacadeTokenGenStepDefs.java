@@ -44,7 +44,7 @@ public class FacadeTokenGenStepDefs {
 
 
 	@Given("a registered customer")
-	public void aRegisteredCustomerWithTokens() {
+	public void aRegisteredCustomer() {
 		regCustomerId = "<existent-id>";
 		publishedEvents.put(regCustomerId, new CompletableFuture<>());
 	}
@@ -153,6 +153,14 @@ public class FacadeTokenGenStepDefs {
 		tokenService.handleTokenGenerationFailure(new Event(
 					EventTypes.TOKEN_GENERATION_FAILURE.getTopic(),
 					"No tokens generated: Invalid customer id.", correlator));
+	}
+
+	@When("the TokenGenerationFailure event is received for the same correlation and customer id")
+	public void theEventIsReceivedForTheSameCorrelationAndCustomerId() {
+		var correlator = tCorrelators.get(regCustomerId);
+		tokenService.handleTokenGenerationFailure(new Event(
+					EventTypes.TOKEN_GENERATION_FAILURE.getTopic(),
+					"No tokens generated: Too many tokens assigned.", correlator));
 	}
 
 	@Then("an InvalidAccount exception with message {string} is raised")
