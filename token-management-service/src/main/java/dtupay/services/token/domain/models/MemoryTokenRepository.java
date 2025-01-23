@@ -45,7 +45,7 @@ public class MemoryTokenRepository implements TokenRepository {
 
 		tokens.forEach((token) -> customerIds.put(token, customerId));
 	}
-
+	
 	@Override
 	public synchronized boolean exists(String customerId) {
 		return tokenLists.containsKey(customerId);

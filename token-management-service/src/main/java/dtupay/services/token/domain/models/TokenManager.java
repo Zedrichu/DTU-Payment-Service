@@ -43,6 +43,7 @@ public class TokenManager {
         return list;
     }
 
+    @MethodAuthor(author = "Adrian Zvizdenco", stdno = "s204683")
     public synchronized TokenGenerationAggregate getOrCreateAggregate(Correlator correlator) {
         if (!aggregators.containsKey(correlator)) {
             aggregators.put(correlator,new TokenGenerationAggregate(correlator));
@@ -67,6 +68,7 @@ public class TokenManager {
         mque.publish(responseEvent);
     }
 
+    @MethodAuthor(author = "Paul Becker")
     public void completeGeneration(TokenGenerationAggregate aggregate) {
         if (aggregate.isComplete()) {
             if (!aggregate.isCustomerVerified()){
@@ -99,6 +101,7 @@ public class TokenManager {
         completeGeneration(aggregate);
     }
 
+    @MethodAuthor(author = "Jonas Kjeldsen", stdno = "s204713")
     public void handleTokenAccountVerified(Event event) {
         logger.debug("Received TokenAccountVerified event: {}", event);
 
@@ -110,6 +113,7 @@ public class TokenManager {
         completeGeneration(aggregate);
     }
 
+    @MethodAuthor(author = "Jonas Kjeldsen", stdno = "s204713")
     public void handlePaymentInitiated(Event event) {
         logger.debug("Received Payment Initiated event: {}", event);
         PaymentRequest paymentRequest = event.getArgument(0, PaymentRequest.class);

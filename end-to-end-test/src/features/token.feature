@@ -1,7 +1,5 @@
 Feature: dtupay.E2E Token Generation
 
-
-
   Scenario: Successful Token Generation for New Customer
     Given a registered customer with DTUPay with 0 valid tokens
     When the customer requests 3 tokens

@@ -112,7 +112,7 @@
                         <index>true</index>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>dtupay.services.token.StartUp</mainClass>
+                            <mainClass>dtupay.services.reporting.StartUp</mainClass>
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
                     </archive>

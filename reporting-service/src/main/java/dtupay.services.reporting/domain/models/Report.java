@@ -1,22 +1,24 @@
 package dtupay.services.reporting.domain.models;
 
-
 import dtupay.services.reporting.domain.models.views.LogView;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.io.Serializable;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class Report {
+@EqualsAndHashCode
+public class Report<T extends LogView> implements Serializable {
 	private UUID id;
-	private List<LogView> entries;
+	private ArrayList<T> entries;
 
-	public Report(List<LogView> entries) {
+	public Report(ArrayList<T> entries) {
 		this.id = UUID.randomUUID();
 		this.entries = entries;
 	}
-
 }

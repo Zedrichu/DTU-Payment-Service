@@ -1,11 +1,14 @@
 package dtupay.services.token.domain.models;
 
+import dtupay.services.token.annotations.ClassAuthor;
+import dtupay.services.token.annotations.MethodAuthor;
 import dtupay.services.token.utilities.Correlator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.Synchronized;
 
+@ClassAuthor(author = "Paul Becker", stdno = "")
 @Getter(onMethod_={@Synchronized})
 @Setter(onMethod_={@Synchronized})
 @EqualsAndHashCode
@@ -26,6 +29,7 @@ public class TokenGenerationAggregate {
 		this.correlator = correlator;
 	}
 
+	@MethodAuthor(author = "Adrian Zvizdenco", stdno = "s204683")
 	public synchronized boolean isComplete(){
 		return requestReceived && customerId != null && customerHandled;
 	}

@@ -1,17 +1,13 @@
-package dtupay.services.reporting.domain.models.views;
+package dtupay.services.facade.domain.models.views;
 
-import dtupay.services.reporting.domain.models.Token;
-import lombok.*;
+import dtupay.services.facade.domain.models.Token;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
-@Setter
 @EqualsAndHashCode(callSuper = true)
-@Getter
+@Value
 public class ManagerView extends CustomerView {
 	String customerId;
-
-	public ManagerView() {
-		super();
-	}
 
 	public ManagerView(String customerId, String merchantId, Token token, int amount) {
 		super(merchantId, token, amount);
