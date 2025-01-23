@@ -55,7 +55,7 @@ public class ReportService {
 		logger.debug("Merchant report request for: {}", id);
 		var correlationId = Correlator.random();
 		merchantReportCorrelations.put(correlationId, new CompletableFuture<>());
-		Event event = new Event(EventTypes.MERCHANT_REPORT_GENERATED.getTopic(), new Object[] { id, correlationId });
+		Event event = new Event(EventTypes.MERCHANT_REPORT_REQUESTED.getTopic(), new Object[] { id, correlationId });
 		mque.publish(event);
 		return merchantReportCorrelations.get(correlationId).join();
 	}
@@ -64,7 +64,7 @@ public class ReportService {
 	public Report<ManagerView> getManagerReport() {
 		logger.debug("Manager report request for: {}");
 		var correlationId = Correlator.random();
-		merchantReportCorrelations.put(correlationId, new CompletableFuture<>());
+		managerReportCorrelations.put(correlationId, new CompletableFuture<>());
 		Event event = new Event(EventTypes.MANAGER_REPORT_REQUESTED.getTopic(), new Object[] { correlationId });
 		mque.publish(event);
 		return managerReportCorrelations.get(correlationId).join();
