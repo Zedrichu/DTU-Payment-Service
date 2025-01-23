@@ -55,7 +55,7 @@ public class MerchantPaymentResource {
             var paymentSuccess = merchantService.pay(paymentRequest);
             return Response.ok().build();
         } catch (CompletionException e) {
-            String message = "Payment failed " + e.getCause().getMessage();
+            String message = e.getCause().getMessage();
             return Response.status(Response.Status.BAD_REQUEST).entity(message).build();
         }
     }

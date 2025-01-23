@@ -59,7 +59,7 @@ public class MerchantsResource {
             .entity(registeredMerchant)
             .build();
   } catch (CompletionException exception) {
-      var message = "Merchant registration failed:" + exception.getCause().getMessage();
+      var message = exception.getCause().getMessage();
       return Response
             .status(Response.Status.BAD_REQUEST)
             .entity(message)
@@ -90,7 +90,7 @@ public class MerchantsResource {
       merchantService.deregister(merchantId);
       return Response.ok().build();
     } catch (CompletionException exception) {
-      var message = "Merchant deregistration failed: " + exception.getCause().getMessage();
+      var message = exception.getCause().getMessage();
       return Response
               .status(Response.Status.BAD_REQUEST)
               .entity(message)

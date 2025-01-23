@@ -72,7 +72,7 @@ public class CustomerTokenResource {
           ArrayList<Token> tokenList = customerService.requestTokens(amount, customerId);
           return Response.ok().entity(tokenList).build();
         } catch (CompletionException exception) {
-            var message = "Token request failed: " + exception.getCause().getMessage();
+            var message = exception.getCause().getMessage();
           return Response
                 .status(Response.Status.BAD_REQUEST)
                 .entity(message)
