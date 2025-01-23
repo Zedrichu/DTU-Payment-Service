@@ -6,8 +6,8 @@ docker compose up -d rabbitMq
 
 sleep 3
 
-docker compose up -d account-management token-management payment-management
+docker compose up -d account-management token-management payment-management reporting
 
-sleep 2
+sleep 4
 
 docker compose up -d dtupay-facade

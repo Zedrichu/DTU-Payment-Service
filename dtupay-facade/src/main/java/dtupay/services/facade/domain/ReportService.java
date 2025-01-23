@@ -62,7 +62,7 @@ public class ReportService {
 
 	@MethodAuthor(author = "Jonas Kjeldsen", stdno = "s204713")
 	public Report<ManagerView> getManagerReport() {
-		logger.debug("Manager report request for: {}");
+		logger.debug("Manager report request");
 		var correlationId = Correlator.random();
 		managerReportCorrelations.put(correlationId, new CompletableFuture<>());
 		Event event = new Event(EventTypes.MANAGER_REPORT_REQUESTED.getTopic(), new Object[] { correlationId });
