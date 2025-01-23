@@ -45,7 +45,6 @@ public class CustomerService {
     this.mque.addHandler(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_DELETED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_DELETE_FAILED.getTopic(),this::handleCustomerDeregistered);
-    this.mque.addHandler(EventTypes.CUSTOMER_REPORT_GENERATED.getTopic(), this::handleCustomerReportGenerated);
   }
 
   public Customer register(Customer customer) throws CompletionException {
@@ -86,18 +85,6 @@ public class CustomerService {
             .toList();
     ArrayList<Token> tokens = new ArrayList<Token>(tokenList);
     tokensCorrelations.get(correlationId).complete(tokens);
-  }
-
-  @MethodAuthor(author = "Jeppe Mikkelsen", stdno = "s204708")
-  private void handleCustomerReportGenerated(Event event) {
-    logger.debug("Received CustomerReportGenerated event: {}", event);
-    ArrayList<LinkedTreeMap<String, Object>> list = event.getArgument(0, ArrayList.class);
-    var correlationId = event.getArgument(1, Correlator.class);
-    Gson gson = new Gson();
-    List<CustomerView> reportList = list.stream()
-            .map(e -> gson.fromJson(gson.toJson(e), CustomerView.class))
-            .toList();
-    customerReportCorrelations.get(correlationId).complete(new ArrayList<>(reportList));
   }
 
   @MethodAuthor(author = "Jeppe Mikkelsen", stdno = "s204708")

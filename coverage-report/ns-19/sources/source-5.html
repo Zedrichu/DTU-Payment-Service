@@ -1,0 +1,270 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TokenManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services.token.domain.models</a>
+</div>
+
+<h1>Coverage Summary for Class: TokenManager (dtupay.services.token.domain.models)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TokenManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    93,8%
+  </span>
+  <span class="absValue">
+    (15/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (73/73)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services.token.domain.models;
+&nbsp;
+&nbsp;import dtupay.services.token.annotations.MethodAuthor;
+&nbsp;
+&nbsp;import dtupay.services.token.utilities.Correlator;
+&nbsp;import dtupay.services.token.utilities.EventTypes;
+&nbsp;import messaging.Event;
+&nbsp;import messaging.MessageQueue;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;
+&nbsp;public class TokenManager {
+<b class="fc">&nbsp;    private static final Logger logger = LoggerFactory.getLogger(TokenManager.class);</b>
+&nbsp;
+&nbsp;    private MessageQueue mque;
+&nbsp;    private TokenRepository repo;
+<b class="fc">&nbsp;    private Map&lt;Correlator, TokenGenerationAggregate&gt; aggregators = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;    private static final int TOKEN_LIMIT = 5;
+&nbsp;
+<b class="fc">&nbsp;    public TokenManager(MessageQueue messageQueue, TokenRepository tokenRepository) {</b>
+<b class="fc">&nbsp;        this.mque = messageQueue;</b>
+<b class="fc">&nbsp;        this.repo = tokenRepository;</b>
+&nbsp;
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.TOKENS_REQUESTED.getTopic(), this::handleTokensRequested);</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.TOKEN_ACCOUNT_VERIFIED.getTopic(), this::handleTokenAccountVerified);</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.TOKEN_ACCOUNT_INVALID.getTopic(), this::handleTokenAccountInvalid );</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), this::handleCustomerDeregistrationRequested);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;    public ArrayList&lt;Token&gt; generateTokens(int noTokens){
+&nbsp;        ArrayList&lt;Token&gt; list = new ArrayList&lt;&gt;();
+<b class="fc">&nbsp;        for (int i = 0; i &lt; noTokens; i++) {</b>
+<b class="fc">&nbsp;            list.add(Token.random());</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;        return list;
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @MethodAuthor(author = &quot;Adrian Zvizdenco&quot;, stdno = &quot;s204683&quot;)
+&nbsp;    public synchronized TokenGenerationAggregate getOrCreateAggregate(Correlator correlator) {
+&nbsp;        if (!aggregators.containsKey(correlator)) {
+<b class="fc">&nbsp;            aggregators.put(correlator,new TokenGenerationAggregate(correlator));</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;        return aggregators.get(correlator);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void acceptTokenGeneration(TokenGenerationAggregate aggregate){
+&nbsp;        String customerId = aggregate.getCustomerId();
+<b class="fc">&nbsp;        int noTokens = aggregate.getNoToken();</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        ArrayList&lt;Token&gt; tokenList = generateTokens(noTokens);
+<b class="fc">&nbsp;        repo.addTokens(customerId, tokenList);</b>
+<b class="fc">&nbsp;        Event responseEvent = new Event(EventTypes.TOKENS_GENERATED.getTopic(),</b>
+<b class="fc">&nbsp;              new Object[]{ tokenList, aggregate.getCorrelator()});</b>
+<b class="fc">&nbsp;        mque.publish(responseEvent);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void declineGeneration(TokenGenerationAggregate aggregate,String errorMessage) {
+&nbsp;        Event responseEvent = new Event(EventTypes.TOKEN_GENERATION_FAILED.getTopic(),
+<b class="fc">&nbsp;              new Object[]{ errorMessage, aggregate.getCorrelator() });</b>
+<b class="fc">&nbsp;        mque.publish(responseEvent);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @MethodAuthor(author = &quot;Paul Becker&quot;,stdno = &quot;s194702&quot;)
+&nbsp;    public void completeGeneration(TokenGenerationAggregate aggregate) {
+&nbsp;        if (aggregate.isComplete()) {
+<b class="fc">&nbsp;            if (!aggregate.isCustomerVerified()){</b>
+<b class="fc">&nbsp;                declineGeneration(aggregate,&quot;No tokens generated: Invalid customer id.&quot;);</b>
+<b class="fc">&nbsp;            } else {</b>
+&nbsp;                int requestNoTokens = aggregate.getNoToken();
+<b class="fc">&nbsp;                int currentNoTokens = repo.getNumberOfTokens(aggregate.getCustomerId());</b>
+<b class="fc">&nbsp;</b>
+&nbsp;                if (currentNoTokens + requestNoTokens &gt; TOKEN_LIMIT || requestNoTokens &lt; 1) {
+<b class="pc">&nbsp;                    declineGeneration(aggregate,&quot;No tokens generated: Invalid token amount.&quot;);</b>
+<b class="fc">&nbsp;                } else {</b>
+&nbsp;                    acceptTokenGeneration(aggregate);
+<b class="fc">&nbsp;                }</b>
+&nbsp;            }
+&nbsp;            aggregators.remove(aggregate.getCorrelator());
+<b class="fc">&nbsp;        }</b>
+&nbsp;    }
+&nbsp;    @MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;    public void handleTokensRequested(Event event){
+&nbsp;        logger.debug(&quot;Received TokensRequest event: {}&quot;, event);
+<b class="fc">&nbsp;</b>
+&nbsp;        Correlator correlator = event.getArgument(2, Correlator.class);
+<b class="fc">&nbsp;        int noTokens = event.getArgument(1, int.class);</b>
+<b class="fc">&nbsp;        String customerId = event.getArgument(0, String.class);</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        TokenGenerationAggregate aggregate = getOrCreateAggregate(correlator);
+<b class="fc">&nbsp;        aggregate.setNoToken(noTokens);</b>
+<b class="fc">&nbsp;        aggregate.setCustomerId(customerId);</b>
+<b class="fc">&nbsp;        aggregate.setRequestReceived(true);</b>
+<b class="fc">&nbsp;        completeGeneration(aggregate);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;    public void handleTokenAccountVerified(Event event) {
+&nbsp;        logger.debug(&quot;Received TokenAccountVerified event: {}&quot;, event);
+<b class="fc">&nbsp;</b>
+&nbsp;        Correlator correlator = event.getArgument(0, Correlator.class);
+<b class="fc">&nbsp;</b>
+&nbsp;        TokenGenerationAggregate aggregate = getOrCreateAggregate(correlator);
+<b class="fc">&nbsp;        aggregate.setCustomerVerified(true);</b>
+<b class="fc">&nbsp;        aggregate.setCustomerHandled(true);</b>
+<b class="fc">&nbsp;        completeGeneration(aggregate);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    @MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;    public void handlePaymentInitiated(Event event) {
+&nbsp;        logger.debug(&quot;Received Payment Initiated event: {}&quot;, event);
+<b class="fc">&nbsp;        PaymentRequest paymentRequest = event.getArgument(0, PaymentRequest.class);</b>
+<b class="fc">&nbsp;        Correlator correlator = event.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;        Token token = paymentRequest.token();</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        String customerId = repo.extractId(token);
+<b class="fc">&nbsp;        Event responseEvent;</b>
+&nbsp;        if (customerId == null) {
+<b class="fc">&nbsp;            responseEvent = new Event(EventTypes.PAYMENT_TOKEN_INVALID.getTopic(),new Object[]{&quot;Invalid token.&quot;,correlator});</b>
+<b class="fc">&nbsp;        }else{</b>
+&nbsp;            responseEvent = new Event(EventTypes.PAYMENT_TOKEN_VERIFIED.getTopic(), new Object[]{customerId ,correlator});
+<b class="fc">&nbsp;        }</b>
+&nbsp;        mque.publish(responseEvent);
+<b class="fc">&nbsp;    }</b>
+&nbsp;
+&nbsp;    public void handleTokenAccountInvalid(Event event) {
+&nbsp;        logger.debug(&quot;Received TokenAccountInvalid event: {}&quot;, event);
+<b class="fc">&nbsp;</b>
+&nbsp;        Correlator correlator = event.getArgument(0, Correlator.class);
+<b class="fc">&nbsp;</b>
+&nbsp;        TokenGenerationAggregate aggregate = getOrCreateAggregate(correlator);
+<b class="fc">&nbsp;        aggregate.setCustomerVerified(false);</b>
+<b class="fc">&nbsp;        aggregate.setCustomerHandled(true);</b>
+<b class="fc">&nbsp;        completeGeneration(aggregate);</b>
+<b class="fc">&nbsp;    }</b>
+&nbsp;    
+&nbsp;    public void handleCustomerDeregistrationRequested(Event event) {
+&nbsp;        logger.debug(&quot;Received CustomerDeregistrationRequested event: {}&quot;, event);
+<b class="fc">&nbsp;        String customerId = event.getArgument(0, String.class);</b>
+<b class="fc">&nbsp;        Correlator correlator = event.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;</b>
+&nbsp;        Event responseEvent = new Event(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), new Object[]{ correlator });
+<b class="fc">&nbsp;        if (repo.exists(customerId)) {</b>
+<b class="fc">&nbsp;            repo.removeId(customerId);</b>
+<b class="fc">&nbsp;        }</b>
+&nbsp;        mque.publish(responseEvent);
+<b class="fc">&nbsp;    }</b>
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>

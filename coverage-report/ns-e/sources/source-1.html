@@ -1,0 +1,271 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > PaymentManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services.payment</a>
+</div>
+
+<h1>Coverage Summary for Class: PaymentManager (dtupay.services.payment)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">PaymentManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (11/11)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (68/68)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services.payment;
+&nbsp;
+&nbsp;import dtu.ws.fastmoney.BankService;
+&nbsp;import dtu.ws.fastmoney.BankServiceException_Exception;
+&nbsp;import dtu.ws.fastmoney.BankServiceService;
+&nbsp;import dtupay.services.payment.annotations.MethodAuthor;
+&nbsp;import dtupay.services.payment.domain.models.*;
+&nbsp;import dtupay.services.payment.utilities.Correlator;
+&nbsp;import dtupay.services.payment.utilities.EventTypes;
+&nbsp;
+&nbsp;import messaging.Event;
+&nbsp;import messaging.MessageQueue;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;import java.math.BigDecimal;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;
+&nbsp;public class PaymentManager {
+<b class="fc">&nbsp;    private static final Logger logger = LoggerFactory.getLogger(PaymentManager.class);</b>
+&nbsp;
+&nbsp;    private MessageQueue mque;
+<b class="fc">&nbsp;    private Map&lt;Correlator, BankTransferAggregate&gt; aggregators = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    private Map&lt;Correlator,Boolean&gt; hasFailure = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;    private BankService bankService = new BankServiceService().getBankServicePort();</b>
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;    public PaymentManager(MessageQueue messageQueue) {</b>
+<b class="fc">&nbsp;        logger.debug(&quot;Initializing Payment Manager&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;        this.mque = messageQueue;</b>
+&nbsp;
+&nbsp;        // Add handlers
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_VERIFIED.getTopic(), this::handleCustomerAccountVerified);</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), this::handleMerchantAccountVerified);</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.PAYMENT_TOKEN_INVALID.getTopic(), this::handlePaymentTokenInvalid);</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_INVALID.getTopic(), this::handleCustomerAccountInvalid);</b>
+<b class="fc">&nbsp;        this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_INVALID.getTopic(), this::handleMerchantAccountInvalid);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @MethodAuthor(author = &quot;Paul Becker&quot;,stdno = &quot;s194702&quot;)
+&nbsp;    public synchronized BankTransferAggregate getOrCreateAggregate(Correlator correlator) throws Exception {
+&nbsp;
+<b class="fc">&nbsp;        if (hasFailure.containsKey(correlator)) {</b>
+<b class="fc">&nbsp;            throw new Exception(&quot;Correlator has Failure&quot;);</b>
+&nbsp;        }
+<b class="fc">&nbsp;        if (!aggregators.containsKey(correlator)) {</b>
+<b class="fc">&nbsp;            aggregators.put(correlator,new BankTransferAggregate(correlator));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return aggregators.get(correlator);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void completePayment(BankTransferAggregate aggregate){
+<b class="fc">&nbsp;        if (aggregate.isComplete()) {</b>
+<b class="fc">&nbsp;            String merchantBankAccount = aggregate.getMerchant().bankAccountNo();</b>
+<b class="fc">&nbsp;            String customerBankAccount = aggregate.getCustomer().bankAccountNo();</b>
+<b class="fc">&nbsp;            String description = &quot;DTUPay\n Used token |&gt; &quot; + aggregate.getPaymentRequest().token();</b>
+<b class="fc">&nbsp;            BigDecimal amount = BigDecimal.valueOf(aggregate.getPaymentRequest().amount());</b>
+&nbsp;
+&nbsp;            Event responseEvent;
+&nbsp;            // SOAP Bank call
+&nbsp;            try {
+<b class="fc">&nbsp;                bankService.transferMoneyFromTo(customerBankAccount, merchantBankAccount, amount, description);</b>
+<b class="fc">&nbsp;                PaymentRecord paymentRecord = new PaymentRecord(customerBankAccount,</b>
+&nbsp;                        merchantBankAccount,aggregate.
+<b class="fc">&nbsp;                        getPaymentRequest().amount(),</b>
+&nbsp;                        description,
+<b class="fc">&nbsp;                        aggregate.getPaymentRequest().token());</b>
+<b class="fc">&nbsp;                responseEvent = new Event(EventTypes.BANK_TRANSFER_CONFIRMED.getTopic(),new Object[]{ paymentRecord, aggregate.getCorrelator() });</b>
+&nbsp;            } catch (BankServiceException_Exception e) {
+<b class="fc">&nbsp;                responseEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(), new Object[] { e.getMessage(), aggregate.getCorrelator() });</b>
+&nbsp;            }
+&nbsp;
+<b class="fc">&nbsp;            mque.publish(responseEvent);</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handlePaymentInitiated(Event event) {
+<b class="fc">&nbsp;        logger.debug(&quot;Received PaymentInitiated event: {}&quot;, event);</b>
+<b class="fc">&nbsp;        PaymentRequest paymentRequest = event.getArgument(0, PaymentRequest.class);</b>
+<b class="fc">&nbsp;        Correlator correlator = event.getArgument(1,Correlator.class);</b>
+&nbsp;        try {
+<b class="fc">&nbsp;            BankTransferAggregate aggregate = getOrCreateAggregate(correlator);</b>
+<b class="fc">&nbsp;            aggregate.setPaymentRequest(paymentRequest);</b>
+<b class="fc">&nbsp;            completePayment(aggregate);</b>
+&nbsp;        } catch (Exception e){
+<b class="fc">&nbsp;            logger.debug(&quot;Payment failed: {}&quot;, e.getMessage());</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;
+&nbsp;    public void handleCustomerAccountVerified(Event event) {
+<b class="fc">&nbsp;        logger.debug(&quot;Received CustomerAccountVerified event: {}&quot;, event);</b>
+<b class="fc">&nbsp;        Customer customer = event.getArgument(0, Customer.class);</b>
+<b class="fc">&nbsp;        Correlator correlator = event.getArgument(1,Correlator.class);</b>
+&nbsp;        try {
+<b class="fc">&nbsp;            BankTransferAggregate aggregate = getOrCreateAggregate(correlator);</b>
+<b class="fc">&nbsp;            aggregate.setCustomer(customer);</b>
+<b class="fc">&nbsp;            completePayment(aggregate);</b>
+&nbsp;        } catch (Exception e) {
+<b class="fc">&nbsp;            logger.debug(&quot;Payment failed: {}&quot;, e.getMessage());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    @MethodAuthor(author = &quot;Paul Becker&quot;,stdno = &quot;s194702&quot;)
+&nbsp;    public void raiseFailure(Correlator correlator) {
+<b class="fc">&nbsp;        hasFailure.put(correlator,true);</b>
+<b class="fc">&nbsp;        aggregators.remove(correlator);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @MethodAuthor(author = &quot;Paul Becker&quot;,stdno = &quot;s194702&quot;)
+&nbsp;    public void handlePaymentTokenInvalid(Event event) {
+<b class="fc">&nbsp;        logger.debug(&quot;Received PaymentTokenInvalid event: {}&quot;, event);</b>
+<b class="fc">&nbsp;        Correlator correlator = event.getArgument(1,Correlator.class);</b>
+<b class="fc">&nbsp;        raiseFailure(correlator);</b>
+<b class="fc">&nbsp;        Event failureEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(),new Object[]{ &quot;Invalid token.&quot;,correlator });</b>
+<b class="fc">&nbsp;        this.mque.publish(failureEvent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleCustomerAccountInvalid(Event event) {
+<b class="fc">&nbsp;        logger.debug(&quot;Received CustomerAccountInvalid event: {}&quot;, event);</b>
+<b class="fc">&nbsp;        Correlator correlator = event.getArgument(1,Correlator.class);</b>
+<b class="fc">&nbsp;        raiseFailure(correlator);</b>
+<b class="fc">&nbsp;        Event failureEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(),new Object[]{ &quot;Customer account invalid.&quot;,correlator });</b>
+<b class="fc">&nbsp;        this.mque.publish(failureEvent);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleMerchantAccountVerified(Event event){
+<b class="fc">&nbsp;        logger.debug(&quot;Received MerchantAccountVerified event: {}&quot;, event);</b>
+<b class="fc">&nbsp;        Merchant merchant = event.getArgument(0, Merchant.class);</b>
+<b class="fc">&nbsp;        Correlator correlator = event.getArgument(1,Correlator.class);</b>
+&nbsp;        try{
+<b class="fc">&nbsp;            BankTransferAggregate aggregate = getOrCreateAggregate(correlator);</b>
+<b class="fc">&nbsp;            aggregate.setMerchant(merchant);</b>
+<b class="fc">&nbsp;            completePayment(aggregate);</b>
+&nbsp;        }catch (Exception e){
+<b class="fc">&nbsp;            logger.debug(&quot;Payment failed: {}&quot;, e.getMessage());</b>
+&nbsp;        }
+&nbsp;
+&nbsp;    }
+&nbsp;
+&nbsp;    public void handleMerchantAccountInvalid(Event event) {
+<b class="fc">&nbsp;        logger.debug(&quot;Received MerchantAccountInvalid event: {}&quot;, event);</b>
+<b class="fc">&nbsp;        Correlator correlator = event.getArgument(1,Correlator.class);</b>
+<b class="fc">&nbsp;        raiseFailure(correlator);</b>
+<b class="fc">&nbsp;        Event failureEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(),new Object[]{ &quot;Merchant account invalid.&quot;,correlator });</b>
+<b class="fc">&nbsp;        this.mque.publish(failureEvent);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>

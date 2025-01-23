@@ -1,0 +1,152 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > TokenGenerationAggregate</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services.token.domain.models</a>
+</div>
+
+<h1>Coverage Summary for Class: TokenGenerationAggregate (dtupay.services.token.domain.models)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">TokenGenerationAggregate</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (2/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services.token.domain.models;
+&nbsp;
+&nbsp;import dtupay.services.token.annotations.ClassAuthor;
+&nbsp;import dtupay.services.token.annotations.MethodAuthor;
+&nbsp;import dtupay.services.token.utilities.Correlator;
+&nbsp;import lombok.EqualsAndHashCode;
+&nbsp;import lombok.Getter;
+&nbsp;import lombok.Setter;
+&nbsp;import lombok.Synchronized;
+&nbsp;
+&nbsp;@ClassAuthor(author = &quot;Paul Becker&quot;, stdno = &quot;&quot;)
+&nbsp;@Getter(onMethod_={@Synchronized})
+&nbsp;@Setter(onMethod_={@Synchronized})
+&nbsp;@EqualsAndHashCode
+&nbsp;public class TokenGenerationAggregate {
+&nbsp;
+<b class="fc">&nbsp;	private Correlator correlator;</b>
+&nbsp;
+&nbsp;	private boolean requestReceived;
+&nbsp;
+<b class="fc">&nbsp;	private int noToken = 0;</b>
+&nbsp;
+&nbsp;	private String customerId;
+&nbsp;
+&nbsp;	private boolean customerVerified;
+&nbsp;
+&nbsp;	private boolean customerHandled;
+<b class="fc">&nbsp;	public TokenGenerationAggregate(Correlator correlator) {</b>
+<b class="fc">&nbsp;		this.correlator = correlator;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Adrian Zvizdenco&quot;, stdno = &quot;s204683&quot;)
+&nbsp;	public synchronized boolean isComplete(){
+<b class="pc">&nbsp;		return requestReceived &amp;&amp; customerId != null &amp;&amp; customerHandled;</b>
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>

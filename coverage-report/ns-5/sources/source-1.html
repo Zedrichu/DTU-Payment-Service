@@ -1,0 +1,307 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > AccountManager</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services.account</a>
+</div>
+
+<h1>Coverage Summary for Class: AccountManager (dtupay.services.account)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">AccountManager</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (15/15)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    76,9%
+  </span>
+  <span class="absValue">
+    (20/26)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (88/88)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services.account;
+&nbsp;
+&nbsp;import dtupay.services.account.annotations.MethodAuthor;
+&nbsp;import dtupay.services.account.domain.AccountRepository;
+&nbsp;import dtupay.services.account.domain.models.Customer;
+&nbsp;import dtupay.services.account.domain.models.Merchant;
+&nbsp;import dtupay.services.account.domain.models.PaymentRequest;
+&nbsp;import dtupay.services.account.utilities.Correlator;
+&nbsp;
+&nbsp;import dtupay.services.account.utilities.EventTypes;
+&nbsp;import messaging.Event;
+&nbsp;import messaging.MessageQueue;
+&nbsp;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;
+&nbsp;public class AccountManager {
+<b class="fc">&nbsp;	private static final Logger logger = LoggerFactory.getLogger(AccountManager.class);</b>
+&nbsp;
+&nbsp;	private MessageQueue mque;
+&nbsp;	private AccountRepository&lt;Customer&gt; customerRepository;
+&nbsp;	private AccountRepository&lt;Merchant&gt; merchantRepository;
+&nbsp;
+<b class="fc">&nbsp;	public AccountManager(MessageQueue mque, AccountRepository&lt;Customer&gt; customerRepository, AccountRepository&lt;Merchant&gt; merchantRepository) {</b>
+<b class="fc">&nbsp;		logger.debug(&quot;Initializing AccountManagementService&quot;);</b>
+<b class="fc">&nbsp;		this.customerRepository = customerRepository;</b>
+<b class="fc">&nbsp;		this.merchantRepository = merchantRepository;</b>
+&nbsp;
+<b class="fc">&nbsp;		this.mque = mque;</b>
+&nbsp;
+&nbsp;		// Add event handlers
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.CUSTOMER_REGISTRATION_REQUESTED.getTopic(), this::handleCustomerRegistrationRequested);</b>
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.MERCHANT_REGISTRATION_REQUESTED.getTopic(), this::handleMerchantRegistrationRequested);</b>
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.PAYMENT_INITIATED.getTopic(), this::handlePaymentInitiated);</b>
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.TOKENS_REQUESTED.getTopic(), this::handleTokensRequested);</b>
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.PAYMENT_TOKEN_VERIFIED.getTopic(), this::handlePaymentTokenVerified);</b>
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), this::handleCustomerDeregistrationRequested);</b>
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.MERCHANT_DEREGISTRATION_REQUESTED.getTopic(), this::handleMerchantDeregistrationRequested);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public void handleCustomerDeregistrationRequested(Event event) {
+<b class="fc">&nbsp;		logger.debug(&quot;Received CustomerDeregistrationRequested event: {}&quot;, event);</b>
+<b class="fc">&nbsp;		var customerId = event.getArgument(0, String.class);</b>
+<b class="fc">&nbsp;		var correlationId = event.getArgument(1, Correlator.class);</b>
+&nbsp;
+&nbsp;		Event newEvent;
+<b class="fc">&nbsp;		if (!customerRepository.exists(customerId)) {</b>
+<b class="fc">&nbsp;			newEvent = new Event(EventTypes.CUSTOMER_DELETED_FAILED.getTopic(), new Object[]{ correlationId });</b>
+<b class="fc">&nbsp;			logger.debug(&quot;Customer deregistration failed: {}&quot;, newEvent);</b>
+&nbsp;
+&nbsp;		} else {
+<b class="fc">&nbsp;			customerRepository.removeAccount(customerId);</b>
+<b class="fc">&nbsp;			newEvent = new Event(EventTypes.CUSTOMER_DELETED.getTopic(), new Object[]{ correlationId });</b>
+<b class="fc">&nbsp;			logger.debug(&quot;Customer deregistered: {}&quot;, newEvent);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		this.mque.publish(newEvent);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public void handleMerchantDeregistrationRequested(Event event) {
+<b class="fc">&nbsp;		logger.debug(&quot;Received MerchantDeregistrationRequested event: {}&quot;, event);</b>
+<b class="fc">&nbsp;		var customerId = event.getArgument(0, String.class);</b>
+<b class="fc">&nbsp;		var correlationId = event.getArgument(1, Correlator.class);</b>
+&nbsp;
+&nbsp;		Event newEvent;
+<b class="fc">&nbsp;		if (!merchantRepository.exists(customerId)) {</b>
+<b class="fc">&nbsp;			newEvent = new Event(EventTypes.MERCHANT_DELETED_FAILED.getTopic(), new Object[]{ correlationId });</b>
+<b class="fc">&nbsp;			logger.debug(&quot;Merchant deregistration failed: {}&quot;, newEvent);</b>
+&nbsp;
+&nbsp;		} else {
+<b class="fc">&nbsp;			merchantRepository.removeAccount(customerId);</b>
+<b class="fc">&nbsp;			newEvent = new Event(EventTypes.MERCHANT_DELETED.getTopic(), new Object[]{ correlationId });</b>
+<b class="fc">&nbsp;			logger.debug(&quot;Merchant deregistered: {}&quot;, newEvent);</b>
+&nbsp;		}
+<b class="fc">&nbsp;		this.mque.publish(newEvent);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Jeppe Mikkelsen&quot;, stdno = &quot;s204708&quot;)
+<b class="fc">&nbsp;	public void handleCustomerRegistrationRequested(Event event) {</b>
+<b class="fc">&nbsp;		logger.debug(&quot;Received CustomerRegistrationRequested event: {}&quot;, event);</b>
+<b class="fc">&nbsp;		var customer = event.getArgument(0, Customer.class);</b>
+&nbsp;		var correlationId = event.getArgument(1, Correlator.class);
+&nbsp;
+<b class="fc">&nbsp;		Event newEvent;</b>
+<b class="fc">&nbsp;		if (validateAccountInfo(customer)) {</b>
+<b class="fc">&nbsp;			newEvent = acceptCustomer(customer, correlationId);</b>
+&nbsp;			logger.debug(&quot;New customer registered: {}&quot;, newEvent);
+<b class="fc">&nbsp;		} else {</b>
+<b class="fc">&nbsp;			newEvent = declineCustomer(customer, correlationId);</b>
+&nbsp;			logger.debug(&quot;New customer declined: {}&quot;, newEvent);
+<b class="fc">&nbsp;		}</b>
+&nbsp;		this.mque.publish(newEvent);
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	public void handleMerchantRegistrationRequested(Event event) {</b>
+<b class="fc">&nbsp;		logger.debug(&quot;Received MerchantRegistrationRequested event: {}&quot;, event);</b>
+<b class="fc">&nbsp;		var merchant = event.getArgument(0, Merchant.class);</b>
+&nbsp;		var correlationId = event.getArgument(1, Correlator.class);
+&nbsp;
+<b class="fc">&nbsp;		Event newEvent;</b>
+<b class="fc">&nbsp;		if (validateAccountInfo(merchant)) {</b>
+<b class="fc">&nbsp;			newEvent = acceptMerchant(merchant, correlationId);</b>
+&nbsp;			logger.debug(&quot;New merchant registered: {}&quot;, newEvent);
+<b class="fc">&nbsp;		} else {</b>
+<b class="fc">&nbsp;			newEvent = declineMerchant(merchant, correlationId);</b>
+&nbsp;			logger.debug(&quot;New merchant declined: {}&quot;, newEvent);
+<b class="fc">&nbsp;		}</b>
+&nbsp;		this.mque.publish(newEvent);
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Adrian Zvizdenco&quot;, stdno = &quot;s204683&quot;)
+<b class="fc">&nbsp;	private Event acceptCustomer(Customer customer, Correlator correlationId) {</b>
+<b class="fc">&nbsp;		String id = customerRepository.createAccount(customer);</b>
+<b class="fc">&nbsp;		var registeredCustomer = new Customer(customer.firstName(), customer.lastName(), customer.cpr(), customer.bankAccountNo(), id);</b>
+&nbsp;		return new Event(EventTypes.CUSTOMER_ACCOUNT_CREATED.getTopic(), new Object[]{ registeredCustomer, correlationId });
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private Event declineCustomer(Customer customer, Correlator correlationId) {</b>
+&nbsp;		return new Event(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), new Object[]{
+&nbsp;					&quot;Account creation failed: Provided customer must have a valid bank account number and CPR&quot;, correlationId
+&nbsp;		});
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private Event acceptMerchant(Merchant merchant, Correlator correlationId) {</b>
+<b class="fc">&nbsp;		String id = merchantRepository.createAccount(merchant);</b>
+<b class="fc">&nbsp;		var registeredMerchant = new Merchant(merchant.firstName(), merchant.lastName(), merchant.cpr(), merchant.bankAccountNo(), id);</b>
+&nbsp;		return new Event(EventTypes.MERCHANT_ACCOUNT_CREATED.getTopic(), new Object[]{ registeredMerchant, correlationId });
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	private Event declineMerchant(Merchant merchant, Correlator correlationId) {</b>
+&nbsp;		return new Event(EventTypes.MERCHANT_ACCOUNT_CREATION_FAILED.getTopic(), new Object[]{
+&nbsp;				&quot;Account creation failed: Provided merchant must have a valid bank account number and CPR&quot;, correlationId
+&nbsp;		});
+&nbsp;	}
+&nbsp;
+<b class="pc">&nbsp;	private boolean validateAccountInfo(Customer customer) {</b>
+<b class="pc">&nbsp;		boolean cprInvalid = customer.cpr() == null || customer.cpr().isEmpty();</b>
+<b class="pc">&nbsp;		boolean bankAccountInvalid = customer.bankAccountNo() == null || customer.bankAccountNo().isEmpty();</b>
+&nbsp;		return ! (cprInvalid || bankAccountInvalid);
+&nbsp;	}
+<b class="pc">&nbsp;	private boolean validateAccountInfo(Merchant merchant){</b>
+<b class="pc">&nbsp;		boolean cprInvalid = merchant.cpr() == null || merchant.cpr().isEmpty();</b>
+<b class="pc">&nbsp;		boolean bankAccountInvalid = merchant.bankAccountNo() == null || merchant.bankAccountNo().isEmpty();</b>
+&nbsp;		return ! (cprInvalid || bankAccountInvalid);
+&nbsp;	}
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;	public void handlePaymentInitiated(Event event) {</b>
+<b class="fc">&nbsp;		String merchantId = event.getArgument(0, PaymentRequest.class).merchantId();</b>
+&nbsp;		var correlationId = event.getArgument(1, Correlator.class);
+<b class="fc">&nbsp;		Event newEvent;</b>
+<b class="fc">&nbsp;		if (!merchantRepository.exists(merchantId)) {</b>
+&nbsp;			newEvent = new Event(EventTypes.MERCHANT_ACCOUNT_INVALID.getTopic(), new Object[]{ &quot;Merchant not registered.&quot;, correlationId });
+<b class="fc">&nbsp;		}else{</b>
+<b class="fc">&nbsp;			Merchant merchant = merchantRepository.getAccount(merchantId);</b>
+&nbsp;			newEvent = new Event(EventTypes.MERCHANT_ACCOUNT_VERIFIED.getTopic(), new Object[]{ merchant, correlationId });
+<b class="fc">&nbsp;		}</b>
+<b class="fc">&nbsp;		logger.debug(&quot;New merchant verified: {}&quot;, newEvent);</b>
+&nbsp;		this.mque.publish(newEvent);
+&nbsp;
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;    public void handlePaymentTokenVerified(Event event) {</b>
+<b class="fc">&nbsp;		String customerId = event.getArgument(0, String.class);</b>
+&nbsp;		var correlationId = event.getArgument(1, Correlator.class);
+<b class="fc">&nbsp;		Event newEvent;</b>
+<b class="fc">&nbsp;		if (!customerRepository.exists(customerId)) {</b>
+&nbsp;			newEvent = new Event(EventTypes.CUSTOMER_ACCOUNT_INVALID.getTopic(), new Object[]{ &quot;Customer not registered.&quot;, correlationId });
+<b class="fc">&nbsp;		}else{</b>
+<b class="fc">&nbsp;			Customer customer = customerRepository.getAccount(customerId);</b>
+&nbsp;			newEvent = new Event(EventTypes.CUSTOMER_ACCOUNT_VERIFIED.getTopic(), new Object[]{ customer, correlationId });
+<b class="fc">&nbsp;		}</b>
+<b class="fc">&nbsp;		logger.debug(&quot;New customer verified: {}&quot;, newEvent);</b>
+&nbsp;		this.mque.publish(newEvent);
+&nbsp;	}
+&nbsp;
+<b class="fc">&nbsp;	public void handleTokensRequested(Event event) {</b>
+<b class="fc">&nbsp;		logger.debug(&quot;Received TokensRequested event: {}&quot;, event);</b>
+<b class="fc">&nbsp;		var customerId = event.getArgument(0, String.class);</b>
+&nbsp;		var correlationId = event.getArgument(2, Correlator.class);
+<b class="fc">&nbsp;</b>
+&nbsp;		Event newEvent = new Event(EventTypes.TOKEN_ACCOUNT_VERIFIED.getTopic(),
+<b class="fc">&nbsp;				new Object[]{correlationId});</b>
+<b class="fc">&nbsp;		if (!customerRepository.exists(customerId)) {</b>
+&nbsp;			newEvent = new Event(EventTypes.TOKEN_ACCOUNT_INVALID.getTopic(), new Object[]{correlationId});
+&nbsp;		};
+<b class="fc">&nbsp;</b>
+&nbsp;		this.mque.publish(newEvent);
+&nbsp;	}
+&nbsp;}
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>

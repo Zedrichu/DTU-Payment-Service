@@ -1,0 +1,256 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CustomerService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services.facade.domain</a>
+</div>
+
+<h1>Coverage Summary for Class: CustomerService (dtupay.services.facade.domain)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CustomerService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (20/20)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96,8%
+  </span>
+  <span class="absValue">
+    (92/95)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services.facade.domain;
+&nbsp;
+&nbsp;import com.google.gson.Gson;
+&nbsp;import com.google.gson.internal.LinkedTreeMap;
+&nbsp;import dtupay.services.facade.annotations.MethodAuthor;
+&nbsp;import dtupay.services.facade.domain.models.Customer;
+&nbsp;import dtupay.services.facade.domain.models.Token;
+&nbsp;import dtupay.services.facade.domain.models.views.CustomerView;
+&nbsp;import dtupay.services.facade.exception.AccountCreationException;
+&nbsp;import dtupay.services.facade.exception.AccountDeletionException;
+&nbsp;import dtupay.services.facade.exception.TokenRequestException;
+&nbsp;import dtupay.services.facade.utilities.Correlator;
+&nbsp;import dtupay.services.facade.utilities.EventTypes;
+&nbsp;import messaging.Event;
+&nbsp;import messaging.MessageQueue;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.CompletableFuture;
+&nbsp;import java.util.concurrent.CompletionException;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;
+&nbsp;public class CustomerService {
+&nbsp;
+<b class="fc">&nbsp;  private Logger logger = LoggerFactory.getLogger(CustomerService.class);</b>
+&nbsp;  private MessageQueue mque;
+<b class="fc">&nbsp;  private Map&lt;Correlator, CompletableFuture&lt;Customer&gt;&gt; customerCorrelations = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;  private Map&lt;Correlator, CompletableFuture&lt;ArrayList&lt;Token&gt;&gt;&gt; tokensCorrelations = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;  private Map&lt;Correlator, CompletableFuture&lt;Boolean&gt;&gt; deregistrationCorrelations = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;  private Map&lt;Correlator, List&lt;Event&gt;&gt; deregistrationEvents = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;  private Map&lt;Correlator, CompletableFuture&lt;ArrayList&lt;CustomerView&gt;&gt;&gt; customerReportCorrelations = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;  public CustomerService(MessageQueue messageQueue) {</b>
+<b class="fc">&nbsp;    logger.info(&quot;facade.CustomerService instantiated&quot;);</b>
+&nbsp;
+<b class="fc">&nbsp;    this.mque = messageQueue;</b>
+&nbsp;
+<b class="fc">&nbsp;    this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATED.getTopic(), this::handleCustomerAccountCreated);</b>
+<b class="fc">&nbsp;    this.mque.addHandler(EventTypes.CUSTOMER_ACCOUNT_CREATION_FAILED.getTopic(), this::handleCustomerAccountCreationFailed);</b>
+<b class="fc">&nbsp;    this.mque.addHandler(EventTypes.TOKENS_GENERATED.getTopic(), this::handleTokensGenerated);</b>
+<b class="fc">&nbsp;    this.mque.addHandler(EventTypes.TOKEN_GENERATION_FAILED.getTopic(), this::handleTokenGenerationFailed);</b>
+<b class="fc">&nbsp;    this.mque.addHandler(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), this::handleCustomerDeregistered);</b>
+<b class="fc">&nbsp;    this.mque.addHandler(EventTypes.CUSTOMER_DELETED.getTopic(), this::handleCustomerDeregistered);</b>
+<b class="fc">&nbsp;    this.mque.addHandler(EventTypes.CUSTOMER_DELETE_FAILED.getTopic(),this::handleCustomerDeregistered);</b>
+<b class="fc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public Customer register(Customer customer) throws CompletionException {
+<b class="fc">&nbsp;    logger.debug(&quot;Registration request for: {}&quot;, customer);</b>
+<b class="fc">&nbsp;    var correlationId = Correlator.random();</b>
+<b class="fc">&nbsp;    customerCorrelations.put(correlationId, new CompletableFuture&lt;&gt;());</b>
+<b class="fc">&nbsp;    Event event = new Event(EventTypes.CUSTOMER_REGISTRATION_REQUESTED.getTopic(),</b>
+<b class="fc">&nbsp;          new Object[]{ customer, correlationId });</b>
+<b class="fc">&nbsp;    mque.publish(event);</b>
+<b class="fc">&nbsp;    return customerCorrelations.get(correlationId).join();</b>
+<b class="fc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public ArrayList&lt;Token&gt; requestTokens(int noTokens, String customerId) throws CompletionException {
+<b class="fc">&nbsp;    logger.debug(&quot;Requesting tokens for: {}&quot;, customerId);</b>
+<b class="fc">&nbsp;    var correlationId = Correlator.random();</b>
+<b class="fc">&nbsp;    tokensCorrelations.put(correlationId, new CompletableFuture&lt;&gt;());</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;    Event event = new Event(EventTypes.TOKENS_REQUESTED.getTopic(), new Object[]{customerId, noTokens, correlationId});</b>
+<b class="fc">&nbsp;    mque.publish(event);</b>
+<b class="fc">&nbsp;    return tokensCorrelations.get(correlationId).join();</b>
+<b class="fc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void handleCustomerAccountCreated(Event e) {
+<b class="fc">&nbsp;    logger.debug(&quot;Received CustomerAccountCreated event: {}: &quot;, e);</b>
+<b class="fc">&nbsp;    var reqCustomer = e.getArgument(0, Customer.class);</b>
+<b class="fc">&nbsp;    var correlationId = e.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;    customerCorrelations.get(correlationId).complete(reqCustomer);</b>
+<b class="fc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  @MethodAuthor(author = &quot;Adrian Zvizdenco&quot;, stdno = &quot;s204683&quot;)
+&nbsp;  public void handleTokensGenerated(Event e) {
+<b class="fc">&nbsp;    logger.debug(&quot;Received TokensGenerated event: {}&quot;, e);</b>
+<b class="fc">&nbsp;    ArrayList&lt;LinkedTreeMap&lt;String, Object&gt;&gt; list = e.getArgument(0, ArrayList.class);</b>
+<b class="fc">&nbsp;    var correlationId = e.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;    Gson gson = new Gson();</b>
+<b class="fc">&nbsp;    List&lt;Token&gt; tokenList = list.stream()</b>
+<b class="fc">&nbsp;            .map(token -&gt; gson.fromJson(gson.toJson(token), Token.class))</b>
+<b class="fc">&nbsp;            .toList();</b>
+<b class="fc">&nbsp;    ArrayList&lt;Token&gt; tokens = new ArrayList&lt;Token&gt;(tokenList);</b>
+<b class="fc">&nbsp;    tokensCorrelations.get(correlationId).complete(tokens);</b>
+<b class="fc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  @MethodAuthor(author = &quot;Jeppe Mikkelsen&quot;, stdno = &quot;s204708&quot;)
+&nbsp;  public boolean deregister(String customerId) throws CompletionException {
+<b class="fc">&nbsp;     logger.debug(&quot;Deregistering customer with ID: {}&quot;, customerId);</b>
+<b class="fc">&nbsp;     var correlationId = Correlator.random();</b>
+<b class="fc">&nbsp;     deregistrationCorrelations.put(correlationId, new CompletableFuture&lt;&gt;());</b>
+<b class="fc">&nbsp;     Event event = new Event(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), new Object[]{ customerId, correlationId });</b>
+<b class="fc">&nbsp;     mque.publish(event);</b>
+<b class="fc">&nbsp;     return deregistrationCorrelations.get(correlationId).join();</b>
+<b class="nc">&nbsp;  }</b>
+<b class="nc">&nbsp;</b>
+<b class="nc">&nbsp;  @MethodAuthor(author = &quot;Paul Becker&quot;, stdno = &quot;s194702&quot;)</b>
+&nbsp;  public synchronized boolean logDeregistrationEventCheckCompletion(Event event) {
+<b class="fc">&nbsp;    var correlationId = event.getArgument(0, Correlator.class);</b>
+<b class="fc">&nbsp;    if (deregistrationEvents.containsKey(correlationId)) {</b>
+<b class="fc">&nbsp;      deregistrationEvents.get(correlationId).add(event);</b>
+<b class="fc">&nbsp;    } else {</b>
+<b class="fc">&nbsp;      deregistrationEvents.put(correlationId, new ArrayList&lt;Event&gt;());</b>
+<b class="fc">&nbsp;      deregistrationEvents.get(correlationId).add(event);</b>
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;    return deregistrationEvents.get(correlationId).size() &gt; 1;</b>
+&nbsp;  }
+&nbsp;
+&nbsp;  @MethodAuthor(author = &quot;Jeppe Mikkelsen&quot;, stdno = &quot;s204708&quot;)
+<b class="fc">&nbsp;  public synchronized void handleCustomerDeregistered(Event event) {</b>
+<b class="fc">&nbsp;    logger.debug(&quot;Received Customer Deregistered event: {}&quot;, event);</b>
+<b class="fc">&nbsp;    var correlationId = event.getArgument(0, Correlator.class);</b>
+<b class="fc">&nbsp;    if (logDeregistrationEventCheckCompletion(event)) {</b>
+<b class="fc">&nbsp;      boolean deregisterSuccess = deregistrationEvents.get(correlationId).stream().allMatch(e -&gt; e.getTopic().equals(EventTypes.CUSTOMER_DELETED.getTopic()) ||</b>
+<b class="fc">&nbsp;              e.getTopic().equals(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic()));</b>
+<b class="fc">&nbsp;      if (deregisterSuccess) {</b>
+<b class="fc">&nbsp;        deregistrationCorrelations.get(correlationId).complete(true);</b>
+&nbsp;      } else {
+<b class="fc">&nbsp;        deregistrationCorrelations.get(correlationId).completeExceptionally(new AccountDeletionException(&quot;Customer Deregistration Failed&quot;));</b>
+&nbsp;      };
+<b class="fc">&nbsp;    }</b>
+<b class="fc">&nbsp;  }</b>
+<b class="fc">&nbsp;</b>
+<b class="fc">&nbsp;  public void handleCustomerAccountCreationFailed(Event event) {</b>
+<b class="fc">&nbsp;    logger.debug(&quot;Received CustomerAccountCreationFailed event: {}&quot;, event);</b>
+<b class="fc">&nbsp;    var errorMessage = event.getArgument(0, String.class);</b>
+<b class="fc">&nbsp;    var correlationId = event.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;    customerCorrelations.get(correlationId).completeExceptionally(new AccountCreationException(errorMessage));</b>
+<b class="fc">&nbsp;  }</b>
+&nbsp;
+&nbsp;  public void handleTokenGenerationFailed(Event event) {
+<b class="fc">&nbsp;    logger.debug(&quot;Received TokensGenerationFailed event: {}&quot;, event);</b>
+<b class="fc">&nbsp;    var errorMessage = event.getArgument(0, String.class);</b>
+<b class="fc">&nbsp;    var correlationId = event.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;    tokensCorrelations.get(correlationId).completeExceptionally(new TokenRequestException(errorMessage));</b>
+<b class="fc">&nbsp;  }</b>
+<b class="fc">&nbsp;}</b>
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>

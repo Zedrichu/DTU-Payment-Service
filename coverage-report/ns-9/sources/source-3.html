@@ -1,0 +1,260 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > ReportService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services.facade.domain</a>
+</div>
+
+<h1>Coverage Summary for Class: ReportService (dtupay.services.facade.domain)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">ReportService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (40/40)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">ReportService$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ReportService$2</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+  <tr>
+    <td class="name">ReportService$3</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (10/10)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (43/43)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services.facade.domain;
+&nbsp;
+&nbsp;import dtupay.services.facade.annotations.ClassAuthor;
+&nbsp;import dtupay.services.facade.annotations.MethodAuthor;
+&nbsp;import dtupay.services.facade.domain.models.Report;
+&nbsp;import dtupay.services.facade.domain.models.views.CustomerView;
+&nbsp;import dtupay.services.facade.domain.models.views.ManagerView;
+&nbsp;import dtupay.services.facade.domain.models.views.MerchantView;
+&nbsp;import dtupay.services.facade.utilities.Correlator;
+&nbsp;import dtupay.services.facade.utilities.EventTypes;
+&nbsp;import messaging.Event;
+&nbsp;import messaging.MessageQueue;
+&nbsp;import org.slf4j.Logger;
+&nbsp;import org.slf4j.LoggerFactory;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.CompletableFuture;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;
+&nbsp;@ClassAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;public class ReportService {
+&nbsp;
+<b class="fc">&nbsp;	private Logger logger = LoggerFactory.getLogger(MerchantService.class);</b>
+&nbsp;	private MessageQueue mque;
+<b class="fc">&nbsp;	private Map&lt;Correlator, CompletableFuture&lt;Report&lt;CustomerView&gt;&gt;&gt; customerReportCorrelations = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;	private Map&lt;Correlator, CompletableFuture&lt;Report&lt;MerchantView&gt;&gt;&gt; merchantReportCorrelations = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;	private Map&lt;Correlator, CompletableFuture&lt;Report&lt;ManagerView&gt;&gt;&gt; managerReportCorrelations = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+<b class="fc">&nbsp;	public ReportService(MessageQueue messageQueue) {</b>
+<b class="fc">&nbsp;		logger.info(&quot;facade.MerchantService instantiated&quot;);</b>
+<b class="fc">&nbsp;		this.mque = messageQueue;</b>
+&nbsp;
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.CUSTOMER_REPORT_GENERATED.getTopic(), this::handleCustomerReportGenerated);</b>
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.MERCHANT_REPORT_GENERATED.getTopic(), this::handleMerchantReportGenerated);</b>
+<b class="fc">&nbsp;		this.mque.addHandler(EventTypes.MANAGER_REPORT_GENERATED.getTopic(), this::handleManagerReportGenerated);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;	public Report&lt;CustomerView&gt; getCustomerReport(String id) {
+<b class="fc">&nbsp;		logger.debug(&quot;Customer report request for: {}&quot;, id);</b>
+<b class="fc">&nbsp;		var correlationId = Correlator.random();</b>
+<b class="fc">&nbsp;		customerReportCorrelations.put(correlationId, new CompletableFuture&lt;&gt;());</b>
+<b class="fc">&nbsp;		Event event = new Event(EventTypes.CUSTOMER_REPORT_REQUESTED.getTopic(), new Object[] { id, correlationId });</b>
+<b class="fc">&nbsp;		mque.publish(event);</b>
+<b class="fc">&nbsp;		return customerReportCorrelations.get(correlationId).join();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public Report&lt;MerchantView&gt; getMerchantReport(String id) {
+<b class="fc">&nbsp;		logger.debug(&quot;Merchant report request for: {}&quot;, id);</b>
+<b class="fc">&nbsp;		var correlationId = Correlator.random();</b>
+<b class="fc">&nbsp;		merchantReportCorrelations.put(correlationId, new CompletableFuture&lt;&gt;());</b>
+<b class="fc">&nbsp;		Event event = new Event(EventTypes.MERCHANT_REPORT_REQUESTED.getTopic(), new Object[] { id, correlationId });</b>
+<b class="fc">&nbsp;		mque.publish(event);</b>
+<b class="fc">&nbsp;		return merchantReportCorrelations.get(correlationId).join();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;	public Report&lt;ManagerView&gt; getManagerReport() {
+<b class="fc">&nbsp;		logger.debug(&quot;Manager report request&quot;);</b>
+<b class="fc">&nbsp;		var correlationId = Correlator.random();</b>
+<b class="fc">&nbsp;		managerReportCorrelations.put(correlationId, new CompletableFuture&lt;&gt;());</b>
+<b class="fc">&nbsp;		Event event = new Event(EventTypes.MANAGER_REPORT_REQUESTED.getTopic(), new Object[] { correlationId });</b>
+<b class="fc">&nbsp;		mque.publish(event);</b>
+<b class="fc">&nbsp;		return managerReportCorrelations.get(correlationId).join();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;	public void handleCustomerReportGenerated(Event event) {
+<b class="fc">&nbsp;		Report&lt;CustomerView&gt; customerReport = event.getArgument(0,</b>
+<b class="fc">&nbsp;				new Report&lt;CustomerView&gt;(new ArrayList&lt;&gt;()) {}.getClass().getGenericSuperclass());</b>
+<b class="fc">&nbsp;		var core = event.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;		customerReportCorrelations.get(core).complete(customerReport);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;	public void handleMerchantReportGenerated(Event event) {
+<b class="fc">&nbsp;		Report&lt;MerchantView&gt; merchantReport = event.getArgument(0,</b>
+<b class="fc">&nbsp;				new Report&lt;MerchantView&gt;(new ArrayList&lt;&gt;()) {}.getClass().getGenericSuperclass());</b>
+<b class="fc">&nbsp;		var core = event.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;		merchantReportCorrelations.get(core).complete(merchantReport);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Jonas Kjeldsen&quot;, stdno = &quot;s204713&quot;)
+&nbsp;	public void handleManagerReportGenerated(Event event) {
+<b class="fc">&nbsp;		Report&lt;ManagerView&gt; managerReport = event.getArgument(0,</b>
+<b class="fc">&nbsp;				new Report&lt;ManagerView&gt;(new ArrayList&lt;&gt;()) {}.getClass().getGenericSuperclass());</b>
+<b class="fc">&nbsp;		var core = event.getArgument(1, Correlator.class);</b>
+<b class="fc">&nbsp;		managerReportCorrelations.get(core).complete(managerReport);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>
