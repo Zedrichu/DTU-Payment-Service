@@ -32,6 +32,7 @@ public class ReportingManager {
         this.messageQueue.addHandler(EventTypes.MANAGER_REPORT_REQUESTED.getTopic(), this::handleManagerReportRequested);
     }
 
+    // Handle the bank transfer confirmed event and stores in repositories
     public void handleBankTransferConfirmed(Event event) {
         logger.debug("Received BankTransferConfirmed event: {}", event);
         var paymentRecord = event.getArgument(0, PaymentRecord.class);
@@ -40,6 +41,7 @@ public class ReportingManager {
         merchantReportRepository.addView(paymentRecord.merchantId(), factory.createMerchantView(paymentRecord));
     }
 
+    // Handle the customer report request
     public void handleCustomerReportRequested(Event event) {
         logger.debug("Received CustomerRecordRequested event");
 
@@ -54,6 +56,7 @@ public class ReportingManager {
         this.messageQueue.publish(response);
     }
 
+    // Handle the merchant report request
     public void handleMerchantReportRequested(Event event) {
         logger.debug("Received MerchantRecordRequested event");
 
@@ -65,6 +68,7 @@ public class ReportingManager {
         this.messageQueue.publish(response);
     }
 
+    // Handle the manager report request
     public void handleManagerReportRequested(Event event) {
         logger.debug("Received ManagerReportRequested event");
         var correlationId = event.getArgument(0, Correlator.class);

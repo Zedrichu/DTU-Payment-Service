@@ -3,6 +3,7 @@ package dtupay.services;
 import dtupay.model.PaymentRequest;
 import dtupay.model.Token;
 import dtupay.model.views.CustomerView;
+import dtupay.model.views.ManagerView;
 import dtupay.model.views.MerchantView;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -31,6 +32,12 @@ public class ReportService {
 				path("/merchants").
 				path(merchantId).request().get();
 		return response.readEntity(new GenericType<ArrayList<MerchantView>>() {});
+	}
+
+	public ArrayList<ManagerView> getManagerReport() {
+		Response response = baseURL.path("/reports").
+				path("/manager").request().get();
+		return response.readEntity(new GenericType<ArrayList<ManagerView>>() {});
 	}
 
 //	public PaymentRequest request()

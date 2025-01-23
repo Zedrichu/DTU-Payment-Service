@@ -11,6 +11,5 @@ Feature: dtupay.E2E DTUPay Reporting
     Then the merchant report is retrieved
 
   Scenario: Successful Reporting Generation for Manager
-    Given a manager registered in DTUPay for reporting
     When the manager requests a report
     Then the manager report is retrieved

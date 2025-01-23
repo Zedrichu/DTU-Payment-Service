@@ -48,7 +48,7 @@ public class ReportsResource {
 	@Path("/manager")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getManagerReport() {
-		logger.info("manager report resource accessed: {}");
+		logger.info("manager report resource accessed");
 		Report<ManagerView> managerRep = reportService.getManagerReport();
 		return Response.ok().entity(managerRep.getEntries()).build();
 	}

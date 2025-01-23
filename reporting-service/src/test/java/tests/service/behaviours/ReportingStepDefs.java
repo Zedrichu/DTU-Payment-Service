@@ -84,7 +84,7 @@ public class ReportingStepDefs {
   @When("the customer report is requested with for non-existing id")
   public void theCustomerReportIsRequestedWithForNonExistingId() {
     EventTypes eventType = EventTypes.CUSTOMER_REPORT_REQUESTED;
-    reportingManager.handleCustomerReportRequested(new Event(eventType.getTopic(), new Object[] {"cId", correlator}));
+    reportingManager.handleCustomerReportRequested(new Event(eventType.getTopic(), new Object[] {"NonExistingId", correlator}));
 
   }
 
@@ -117,4 +117,50 @@ public class ReportingStepDefs {
     assertTrue(merchantReport.getEntries().contains(merchantView));
   }
 
+  @When("the manager report is requested")
+  public void theManagerReportIsRequested() {
+    EventTypes eventType = EventTypes.MANAGER_REPORT_REQUESTED;
+    reportingManager.handleManagerReportRequested(new Event(eventType.getTopic(), new Object[] {correlator}));
+  }
+
+  @Then("the manager report is received")
+  public void theManagerReportIsReceived() {
+    EventTypes eventType = EventTypes.MANAGER_REPORT_GENERATED;
+    ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+    verify(queue).publish(eventCaptor.capture());
+    Event receivedEvent = eventCaptor.getValue();
+    managerReport = receivedEvent.getArgument(0,
+            new Report<ManagerView>(new ArrayList<>()) {}.getClass().getGenericSuperclass());
+
+    assertEquals(eventType.getTopic(), receivedEvent.getTopic());
+    assertEquals(correlator, receivedEvent.getArgument(1, Correlator.class));
+  }
+
+  @And("the payment log is in the manager report")
+  public void thePaymentLogIsInTheManagerReport() {
+    ManagerView managerView = new ManagerView(paymentRecord.customerId(),paymentRecord.merchantId(),paymentRecord.token(),paymentRecord.amount());
+    assertTrue(managerReport.getEntries().contains(managerView));
+  }
+
+  @When("the merchant report is requested with for non-existing id")
+  public void theMerchantReportIsRequestedWithForNonExistingId() {
+    EventTypes eventType = EventTypes.MERCHANT_REPORT_REQUESTED;
+    reportingManager.handleMerchantReportRequested(new Event(eventType.getTopic(), new Object[] {"NonExistingId", correlator}));
+  }
+
+  @And("the payment log is empty in the merchant report")
+  public void thePaymentLogIsEmptyInTheMerchantReport() {
+    assertTrue(merchantReport.getEntries().isEmpty());
+  }
+
+  @When("the manager report is requested with no entries")
+  public void theManagerReportIsRequestedWithNoEntries() {
+    EventTypes eventType = EventTypes.MANAGER_REPORT_REQUESTED;
+    reportingManager.handleManagerReportRequested(new Event(eventType.getTopic(), new Object[] {correlator}));
+  }
+
+  @And("the payment log is empty in the manager report")
+  public void thePaymentLogIsEmptyInTheManagerReport() {
+    assertTrue(managerReport.getEntries().isEmpty());
+  }
 }

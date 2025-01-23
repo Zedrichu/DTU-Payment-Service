@@ -3,6 +3,7 @@ package tests.dtupay;
 import dtupay.model.Customer;
 import dtupay.model.Merchant;
 import dtupay.model.views.CustomerView;
+import dtupay.model.views.ManagerView;
 import dtupay.model.views.MerchantView;
 import dtupay.services.CustomerService;
 import dtupay.services.MerchantService;
@@ -22,6 +23,7 @@ public class ReportingStepDefs {
 	private ReportService reportService = new ReportService();
 	private ArrayList<CustomerView> responseCustomer;
 	private ArrayList<MerchantView> responseMerchant;
+	private ArrayList<ManagerView> responseManager;
 	private Merchant registeredMerchant;
 	private Exception exception;
 
@@ -55,5 +57,15 @@ public class ReportingStepDefs {
 	@Then("the merchant report is retrieved")
 	public void theMerchantReportIsRetrieved() {
 		assertNotNull(responseMerchant);
+	}
+
+	@When("the manager requests a report")
+	public void theManagerRequestsAReport() {
+		responseManager = reportService.getManagerReport();
+	}
+
+	@Then("the manager report is retrieved")
+	public void theManagerReportIsRetrieved() {
+		assertNotNull(responseManager);
 	}
 }
