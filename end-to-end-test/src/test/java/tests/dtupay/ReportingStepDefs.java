@@ -1,17 +1,22 @@
 package tests.dtupay;
 
 import dtupay.model.Customer;
+import dtupay.model.views.CustomerView;
 import dtupay.services.CustomerService;
 import dtupay.services.ReportService;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 
+import java.util.ArrayList;
+
+import static org.junit.Assert.assertNotNull;
+
 public class ReportingStepDefs {
 	private CustomerService customerService = new CustomerService();
 	private Customer registeredCustomer;
 	private ReportService reportService = new ReportService();
-	private String response;
+	private ArrayList<CustomerView> responseCustomer;
 	private Exception exception;
 
 	@Given("a customer registered in DTUPay for reporting")
@@ -22,15 +27,11 @@ public class ReportingStepDefs {
 
 	@When("the customer requests a report")
 	public void the_customer_requests_a_report() {
-		try {
-			response = reportService.getCustomerReport(registeredCustomer.payId());
-		} catch (Exception e) {
-			exception = e;
-		}
+		responseCustomer = reportService.getCustomerReport(registeredCustomer.payId());
 	}
 
 	@Then("the customer report is retrieved")
 	public void the_customer_report_is_retrieved() {
-
+		assertNotNull(responseCustomer);
 	}
 }

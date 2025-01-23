@@ -28,7 +28,8 @@ public class CustomerTokenResource {
     private CustomerService customerService = new CustomerServiceFactory().getService();
 
 
-    @GET
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
             summary = "Request tokens for a customer",
@@ -63,7 +64,7 @@ public class CustomerTokenResource {
                     required = true,
                     example = "5"
             )
-            @QueryParam("amount") int amount) {
+            int amount) {
         logger.info("Received request of {} tokens for customer with id {}", amount, customerId);
         try {
           ArrayList<Token> tokenList = customerService.requestTokens(amount, customerId);

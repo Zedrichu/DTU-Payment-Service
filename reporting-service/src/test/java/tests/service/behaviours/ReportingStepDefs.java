@@ -76,6 +76,18 @@ public class ReportingStepDefs {
 
   }
 
+  @When("the customer report is requested with for non-existing id")
+  public void theCustomerReportIsRequestedWithForNonExistingId() {
+    EventTypes eventType = EventTypes.CUSTOMER_REPORT_REQUESTED;
+    reportingManager.handleCustomerReportRequested(new Event(eventType.getTopic(), new Object[] {"cId", correlator}));
+
+  }
+
+  @And("the payment log is empty in the customer report")
+  public void thePaymentLogIsEmptyInTheCustomerReport() {
+    assertTrue(customerReport.getEntries().isEmpty());
+  }
+
 //  @Then("the payment history is updated")
 //  public void thePaymentHistoryIsUpdated() {
 //    reportingManager.

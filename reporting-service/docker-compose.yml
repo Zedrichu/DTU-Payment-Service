@@ -1,5 +1,5 @@
 services:
-  payment-management:
+  reporting:
     image: reporting-service
     build:
       context: .

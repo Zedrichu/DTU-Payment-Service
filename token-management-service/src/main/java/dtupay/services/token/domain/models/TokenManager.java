@@ -86,7 +86,7 @@ public class TokenManager {
             aggregators.remove(aggregate.getCorrelator());
         }
     }
-
+    @MethodAuthor(author = "Jonas Kjeldsen", stdno = "s204713")
     public void handleTokensRequested(Event event){
         logger.debug("Received TokensRequest event: {}", event);
 

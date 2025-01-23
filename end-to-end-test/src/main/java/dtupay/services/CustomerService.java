@@ -38,9 +38,8 @@ public class CustomerService {
               .path("/customers")
               .path(customerId)
               .path("/tokens")
-              .queryParam("amount", noTokens)
               .request()
-              .get();
+              .post(Entity.entity(noTokens,MediaType.APPLICATION_JSON));
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
         throw new TokenRequestException(response.readEntity(String.class));

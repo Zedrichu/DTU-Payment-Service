@@ -5,3 +5,8 @@ Feature: Reporting Service
     When the customer report is requested
     Then the customer report is received
     And the payment log is in the customer report
+
+  Scenario: Successful Payment History with No Entries
+    When the customer report is requested with for non-existing id
+    Then the customer report is received
+    And the payment log is empty in the customer report

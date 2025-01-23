@@ -41,3 +41,10 @@ services:
     depends_on:
       rabbitMq:
         condition: service_healthy
+
+  reporting:
+    image: reporting-service
+    container_name: reporting
+    depends_on:
+      rabbitMq:
+        condition: service_healthy

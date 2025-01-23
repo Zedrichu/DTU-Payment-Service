@@ -4,7 +4,7 @@ docker image prune -f
 
 cd ..
 
-for dir in messaging-utilities dtupay-facade account-management-service token-management-service payment-management-service; do
+for dir in messaging-utilities dtupay-facade account-management-service token-management-service payment-management-service reporting-service; do
   pushd $dir
   ./build.sh
   popd
@@ -16,7 +16,7 @@ docker compose up -d rabbitMq
 
 sleep 3
 
-docker compose up -d account-management token-management payment-management
+docker compose up -d account-management token-management payment-management reporting
 
 sleep 1
 

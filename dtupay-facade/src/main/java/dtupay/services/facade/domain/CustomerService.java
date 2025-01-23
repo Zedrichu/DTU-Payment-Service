@@ -5,6 +5,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import dtupay.services.facade.annotations.MethodAuthor;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Token;
+import dtupay.services.facade.domain.models.views.CustomerView;
 import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.exception.AccountDeletionException;
 import dtupay.services.facade.exception.TokenRequestException;
@@ -30,6 +31,7 @@ public class CustomerService {
   private Map<Correlator, CompletableFuture<ArrayList<Token>>> tokensCorrelations = new ConcurrentHashMap<>();
   private Map<Correlator, CompletableFuture<Boolean>> deregistrationCorrelations = new ConcurrentHashMap<>();
   private Map<Correlator, List<Event>> deregistrationEvents = new ConcurrentHashMap<>();
+  private Map<Correlator, CompletableFuture<ArrayList<CustomerView>>> customerReportCorrelations = new ConcurrentHashMap<>();
 
   public CustomerService(MessageQueue messageQueue) {
     logger.info("facade.CustomerService instantiated");
@@ -43,6 +45,7 @@ public class CustomerService {
     this.mque.addHandler(EventTypes.CUSTOMER_TOKENS_DELETED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_DELETED.getTopic(), this::handleCustomerDeregistered);
     this.mque.addHandler(EventTypes.CUSTOMER_DELETE_FAILED.getTopic(),this::handleCustomerDeregistered);
+    this.mque.addHandler(EventTypes.CUSTOMER_REPORT_GENERATED.getTopic(), this::handleCustomerReportGenerated);
   }
 
   public Customer register(Customer customer) throws CompletionException {
@@ -85,6 +88,18 @@ public class CustomerService {
     tokensCorrelations.get(correlationId).complete(tokens);
   }
 
+  @MethodAuthor(author = "Jeppe Mikkelsen", stdno = "s204708")
+  private void handleCustomerReportGenerated(Event event) {
+    logger.debug("Received CustomerReportGenerated event: {}", event);
+    ArrayList<LinkedTreeMap<String, Object>> list = event.getArgument(0, ArrayList.class);
+    var correlationId = event.getArgument(1, Correlator.class);
+    Gson gson = new Gson();
+    List<CustomerView> reportList = list.stream()
+            .map(e -> gson.fromJson(gson.toJson(e), CustomerView.class))
+            .toList();
+    customerReportCorrelations.get(correlationId).complete(new ArrayList<>(reportList));
+  }
+  @MethodAuthor(author = "Jeppe Mikkelsen", stdno = "s204708")
   public boolean deregister(String customerId) throws CompletionException {
      logger.debug("Deregistering customer with ID: {}", customerId);
      var correlationId = Correlator.random();
