@@ -11,6 +11,11 @@ The DTU-Payment-Service consists of 7 projects.
 6. A facade microservice in ``dtupay-facade`` that offers an external REST interface. Also, this service communicates through message queues.
 7. A message utilities in ``messaging-utilities`` provided by Hubert Baumeister.
 
+## Dockerization
+In our docker-compose files, we run the ``rabbitMq`` container first and we have set up custom healthcheck on which the other services depend  to make sure it's ready to accept communication with the other services.
+<br><br>
+Also, we use the eclipse image ``eclipse-temurin:23-alpine`` as a base in our service DockerFiles in order to optimize the size of the images. 
+
 ## Prerequisites
 Before proceeding to the installation of the project, make sure you have the following technologies installed:
 1. [Docker](https://www.docker.com/)
