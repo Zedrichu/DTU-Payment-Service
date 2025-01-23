@@ -1,8 +1,11 @@
 package dtupay.services.facade.adapter.mq;
 
+import dtupay.services.facade.annotations.ClassAuthor;
+import dtupay.services.facade.annotations.MethodAuthor;
 import dtupay.services.facade.domain.MerchantService;
 import messaging.implementations.RabbitMqQueue;
 
+@ClassAuthor(author = "Jeppe", stdno = "s204708")
 public class MerchantServiceFactory {
 	static MerchantService service = null;
 

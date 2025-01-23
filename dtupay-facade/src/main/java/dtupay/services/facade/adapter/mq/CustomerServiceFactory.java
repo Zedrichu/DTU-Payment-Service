@@ -1,8 +1,10 @@
 package dtupay.services.facade.adapter.mq;
 
+import dtupay.services.facade.annotations.ClassAuthor;
 import dtupay.services.facade.domain.CustomerService;
 import messaging.implementations.RabbitMqQueue;
 
+@ClassAuthor(author = "Adrian Zvizdenco", stdno = "s204683")
 public class CustomerServiceFactory {
 
 	static CustomerService service = null;
