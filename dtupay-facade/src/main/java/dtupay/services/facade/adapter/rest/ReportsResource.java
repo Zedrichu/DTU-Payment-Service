@@ -15,6 +15,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import dtupay.services.facade.annotations.MethodAuthor;
 
 @ClassAuthor(author = "Jonas Kjeldsen", stdno = "s204713")
 @Path("/reports")
+@Tag(name = "Reports Resource", description = "APIs for generating reports")
 public class ReportsResource {
 	private Logger logger = LoggerFactory.getLogger(CustomersResource.class);
 	private ReportService reportService = new ReportServiceFactory().getService();

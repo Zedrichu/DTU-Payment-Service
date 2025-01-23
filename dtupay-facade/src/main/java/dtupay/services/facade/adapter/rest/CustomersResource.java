@@ -1,6 +1,7 @@
 package dtupay.services.facade.adapter.rest;
 
 import dtupay.services.facade.adapter.mq.CustomerServiceFactory;
+import dtupay.services.facade.annotations.MethodAuthor;
 import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.CustomerService;
 import dtupay.services.facade.exception.AccountDeletionException;
@@ -66,6 +67,7 @@ public class CustomersResource {
     }
   }
 
+  @MethodAuthor(author = "Jeppe Mikkelsen", stdno = "s204708")
   @DELETE
   @Path("/{customerId}")
   @Produces(MediaType.APPLICATION_JSON)

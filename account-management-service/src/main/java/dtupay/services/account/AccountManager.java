@@ -75,6 +75,7 @@ public class AccountManager {
 		this.mque.publish(newEvent);
 	}
 
+	@MethodAuthor(author = "Jeppe Mikkelsen", stdno = "s204708")
 	public void handleCustomerRegistrationRequested(Event event) {
 		logger.debug("Received CustomerRegistrationRequested event: {}", event);
 		var customer = event.getArgument(0, Customer.class);

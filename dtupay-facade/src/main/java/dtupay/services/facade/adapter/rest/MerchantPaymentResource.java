@@ -17,14 +17,10 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
-
-
-import java.util.ArrayList;
 import java.util.concurrent.CompletionException;
 
 @Path("/merchants/{mid}/payments")
-@Tag(name = "Merchant Payments", description = "APIs for merchants requesting payments")
+@Tag(name = "Merchant Payments Resource", description = "APIs for merchants requesting payments")
 public class MerchantPaymentResource {
 
     private Logger logger = LoggerFactory.getLogger(CustomersResource.class);

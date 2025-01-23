@@ -109,6 +109,7 @@ public class CustomerService {
      return deregistrationCorrelations.get(correlationId).join();
   }
 
+  @MethodAuthor(author = "Paul Becker", stdno = "s194702")
   public synchronized boolean logDeregistrationEventCheckCompletion(Event event) {
     var correlationId = event.getArgument(0, Correlator.class);
     if (deregistrationEvents.containsKey(correlationId)) {
@@ -120,6 +121,7 @@ public class CustomerService {
     return deregistrationEvents.get(correlationId).size() > 1;
   }
 
+  @MethodAuthor(author = "Jeppe Mikkelsen", stdno = "s204708")
   public synchronized void handleCustomerDeregistered(Event event) {
     logger.debug("Received Customer Deregistered event: {}", event);
     var correlationId = event.getArgument(0, Correlator.class);
@@ -133,7 +135,6 @@ public class CustomerService {
       };
     }
   }
-
 
   public void handleCustomerAccountCreationFailed(Event event) {
     logger.debug("Received CustomerAccountCreationFailed event: {}", event);
