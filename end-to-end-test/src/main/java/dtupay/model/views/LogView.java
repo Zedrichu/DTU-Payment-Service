@@ -1,6 +1,6 @@
 package dtupay.model.views;
 
-import dtupay.services.reporting.domain.models.Token;
+import dtupay.model.Token;
 import jakarta.json.bind.annotation.JsonbProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
