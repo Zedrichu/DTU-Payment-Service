@@ -20,25 +20,11 @@ public enum EventTypes {
     PAYMENT_INITIATED("PaymentInitiated"),
     PAYMENT_TOKEN_VERIFIED("PaymentTokenVerified"),
     PAYMENT_TOKEN_INVALID("PaymentTokenInvalid");
-
-
+    
     private final String topic;
 
     EventTypes(String topic) {
         this.topic = topic;
     }
 
-    public static EventTypes fromTopic(String topic) {
-        for (EventTypes eventType : values()) {
-            if (eventType.topic.equals(topic)) {
-              return eventType;
-            }
-        }
-        throw new IllegalArgumentException("No matching EventTypes for topic: " + topic);
-    }
-
-    @Override
-    public String toString() {
-        return topic;
-    }
 }

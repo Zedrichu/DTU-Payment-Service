@@ -7,7 +7,7 @@ import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Token;
 import dtupay.services.facade.exception.AccountCreationException;
 import dtupay.services.facade.exception.AccountDeletionException;
-import dtupay.services.facade.exception.InvalidAccountException;
+import dtupay.services.facade.exception.TokenRequestException;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
 import messaging.Event;
@@ -131,6 +131,6 @@ public class CustomerService {
     logger.debug("Received TokensGenerationFailed event: {}", event);
     var errorMessage = event.getArgument(0, String.class);
     var correlationId = event.getArgument(1, Correlator.class);
-    tokensCorrelations.get(correlationId).completeExceptionally(new InvalidAccountException(errorMessage));
+    tokensCorrelations.get(correlationId).completeExceptionally(new TokenRequestException(errorMessage));
   }
 }

@@ -16,7 +16,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
-
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <java.version>23</java.version>
+        <maven.compiler.proc>full</maven.compiler.proc>
     </properties>
     <dependencies>
         <dependency>
@@ -80,6 +82,15 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

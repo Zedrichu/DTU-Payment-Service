@@ -83,11 +83,11 @@ public class PaymentManager {
         logger.debug("Received PaymentInitiated event: {}", event);
         PaymentRequest paymentRequest = event.getArgument(0, PaymentRequest.class);
         Correlator correlator = event.getArgument(1,Correlator.class);
-        try{
+        try {
             BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
             aggregate.setPaymentRequest(paymentRequest);
             completePayment(aggregate);
-        }catch (Exception e){
+        } catch (Exception e){
             logger.debug("Payment failed: {}", e.getMessage());
         }
     }
@@ -98,11 +98,11 @@ public class PaymentManager {
         logger.debug("Received CustomerAccountVerified event: {}", event);
         Customer customer = event.getArgument(0, Customer.class);
         Correlator correlator = event.getArgument(1,Correlator.class);
-        try{
+        try {
             BankTransferAggregate aggregate = getOrCreateAggregate(correlator);
             aggregate.setCustomer(customer);
             completePayment(aggregate);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.debug("Payment failed: {}", e.getMessage());
         }
 

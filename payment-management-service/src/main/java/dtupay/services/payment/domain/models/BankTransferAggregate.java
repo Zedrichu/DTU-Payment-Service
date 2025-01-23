@@ -14,14 +14,9 @@ public class BankTransferAggregate {
     // Aggregate root - identifies the whole structure
     private Correlator correlator;
 
-
     private Merchant merchant;
     private Customer customer;
     private PaymentRequest paymentRequest;
-
-    BankTransferAggregate() {
-        super();
-    }
 
     public BankTransferAggregate(Correlator id) {
         this.correlator = id;

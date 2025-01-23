@@ -22,7 +22,20 @@
 
   # Paul Becker (s194702)
   Scenario: Unsuccessful Transfer of Money due to invalid token
+    When the "MerchantAccountInvalid" event for an error is received
     When the "PaymentInitiated" event for a request is received
-    When the "PaymentTokenInvalid" event for an error is received
-    And the "MerchantAccountVerified" event for an error is received
+    And the "CustomerAccountVerified" event for a customer is received
     Then the "BankTransferFailed" event is sent with the same correlation id
+
+  Scenario: Unsuccessful Transfer of Money due to invalid token
+    When the "PaymentTokenInvalid" event for an error is received
+    When the "PaymentInitiated" event for a request is received
+    And the "MerchantAccountVerified" event for a merchant is received
+    Then the "BankTransferFailed" event is sent with the same correlation id
+
+#    Author - Adrian Ursu (s240160)
+  Scenario: Unsuccessful Transfer of Money due to insufficient funds
+    When the "PaymentInitiated" event for a request over the balance is received
+    When the "CustomerAccountVerified" event for a customer is received
+    And the "MerchantAccountVerified" event for a merchant is received
+    When the "BankTransferFailed" event is sent with the same correlation id

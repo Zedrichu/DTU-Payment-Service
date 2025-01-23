@@ -34,9 +34,4 @@ public enum EventTypes {
         }
         throw new IllegalArgumentException("No matching EventTypes for topic: " + topic);
     }
-
-    @Override
-    public String toString() {
-        return topic;
-    }
 }

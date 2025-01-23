@@ -14,3 +14,9 @@ Feature: dtupay.services.account Account Creation Feature
     When a "MerchantRegistrationRequested" event for a merchant is received
     Then the "MerchantAccountCreated" event is sent with the same correlation id
     And the merchant account is assigned a merchant id
+
+#    Author - Adrian Ursu (s240160)
+  Scenario: Unsuccessful Merchant Enrollment (Bank Account Missing)
+    When a "MerchantRegistrationRequested" event for a merchant is received with missing bank account
+    Then the "MerchantAccountCreationFailed" event is sent with same correlation id
+    And the merchant receives a failure message "Account creation failed: Provided merchant must have a valid bank account number and CPR"
