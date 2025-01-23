@@ -99,6 +99,7 @@ public class CustomerService {
             .toList();
     customerReportCorrelations.get(correlationId).complete(new ArrayList<>(reportList));
   }
+
   @MethodAuthor(author = "Jeppe Mikkelsen", stdno = "s204708")
   public boolean deregister(String customerId) throws CompletionException {
      logger.debug("Deregistering customer with ID: {}", customerId);

@@ -1,7 +1,6 @@
 package dtupay.services.reporting.utilities;
 
 import dtupay.services.reporting.annotations.ClassAuthor;
-import dtupay.services.reporting.annotations.MethodAuthor;
 
 @ClassAuthor(author = "Adrian Ursu", stdno = "s240160")
 public enum EventTypes {
@@ -22,11 +21,6 @@ public enum EventTypes {
     }
 
     public String getTopic() {
-        return topic;
-    }
-
-    @Override
-    public String toString() {
         return topic;
     }
 }

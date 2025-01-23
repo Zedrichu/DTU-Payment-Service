@@ -1,8 +1,9 @@
 package dtupay.exceptions;
 
-public class AccountCreationException extends RuntimeException {
+import dtupay.annotations.ClassAuthor;
 
-	public AccountCreationException() {}
+@ClassAuthor(author = "Adrian Zvizdenco", stdno = "s204683")
+public class AccountCreationException extends RuntimeException {
 
 	public AccountCreationException(String message) {
 		super(message);
