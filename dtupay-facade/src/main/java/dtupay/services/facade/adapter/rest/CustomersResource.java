@@ -39,7 +39,7 @@ public class CustomersResource {
   @APIResponses({
           @APIResponse(
                   responseCode = "201",
-                  description = "Customer successfully registered",
+                  description = "Customer successfully registered when returned with id",
                   content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Customer.class))
           ),
           @APIResponse(

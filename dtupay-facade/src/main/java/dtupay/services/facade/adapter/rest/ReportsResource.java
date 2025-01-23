@@ -10,6 +10,11 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +32,18 @@ public class ReportsResource {
 	@GET
 	@Path("/customers/{customerId}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(
+			summary = "Get customer report",
+			description = "Get a report of a customer's transaction based on id"
+	)
+	@APIResponses({
+			@APIResponse(
+					responseCode = "201",
+					description = "Successfully retrieved customer report",
+					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Report.class)
+					)
+			)
+	})
 	public Response getCustomerReport(@PathParam("customerId") String customerId) {
 		logger.info("customer report resource accessed: {}", customerId);
 		Report<CustomerView> customerRep = reportService.getCustomerReport(customerId);
@@ -37,6 +54,18 @@ public class ReportsResource {
 	@GET
 	@Path("/merchants/{merchantId}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(
+			summary = "Get merchant report",
+			description = "Get a report of a merchant's transaction based on id"
+	)
+	@APIResponses({
+			@APIResponse(
+					responseCode = "201",
+					description = "Successfully retrieved merchant report",
+					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Report.class)
+					)
+			)
+	})
 	public Response getMerchantReport(@PathParam("merchantId") String merchantId) {
 		logger.info("merchant report resource accessed: {}", merchantId);
 		Report<MerchantView> merchantRep = reportService.getMerchantReport(merchantId);
@@ -47,6 +76,18 @@ public class ReportsResource {
 	@GET
 	@Path("/manager")
 	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(
+			summary = "Get manager report",
+			description = "Get a report of all transactions"
+	)
+	@APIResponses({
+			@APIResponse(
+					responseCode = "201",
+					description = "Successfully retrieved manager report",
+					content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Report.class)
+					)
+			)
+	})
 	public Response getManagerReport() {
 		logger.info("manager report resource accessed");
 		Report<ManagerView> managerRep = reportService.getManagerReport();

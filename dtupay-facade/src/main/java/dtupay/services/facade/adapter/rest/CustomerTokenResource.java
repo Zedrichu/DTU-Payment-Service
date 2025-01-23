@@ -1,6 +1,7 @@
 package dtupay.services.facade.adapter.rest;
 
 import dtupay.services.facade.adapter.mq.CustomerServiceFactory;
+import dtupay.services.facade.annotations.MethodAuthor;
 import dtupay.services.facade.domain.CustomerService;
 import dtupay.services.facade.domain.models.Token;
 import jakarta.ws.rs.*;
@@ -21,13 +22,14 @@ import java.util.ArrayList;
 import java.util.concurrent.CompletionException;
 
 @Path("/customers/{cid}/tokens")
-@Tag(name = "Customer Tokens", description = "APIs for managing customer tokens")
+@Tag(name = "Customer Tokens", description = "APIs for customers requesting tokens")
 public class CustomerTokenResource {
 
     private Logger logger = LoggerFactory.getLogger(CustomersResource.class);
     private CustomerService customerService = new CustomerServiceFactory().getService();
 
 
+    @MethodAuthor(author = "Jeppe", stdno = "s204708")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -39,7 +41,7 @@ public class CustomerTokenResource {
             @APIResponse(
                     responseCode = "200",
                     description = "Successfully retrieved tokens",
-                    content = @Content(mediaType = MediaType.TEXT_PLAIN)
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON, schema = @Schema(implementation = Token.class))
             ),
             @APIResponse(
                     responseCode = "400",
@@ -70,9 +72,10 @@ public class CustomerTokenResource {
           ArrayList<Token> tokenList = customerService.requestTokens(amount, customerId);
           return Response.ok().entity(tokenList).build();
         } catch (CompletionException exception) {
+            var message = "Token request failed: " + exception.getCause().getMessage();
           return Response
                 .status(Response.Status.BAD_REQUEST)
-                .entity(exception.getCause().getMessage())
+                .entity(message)
                 .build();
         }
     }
