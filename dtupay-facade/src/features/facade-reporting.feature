@@ -1,10 +1,11 @@
-#Feature: dtupay.services.facade DTUPay Facade Reporting Feature
-#  Scenario: Successful Customer Report Request
-#    Given a registered customer and report of customer
-#    When a customer report is requested with id
-#    Then the "CustomerReportRequest" event for customer is sent with their id
-#    When the "CustomerReportGenerated" is received for the customer id
-#    Then a customer report is retrieved
+Feature: dtupay.services.facade DTUPay Facade Reporting Feature
+  Scenario: Successful Customer Report Request
+    Given a customer that has performed no payments
+    When a customer is requesting a customer report with a non existing customer id
+    Then the "CustomerReportRequested" event is sent with an non existing customer id
+    When the "CustomerReportGenerated" event is received for customer
+    Then the retrieve report is empty
+
 
 
 #  Scenario: Successful Merchant Report Request
