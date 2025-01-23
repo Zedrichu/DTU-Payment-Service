@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
 public class TokenStepDefs {
   EventTypes eventType;
 	MessageQueue messageQueue = mock(MessageQueue.class);
-	Correlator correlator;
+	Correlator correlator = Correlator.random();
 	String customerId;
 	TokenRepository memoryTokenRepository = new MemoryTokenRepository();
 	TokenManager tokenManager = new TokenManager(messageQueue, memoryTokenRepository);
@@ -41,7 +41,7 @@ public class TokenStepDefs {
 		for (int i = 0; i < noTokens; i++) {
 			tokens.add(Token.random());
 		}
-		memoryTokenRepository.addTokens(customerId,tokens);
+		memoryTokenRepository.addTokens(customerId, tokens);
 		tokenManager = new TokenManager(messageQueue, memoryTokenRepository);
 	}
 
@@ -54,8 +54,9 @@ public class TokenStepDefs {
 		PaymentRequest paymentRequest = new PaymentRequest("jeppe", tokenUsed,1000 );
 		tokenManager.handlePaymentInitiated(new Event(eventType.getTopic(),new Object[] {paymentRequest, correlator}));
 	}
+
 	@When("PaymentInitiated event is received for a payment request with an invalid token")
-	public void paymentinitiatedEventIsReceivedForAPaymentRequestWithAnInvalidToken() {
+	public void paymentInitiatedEventIsReceivedForAPaymentRequestWithAnInvalidToken() {
 		eventType = EventTypes.PAYMENT_INITIATED;
 		correlator = Correlator.random();
 		PaymentRequest paymentRequest = new PaymentRequest("jeppe", Token.random(),1000 );
@@ -167,14 +168,14 @@ public class TokenStepDefs {
 	}
 
 	@When("CustomerDeregistrationRequested event is received for the same customer id")
-	public void customerderegistrationrequestedEventIsReceivedForTheSameCustomerId() {
+	public void customerDeregistrationRequestedEventIsReceivedForTheSameCustomerId() {
 		eventType = EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED;
 		tokenManager.handleCustomerDeregistrationRequested(new Event(eventType.getTopic(),new Object[] { customerId, correlator}));
 
 	}
 
 	@Then("CustomerTokensDeleted event is sent with the same correlation id")
-	public void customertokensdeletedEventIsSentWithTheSameCorrelationId() {
+	public void customerTokensDeletedEventIsSentWithTheSameCorrelationId() {
 		eventType = EventTypes.CUSTOMER_TOKENS_DELETED;
 		eventCaptor = ArgumentCaptor.forClass(Event.class);
 		verify(messageQueue).publish(eventCaptor.capture());
@@ -189,7 +190,7 @@ public class TokenStepDefs {
 	}
 
 	@When("CustomerDeregistrationRequested event is received for a customer id")
-	public void customerderegistrationrequestedEventIsReceivedForACustomerId() {
+	public void customerDeregistrationRequestedEventIsReceivedForACustomerId() {
 		eventType = EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED;
 		customerId = "noCustomer";
 		correlator = Correlator.random();

@@ -25,16 +25,6 @@ public enum EventTypes {
         return topic;
     }
 
-    @MethodAuthor(author = "Adrian Ursu", stdno = "s240160")
-    public static EventTypes fromTopic(String topic) {
-        for (EventTypes eventType : values()) {
-            if (eventType.topic.equals(topic)) {
-              return eventType;
-            }
-        }
-        throw new IllegalArgumentException("No matching EventTypes for topic: " + topic);
-    }
-
     @Override
     public String toString() {
         return topic;

@@ -24,8 +24,6 @@ public class Correlator {
 		return Objects.hashCode(id);
 	}
 
-
-
 	public static Correlator random() { return new Correlator(UUID.randomUUID()); }
 
 	@Override

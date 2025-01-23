@@ -58,8 +58,6 @@ public class DeregistrationStepDefs {
         }
     }
 
-
-
     @Then("the merchant is deregistered")
     public void theMerchantIsDeregistered() {
         assertTrue(response);

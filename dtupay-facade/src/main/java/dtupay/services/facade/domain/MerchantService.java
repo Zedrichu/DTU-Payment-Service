@@ -75,7 +75,7 @@ public class MerchantService {
     logger.debug("Received MerchantAccountCreationFailed event: {}", event);
     var errorMessage = event.getArgument(0, String.class);
     var core = event.getArgument(1, Correlator.class);
-    registerCorrelations.get(core).completeExceptionally(new CompletionException(new AccountCreationException(errorMessage)));
+    registerCorrelations.get(core).completeExceptionally(new AccountCreationException(errorMessage));
   }
 
   public void handleBankTransferFailed(Event event) {

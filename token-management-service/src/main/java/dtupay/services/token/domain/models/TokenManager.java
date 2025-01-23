@@ -33,7 +33,6 @@ public class TokenManager {
         this.mque.addHandler(EventTypes.CUSTOMER_DEREGISTRATION_REQUESTED.getTopic(), this::handleCustomerDeregistrationRequested);
     }
 
-
     @MethodAuthor(author = "Jonas Kjeldsen", stdno = "s204713")
     public ArrayList<Token> generateTokens(int noTokens){
         ArrayList<Token> list = new ArrayList<>();

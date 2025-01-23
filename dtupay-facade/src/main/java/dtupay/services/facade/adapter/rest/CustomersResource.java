@@ -58,7 +58,7 @@ public class CustomersResource {
             .entity(registeredCustomer)
             .build();
     } catch (CompletionException exception) {
-      var message = "Merchant registration failed: " + exception.getCause().getMessage();
+      var message = exception.getCause().getMessage();
       return Response
               .status(Response.Status.BAD_REQUEST)
               .entity(message)
@@ -91,7 +91,7 @@ public class CustomersResource {
       customerService.deregister(customerId);
       return Response.ok().build();
     } catch (CompletionException exception) {
-      var message = "Customer deregistration failed: " + exception.getCause().getMessage();
+      var message = exception.getCause().getMessage();
       return Response
               .status(Response.Status.BAD_REQUEST)
               .entity(message)

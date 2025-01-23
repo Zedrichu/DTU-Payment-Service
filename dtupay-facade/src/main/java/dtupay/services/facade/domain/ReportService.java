@@ -1,27 +1,22 @@
 package dtupay.services.facade.domain;
 
-import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
+import dtupay.services.facade.annotations.ClassAuthor;
+import dtupay.services.facade.annotations.MethodAuthor;
+import dtupay.services.facade.domain.models.Report;
 import dtupay.services.facade.domain.models.views.CustomerView;
 import dtupay.services.facade.domain.models.views.ManagerView;
 import dtupay.services.facade.domain.models.views.MerchantView;
-import dtupay.services.facade.domain.models.Report;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
-import messaging.MessageQueue;
 import messaging.Event;
-
+import messaging.MessageQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-
-import dtupay.services.facade.annotations.ClassAuthor;
-import dtupay.services.facade.annotations.MethodAuthor;
 
 @ClassAuthor(author = "Jonas Kjeldsen", stdno = "s204713")
 public class ReportService {

@@ -6,7 +6,6 @@ import dtupay.services.facade.domain.models.Customer;
 import dtupay.services.facade.domain.models.Merchant;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -63,7 +62,6 @@ public class FacadeDeregisterStepDefs {
 	private Customer customer;
 	private Merchant merchant;
 	private EventTypes eventTypeName;
-	private EventTypes eventTypeName1;
 
 	@Given("a registered customer with id opting to deregister")
 	public void aRegisteredCustomerWithTokensOptingToDeregister() {
