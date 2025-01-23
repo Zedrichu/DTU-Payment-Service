@@ -58,9 +58,10 @@ public class CustomersResource {
             .entity(registeredCustomer)
             .build();
     } catch (CompletionException exception) {
+      var message = "Merchant registration failed: " + exception.getCause().getMessage();
       return Response
               .status(Response.Status.BAD_REQUEST)
-              .entity(exception.getCause().getMessage())
+              .entity(message)
               .build();
     }
   }
@@ -68,15 +69,32 @@ public class CustomersResource {
   @DELETE
   @Path("/{customerId}")
   @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Operation(
+           summary = "Deregister a customer",
+           description = "Deregisters a existing customer and returns a response indicating the result."
+  )
+  @APIResponses({
+            @APIResponse(
+                    responseCode = "200",
+                    description = "Customer successfully deregistered"
+            ),
+            @APIResponse(
+                    responseCode = "400",
+                    description = "Invalid merchant ID or deregistration error",
+                    content = @Content(mediaType = MediaType.TEXT_PLAIN)
+            )
+  })
   public Response deregister(@PathParam("customerId") String customerId) {
     logger.info("Customer deregistration resource accessed: {}", customerId);
     try {
       customerService.deregister(customerId);
       return Response.ok().build();
     } catch (CompletionException exception) {
+      var message = "Customer deregistration failed: " + exception.getCause().getMessage();
       return Response
               .status(Response.Status.BAD_REQUEST)
-              .entity(exception.getCause().getMessage())
+              .entity(message)
               .build();
     }
   }

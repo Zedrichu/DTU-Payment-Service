@@ -1,0 +1,250 @@
+---
+openapi: 3.1.0
+tags:
+- name: Customer Resource
+  description: Customer management operations
+- name: Customer Tokens Resource
+  description: APIs for managing customer tokens
+- name: Merchant Payment Process
+  description: API for processing payments from merchants
+- name: Merchant Resource
+  description: Merchant management operations
+- name: Reporting Resource
+  description: APIs for generating reports based on the provided customer- or merchant
+    id or manager report
+components:
+  schemas:
+    Customer:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        cpr:
+          type: string
+        bankAccountNo:
+          type: string
+        payId:
+          type: string
+    Merchant:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        cpr:
+          type: string
+        bankAccountNo:
+          type: string
+        payId:
+          type: string
+    PaymentRequest:
+      type: object
+      properties:
+        merchantId:
+          type: string
+        token:
+          $ref: "#/components/schemas/Token"
+        amount:
+          type: integer
+          format: int32
+    Token:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/UUID"
+    UUID:
+      type: string
+      format: uuid
+      pattern: "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+paths:
+  /customers:
+    post:
+      summary: Register a new customer
+      description: Registers a new customer and returns the created customer along
+        with a URI for the resource.
+      tags:
+      - Customer Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Customer"
+        required: true
+      responses:
+        "201":
+          description: Customer successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+        "400":
+          description: Invalid customer data or registration error
+          content:
+            text/plain: {}
+  /customers/{cid}/tokens:
+    post:
+      summary: Request tokens for a customer
+      description: Allows a customer to request a specific number of tokens.
+      tags:
+      - Customer Tokens Resource
+      parameters:
+      - description: Customer ID for which the tokens are requested
+        example: "12345"
+        required: true
+        name: cid
+        in: path
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: integer
+              format: int32
+        required: true
+      responses:
+        "201":
+          description: Successfully retrieved tokens
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        "400":
+          description: Invalid input or customer ID
+          content:
+            text/plain: {}
+        "404":
+          description: Customer not found
+          content:
+            text/plain: {}
+  /customers/{customerId}:
+    delete:
+      summary: Deregister a customer
+      description: Deregisters a existing customer and returns a response indicating
+        the result.
+      tags:
+      - Customer Resource
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Customer successfully deregistered
+        "400":
+          description: Invalid merchant ID or deregistration error
+          content:
+            text/plain: {}
+  /merchants:
+    post:
+      summary: Register a new merchant
+      description: Registers a new customer and returns the created customer along
+        with a URI for the resource.
+      tags:
+      - Merchant Resource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Merchant"
+        required: true
+      responses:
+        "201":
+          description: Merchant successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Merchant"
+        "400":
+          description: Invalid merchant data or registration error
+          content:
+            text/plain: {}
+  /merchants/{merchantId}:
+    delete:
+      summary: Deletes an existing merchant
+      description: Deletes an existing merchant based on their id and returns a response
+        indicating the result.
+      tags:
+      - Merchant Resource
+      parameters:
+      - name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Merchant successfully deregistered
+        "400":
+          description: Invalid merchant data or registration error
+          content:
+            text/plain: {}
+  /merchants/{mid}/payments:
+    post:
+      summary: Request a payment from a merchant
+      description: Handles payment requests from merchants by processing a payment
+        request payload.
+      tags:
+      - Merchant Payment Process
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+        required: true
+      responses:
+        "200":
+          description: Payment processed successfully
+        "400":
+          description: Invalid payment request
+          content:
+            text/plain: {}
+  /reports/customers/{customerId}:
+    get:
+      tags:
+      - Reporting Resource
+      parameters:
+      - name: customerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+      summary: Get Customer Report
+  /reports/manager:
+    get:
+      tags:
+      - Reporting Resource
+      responses:
+        "200":
+          description: OK
+      summary: Get Manager Report
+  /reports/merchants/{merchantId}:
+    get:
+      tags:
+      - Reporting Resource
+      parameters:
+      - name: merchantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+      summary: Get Merchant Report
+info:
+  title: dtupay-facade API
+  version: 1.0.1
+servers:
+- url: http://localhost:8080
+  description: Auto generated value
+- url: http://0.0.0.0:8080
+  description: Auto generated value
