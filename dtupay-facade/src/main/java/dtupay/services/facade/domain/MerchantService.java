@@ -3,6 +3,7 @@ package dtupay.services.facade.domain;
 import dtupay.services.facade.domain.models.Merchant;
 import dtupay.services.facade.domain.models.PaymentRequest;
 import dtupay.services.facade.exception.AccountCreationException;
+import dtupay.services.facade.exception.AccountDeletionException;
 import dtupay.services.facade.exception.BankFailureException;
 import dtupay.services.facade.utilities.Correlator;
 import dtupay.services.facade.utilities.EventTypes;
@@ -22,7 +23,7 @@ public class MerchantService {
   private MessageQueue mque;
   private Map<Correlator, CompletableFuture<Merchant>> registerCorrelations = new ConcurrentHashMap<>();
   private Map<Correlator, CompletableFuture<Boolean>> payCorrelations = new ConcurrentHashMap<>();
-  private Map<Correlator, CompletableFuture<String>> deregistrationCorrelations = new ConcurrentHashMap<>();
+  private Map<Correlator, CompletableFuture<Boolean>> deregistrationCorrelations = new ConcurrentHashMap<>();
 
   public MerchantService(MessageQueue messageQueue) {
     logger.info("facade.MerchantService instantiated");
@@ -84,20 +85,20 @@ public class MerchantService {
     payCorrelations.get(correlationId).completeExceptionally(new BankFailureException(errorMessage));
   }
 
-  public String deregister(String merchantId) {
+  public boolean deregister(String merchantId)  throws AccountDeletionException {
     logger.debug("Deregister request for merchant: {}", merchantId);
     var correlationId = Correlator.random();
     deregistrationCorrelations.put(correlationId, new CompletableFuture<>());
     Event event = new Event(EventTypes.MERCHANT_DEREGISTRATION_REQUESTED.getTopic(), new Object[]{ merchantId, correlationId });
     mque.publish(event);
-    return String.valueOf(deregistrationCorrelations.get(correlationId).join());
+    return deregistrationCorrelations.get(correlationId).join();
   }
 
   public void handleMerchantDeregistered(Event event) {
     logger.debug("Received Merchant Deregistered event: {}", event);
     var correlationId = event.getArgument(0, Correlator.class);
     if (event.getTopic().equals(EventTypes.MERCHANT_DELETED.getTopic())) {
-      deregistrationCorrelations.get(correlationId).complete("Merchant Successful Deregistration");
+      deregistrationCorrelations.get(correlationId).complete(true);
     } else {
       deregistrationCorrelations.get(correlationId).completeExceptionally(new AccountCreationException("Merchant Deregistration Failed"));
     }

@@ -38,7 +38,7 @@ public class MerchantService {
 		return response.getStatus() == Response.Status.OK.getStatusCode();
 	}
 
-	public String deregister(String merchantId) {
+	public boolean deregister(String merchantId) {
 		Response response = baseURL
 				.path("/merchants")
 				.path(merchantId)
@@ -47,6 +47,6 @@ public class MerchantService {
 		if (response.getStatus() != Response.Status.OK.getStatusCode()) {
 			throw new DeregisterException(response.readEntity(String.class));
 		}
-		return response.readEntity(String.class);
+		return true;
 	}
 }

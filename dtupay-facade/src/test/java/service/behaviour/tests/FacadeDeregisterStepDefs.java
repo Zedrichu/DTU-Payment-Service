@@ -20,8 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class FacadeDeregisterStepDefs {
 
@@ -56,8 +55,8 @@ public class FacadeDeregisterStepDefs {
 	private MerchantService merchantIdService = new MerchantService(merchantIdQ);
 
 	private Map<String, CompletableFuture<Event>> publishedEvents = new ConcurrentHashMap<>();
-	private CompletableFuture<String> futureCustomerDeregister = new CompletableFuture<>();
-	private CompletableFuture<String> futureMerchantDeregister = new CompletableFuture<>();
+	private CompletableFuture<Boolean> futureCustomerDeregister = new CompletableFuture<>();
+	private CompletableFuture<Boolean> futureMerchantDeregister = new CompletableFuture<>();
 	private Map<String, Correlator> cStringCorrelators = new ConcurrentHashMap<>();
 	private Map<String, Correlator> mStringCorrelators = new ConcurrentHashMap<>();
 	private Event mockEvent;
@@ -115,7 +114,7 @@ public class FacadeDeregisterStepDefs {
 	@Then("the customer is deregistered")
 	public void theCustomerIsDeregistered() {
 		var result = futureCustomerDeregister.join();
-		assertEquals("Customer Successful Deregistration", result);
+		assertTrue(result);
 	}
 
 	@Then("the customer deregistration failed")
@@ -174,7 +173,7 @@ public class FacadeDeregisterStepDefs {
 	@Then("the merchant is deregistered")
 	public void theMerchantIsDeregistered() {
 		var result = futureMerchantDeregister.join();
-		assertEquals("Merchant Successful Deregistration", result);
+		assertTrue(result);
 	}
 
 	@Then("the merchant deregistration failed")

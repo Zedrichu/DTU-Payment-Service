@@ -17,7 +17,7 @@ public class DeregistrationStepDefs {
     private Customer registeredCustomer;
     private MerchantService merchantService = new MerchantService();
     private Merchant registeredMerchant;
-    private String response;
+    private boolean response;
     private Exception exception;
 
     @Given("a customer registered in DTUPay")
@@ -39,9 +39,9 @@ public class DeregistrationStepDefs {
         }
     }
 
-    @Then("the customer receives a confirmation message {string}")
-    public void the_customer_receives_a_event(String message) {
-        assertEquals(message, response);
+    @Then("the customer is deregistered")
+    public void theCustomerIsDeregistered() {
+        assertTrue(response);
     }
 
     @Given("a merchant registered in DTUPay")
@@ -58,9 +58,11 @@ public class DeregistrationStepDefs {
         }
     }
 
-    @Then("the merchant receives a confirmation message {string}")
-    public void theMerchantReceivesAConfirmationMessage(String confirmationMessage) {
-        assertEquals(confirmationMessage, response);
+
+
+    @Then("the merchant is deregistered")
+    public void theMerchantIsDeregistered() {
+        assertTrue(response);
     }
 
 
@@ -73,9 +75,22 @@ public class DeregistrationStepDefs {
         }
     }
 
+    @When("the merchant deregisters in DTUPay with the wrong ID")
+    public void theMerchantDeregistersInDTUPayWithTheWrongID() {
+        try {
+            response = merchantService.deregister("wrongid");
+        } catch (Exception e) {
+            exception = e;
+        }
+    }
+
     @Then("the customer receives an error message {string}")
     public void theCustomerReceivesAnErrorMessage(String errorMessage) {
-        assertNotNull(registeredCustomer);
+        assertTrue(exception instanceof DeregisterException);
+        assertEquals(errorMessage, exception.getMessage());
+    }
+    @Then("the merchant receives an error message {string}")
+    public void theMerchantReceivesAnErrorMessage(String errorMessage) {
         assertTrue(exception instanceof DeregisterException);
         assertEquals(errorMessage, exception.getMessage());
     }

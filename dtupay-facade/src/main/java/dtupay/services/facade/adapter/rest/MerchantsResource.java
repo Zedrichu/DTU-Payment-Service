@@ -48,9 +48,9 @@ public class MerchantsResource {
   public Response deregister(@PathParam("merchantId") String merchantId) {
     logger.info("Merchant deregistration resource accessed: {}", merchantId);
     try {
-      String response = merchantService.deregister(merchantId);
-      return Response.ok().entity(response).build();
-    } catch (AccountDeletionException exception) {
+      merchantService.deregister(merchantId);
+      return Response.ok().build();
+    } catch (CompletionException exception) {
       return Response
               .status(Response.Status.BAD_REQUEST)
               .entity(exception.getCause().getMessage())

@@ -49,7 +49,7 @@ public class CustomerService {
       return response.readEntity(new GenericType<ArrayList<Token>>() {});
     }
 
-  public String deregister(String customerId) {
+  public boolean deregister(String customerId) throws DeregisterException {
     Response response = baseURL
           .path("/customers")
           .path(customerId)
@@ -59,7 +59,7 @@ public class CustomerService {
     if (response.getStatus() != Response.Status.OK.getStatusCode()) {
       throw new DeregisterException(response.readEntity(String.class));
     }
-    return response.readEntity(String.class);
+    return true;
   }
 }
 
