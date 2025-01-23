@@ -2,7 +2,7 @@
 set -e
 docker image prune -f
 
-for dir in messaging-utilities dtupay-facade account-management-service token-management-service payment-management-service; do
+for dir in messaging-utilities dtupay-facade account-management-service token-management-service payment-management-service reporting-service; do
   pushd $dir
   ./build.sh
   popd

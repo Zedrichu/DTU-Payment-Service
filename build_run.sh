@@ -14,7 +14,7 @@ docker compose up -d dtupay-facade
 
 sleep 1
 
-docker compose up -d account-management token-management payment-management
+docker compose up -d account-management token-management payment-management reporting
 
 mvn clean test
 
