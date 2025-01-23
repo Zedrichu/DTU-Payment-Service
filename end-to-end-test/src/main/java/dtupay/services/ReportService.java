@@ -1,13 +1,10 @@
 package dtupay.services;
 
-import dtupay.model.PaymentRequest;
-import dtupay.model.Token;
 import dtupay.model.views.CustomerView;
 import dtupay.model.views.ManagerView;
 import dtupay.model.views.MerchantView;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.GenericType;
 import jakarta.ws.rs.core.Response;
@@ -39,18 +36,4 @@ public class ReportService {
 				path("/manager").request().get();
 		return response.readEntity(new GenericType<ArrayList<ManagerView>>() {});
 	}
-
-//	public PaymentRequest request()
-//		public Customer register(Customer customer) throws AccountCreationException {
-//    Response response = baseURL
-//          .path("/customers")
-//          .request()
-//          .post(Entity.entity(customer, MediaType.APPLICATION_JSON));
-//
-//    if (response.getStatus() != Response.Status.CREATED.getStatusCode()) {
-//      throw new AccountCreationException(response.readEntity(String.class));
-//    }
-//    return response.readEntity(Customer.class);Response response = baseURL
-//					.path("/reports")
-//					.path("/customers")
 }
