@@ -1,8 +1,8 @@
 package dtupay.services.reporting.domain;
 
-import dtupay.services.reporting.domain.aggregate.CustomerView;
-import dtupay.services.reporting.domain.aggregate.MerchantView;
-import dtupay.services.reporting.domain.aggregate.PaymentReport;
+import dtupay.services.reporting.domain.views.CustomerView;
+import dtupay.services.reporting.domain.views.MerchantView;
+import dtupay.services.reporting.domain.views.PaymentReport;
 import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.domain.repositories.ReadModelRepository;
 import dtupay.services.reporting.domain.repositories.ReportRepository;

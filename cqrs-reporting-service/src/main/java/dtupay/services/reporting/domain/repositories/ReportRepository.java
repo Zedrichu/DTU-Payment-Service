@@ -1,6 +1,6 @@
 package dtupay.services.reporting.domain.repositories;
 
-import dtupay.services.reporting.domain.aggregate.PaymentReport;
+import dtupay.services.reporting.domain.views.PaymentReport;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 
 public class ReportRepository {

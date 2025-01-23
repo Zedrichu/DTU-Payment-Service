@@ -1,0 +1,7 @@
+services:
+  payment-management:
+    image: cqrs-reporting-service
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+

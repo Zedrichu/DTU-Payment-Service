@@ -3,6 +3,7 @@ package service.behaviours.tests;
 import dtupay.services.reporting.domain.ReportingManager;
 import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.domain.models.Token;
+import dtupay.services.reporting.domain.repositories.ReadModelRepository;
 import dtupay.services.reporting.domain.repositories.ReportRepository;
 import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;

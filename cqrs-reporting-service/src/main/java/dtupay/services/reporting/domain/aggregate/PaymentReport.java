@@ -1,4 +1,4 @@
-package dtupay.services.reporting.domain.aggregate;
+package dtupay.services.reporting.domain.views;
 
 import dtupay.services.reporting.domain.events.CustomerViewAdded;
 import dtupay.services.reporting.domain.events.Event;

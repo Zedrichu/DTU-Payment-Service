@@ -1,11 +1,12 @@
-package dtupay.services.reporting.domain.aggregate;
+package dtupay.services.reporting.domain.views;
 
 import dtupay.services.reporting.domain.models.Token;
 import lombok.Value;
 
 @Value
-public class MerchantView {
+public class CustomerView {
 	private static final long serialVersionUID = 1231553453445L;
 	int amount;
+	String merchantId;
 	Token token;
 }
