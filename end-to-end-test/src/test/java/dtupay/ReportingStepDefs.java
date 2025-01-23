@@ -14,8 +14,8 @@ public class ReportingStepDefs {
 	private String response;
 	private Exception exception;
 
-	@Given("a customer registered in DTUPay")
-	public void a_customer_registered_in_DTUPay() {
+	@Given("a customer registered in DTUPay for reporting")
+	public void a_customer_registered_in_DTUPay_for_reporting() {
 		registeredCustomer = customerService.register(new Customer("John",
 					"Sayna", "102030-1234", "9696", "rand"));
 	}
