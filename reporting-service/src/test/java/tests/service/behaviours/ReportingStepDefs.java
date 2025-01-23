@@ -6,6 +6,8 @@ import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.domain.models.Report;
 import dtupay.services.reporting.domain.models.Token;
 import dtupay.services.reporting.domain.models.views.CustomerView;
+import dtupay.services.reporting.domain.models.views.ManagerView;
+import dtupay.services.reporting.domain.models.views.MerchantView;
 import dtupay.services.reporting.domain.repositories.ReportRepository;
 import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;
@@ -30,6 +32,9 @@ public class ReportingStepDefs {
     private ReportingManager reportingManager = new ReportingManager(queue);
     PaymentRecord paymentRecord;
     Correlator correlator = Correlator.random();
+    Report<CustomerView> customerReport;
+    Report<MerchantView> merchantReport;
+    Report<ManagerView> managerReport;
 
 
   @Given("a BankTransferConfirmed event is received with a payment record")
@@ -54,7 +59,7 @@ public class ReportingStepDefs {
     reportingManager.handleCustomerReportRequested(new Event(eventType.getTopic(), new Object[] {paymentRecord.customerId(), correlator}));
   }
 
-  Report<CustomerView> customerReport;
+
 
   @Then("the customer report is received")
   public void theCustomerReportIsReceived() {
@@ -88,10 +93,28 @@ public class ReportingStepDefs {
     assertTrue(customerReport.getEntries().isEmpty());
   }
 
-//  @Then("the payment history is updated")
-//  public void thePaymentHistoryIsUpdated() {
-//    reportingManager.
-//  }
+  @When("the merchant report is requested")
+  public void theMerchantReportIsRequested() {
+    EventTypes eventType = EventTypes.MERCHANT_REPORT_REQUESTED;
+    reportingManager.handleMerchantReportRequested(new Event(eventType.getTopic(), new Object[] {paymentRecord.merchantId(), correlator}));
+  }
 
+  @Then("the merchant report is received")
+  public void theMerchantReportIsReceived() {
+    EventTypes eventType = EventTypes.MERCHANT_REPORT_GENERATED;
+    ArgumentCaptor<Event> eventCaptor = ArgumentCaptor.forClass(Event.class);
+    verify(queue).publish(eventCaptor.capture());
+    Event receivedEvent = eventCaptor.getValue();
+    merchantReport = receivedEvent.getArgument(0,
+            new Report<MerchantView>(new ArrayList<>()) {}.getClass().getGenericSuperclass());
+
+    assertEquals(eventType.getTopic(), receivedEvent.getTopic());
+    assertEquals(correlator, receivedEvent.getArgument(1, Correlator.class));
+  }
+  @And("the payment log is in the merchant report")
+  public void thePaymentLogIsInTheMerchantReport() {
+    MerchantView merchantView = new MerchantView(paymentRecord.token(),paymentRecord.amount());
+    assertTrue(merchantReport.getEntries().contains(merchantView));
+  }
 
 }

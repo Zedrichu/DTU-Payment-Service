@@ -61,7 +61,7 @@ public class ReportingManager {
         var correlationId = event.getArgument(1, Correlator.class);
 
         var history = merchantReportRepository.getReport(merchantId);
-        Event response = new Event(EventTypes.CUSTOMER_REPORT_GENERATED.getTopic(), new Report<>(history), correlationId);
+        Event response = new Event(EventTypes.MERCHANT_REPORT_GENERATED.getTopic(), new Report<>(history), correlationId);
         this.messageQueue.publish(response);
     }
 

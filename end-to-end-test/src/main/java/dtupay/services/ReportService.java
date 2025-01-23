@@ -28,7 +28,7 @@ public class ReportService {
 
 	public ArrayList<MerchantView> getMerchantReport(String merchantId) {
 		Response response = baseURL.path("/reports").
-				path("/merchant").
+				path("/merchants").
 				path(merchantId).request().get();
 		return response.readEntity(new GenericType<ArrayList<MerchantView>>() {});
 	}
