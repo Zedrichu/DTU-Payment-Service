@@ -3,6 +3,7 @@ package dtupay.services.payment;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
+import dtupay.services.payment.annotations.MethodAuthor;
 import dtupay.services.payment.domain.models.*;
 import dtupay.services.payment.utilities.Correlator;
 import dtupay.services.payment.utilities.EventTypes;
@@ -40,6 +41,7 @@ public class PaymentManager {
         this.mque.addHandler(EventTypes.MERCHANT_ACCOUNT_INVALID.getTopic(), this::handleMerchantAccountInvalid);
     }
 
+    @MethodAuthor(author = "Paul Becker",stdno = "s194702")
     public synchronized BankTransferAggregate getOrCreateAggregate(Correlator correlator) throws Exception {
 
         if (hasFailure.containsKey(correlator)) {
@@ -106,10 +108,13 @@ public class PaymentManager {
 
     }
 
+    @MethodAuthor(author = "Paul Becker",stdno = "s194702")
     public void raiseFailure(Correlator correlator) {
         hasFailure.put(correlator,true);
         aggregators.remove(correlator);
     }
+
+    @MethodAuthor(author = "Paul Becker",stdno = "s194702")
     public void handlePaymentTokenInvalid(Event event) {
         logger.debug("Received PaymentTokenInvalid event: {}", event);
         Correlator correlator = event.getArgument(1,Correlator.class);

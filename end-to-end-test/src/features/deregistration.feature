@@ -1,3 +1,4 @@
+#author = "Paul Becker",stdno = "s194702"
 Feature: dtupay.E2E DTUPay Deregistration
 
   Scenario: Successful Deregistration Customer without tokens

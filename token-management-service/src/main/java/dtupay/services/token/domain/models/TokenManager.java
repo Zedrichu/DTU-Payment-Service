@@ -68,7 +68,7 @@ public class TokenManager {
         mque.publish(responseEvent);
     }
 
-    @MethodAuthor(author = "Paul Becker")
+    @MethodAuthor(author = "Paul Becker",stdno = "s194702")
     public void completeGeneration(TokenGenerationAggregate aggregate) {
         if (aggregate.isComplete()) {
             if (!aggregate.isCustomerVerified()){
