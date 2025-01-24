@@ -68,7 +68,9 @@ public class PaymentManager {
                         merchantBankAccount,aggregate.
                         getPaymentRequest().amount(),
                         description,
-                        aggregate.getPaymentRequest().token());
+                        aggregate.getPaymentRequest().token(),
+                        aggregate.getCustomer().payId(),
+                        aggregate.getMerchant().payId());
                 responseEvent = new Event(EventTypes.BANK_TRANSFER_CONFIRMED.getTopic(),new Object[]{ paymentRecord, aggregate.getCorrelator() });
             } catch (BankServiceException_Exception e) {
                 responseEvent = new Event(EventTypes.BANK_TRANSFER_FAILED.getTopic(), new Object[] { e.getMessage(), aggregate.getCorrelator() });
