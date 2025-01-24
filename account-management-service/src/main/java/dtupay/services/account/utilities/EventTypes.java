@@ -46,6 +46,6 @@ public enum EventTypes {
               return eventType;
             }
         }
-        return null;
+        throw new IllegalArgumentException("Invalid event type: " + topic);
     }
 }
