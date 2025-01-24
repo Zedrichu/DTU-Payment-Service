@@ -136,7 +136,7 @@ public class ReportingStepDefs {
 		usedAmount = amount;
 		PaymentRequest paymentRequest = new PaymentRequest(registeredMerchant.payId(), usedToken, usedAmount);
 		merchantService.pay(paymentRequest);
-		Thread.sleep(2000);
+		Thread.sleep(100);
 
 	}
 
@@ -144,7 +144,6 @@ public class ReportingStepDefs {
 	@And("the customer report contains an entry")
 	public void customerReportContainsAnEntry() {
 		assertNotNull(responseCustomer);
-		System.out.println(responseCustomer.toString());
 		for (CustomerView customer: responseCustomer){
 			assertEquals(registeredMerchant.payId(),customer.getMerchantId());
 			assertEquals(usedToken,customer.getToken());
