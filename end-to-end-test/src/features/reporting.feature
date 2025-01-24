@@ -14,6 +14,7 @@ Feature: dtupay.E2E DTUPay Reporting
     When the manager requests a report
     Then the manager report is retrieved
 
+  #Jonas Kjeldsen (s204713)
   Scenario: Successful Reporting Generation After Transaction
     Given a registered customer with tokens
     And a registered merchant
