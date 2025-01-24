@@ -31,9 +31,15 @@ Before proceeding to the installation of the project, make sure you have the fol
 <br><br>
 In case you want to keep the docker images turned on after running the tests, instead of running the ``./build_deploy_test.sh`` from ``./end-to-end-test`` directory, run the ``./build_deploy.sh`` script.
 
+### Note: RabbitMQ Compose Service
+Even though the `docker-compose` mechanism employs a custom health check for the RabbitMQ container, its booting is completely failing occasionally (as seen in our Jenkins build history). To verify the application testing and deployment, one should try restarting the compose deployment until the RabbitMQ service is marked as healthy.
+
 ### Jenkins Access
 [Jenkins URL](http://fm-18.compute.dtu.dk:8282/view/DTUPay-Platform/)
 <br><br>
 Credentials:
 ``Login: huba |
 Password: group18``
+
+#### Project completed in course 02267 Software Development of Web Services @ Technical University of Denmark 
+<img src="https://user-images.githubusercontent.com/65953954/120001846-7f05f180-bfd4-11eb-8c11-2379a547dc9f.jpg" alt="drawing" width="100"/>
