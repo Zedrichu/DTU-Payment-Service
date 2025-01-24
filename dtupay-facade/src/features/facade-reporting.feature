@@ -13,7 +13,6 @@ Feature: dtupay.services.facade DTUPay Facade Reporting Feature
     When the "MerchantReportGenerated" event is received for merchant
     Then the retrieved merchant report is empty
 
-
   Scenario: Successful Manager Report Request
     When a manager is requesting a manager report
     Then the "ManagerReportRequested" event is sent

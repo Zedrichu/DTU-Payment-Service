@@ -1,0 +1,214 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CustomerService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services</a>
+</div>
+
+<h1>Coverage Summary for Class: CustomerService (dtupay.services)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CustomerService</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (27/27)
+  </span>
+</td>
+</tr>
+  <tr>
+    <td class="name">CustomerService$1</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (28/28)
+  </span>
+</td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services;
+&nbsp;
+&nbsp;import dtupay.exceptions.AccountCreationException;
+&nbsp;import dtupay.exceptions.DeregisterException;
+&nbsp;import dtupay.exceptions.TokenRequestException;
+&nbsp;import dtupay.model.Customer;
+&nbsp;import dtupay.model.Token;
+&nbsp;import jakarta.ws.rs.client.Client;
+&nbsp;import jakarta.ws.rs.client.ClientBuilder;
+&nbsp;import jakarta.ws.rs.client.Entity;
+&nbsp;import jakarta.ws.rs.client.WebTarget;
+&nbsp;import jakarta.ws.rs.core.GenericType;
+&nbsp;import jakarta.ws.rs.core.MediaType;
+&nbsp;import jakarta.ws.rs.core.Response;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;
+<b class="fc">&nbsp;public class CustomerService {</b>
+&nbsp;
+<b class="fc">&nbsp;  Client client = ClientBuilder.newClient();</b>
+<b class="fc">&nbsp;  WebTarget baseURL = client.target(&quot;http://localhost:8080&quot;);</b>
+&nbsp;
+&nbsp;  public Customer register(Customer customer) throws AccountCreationException {
+<b class="fc">&nbsp;    Response response = baseURL</b>
+<b class="fc">&nbsp;          .path(&quot;/customers&quot;)</b>
+<b class="fc">&nbsp;          .request()</b>
+<b class="fc">&nbsp;          .post(Entity.entity(customer, MediaType.APPLICATION_JSON));</b>
+&nbsp;
+<b class="fc">&nbsp;    if (response.getStatus() != Response.Status.CREATED.getStatusCode()) {</b>
+<b class="fc">&nbsp;      throw new AccountCreationException(response.readEntity(String.class));</b>
+&nbsp;    }
+<b class="fc">&nbsp;    return response.readEntity(Customer.class);</b>
+&nbsp;  }
+&nbsp;
+&nbsp;    public ArrayList&lt;Token&gt; requestTokens(String customerId, int noTokens) throws TokenRequestException {
+&nbsp;
+<b class="fc">&nbsp;      Response response = baseURL</b>
+<b class="fc">&nbsp;              .path(&quot;/customers&quot;)</b>
+<b class="fc">&nbsp;              .path(customerId)</b>
+<b class="fc">&nbsp;              .path(&quot;/tokens&quot;)</b>
+<b class="fc">&nbsp;              .request()</b>
+<b class="fc">&nbsp;              .post(Entity.entity(noTokens,MediaType.APPLICATION_JSON));</b>
+&nbsp;
+<b class="fc">&nbsp;      if (response.getStatus() != Response.Status.OK.getStatusCode()) {</b>
+<b class="fc">&nbsp;        throw new TokenRequestException(response.readEntity(String.class));</b>
+&nbsp;      }
+&nbsp;
+<b class="fc">&nbsp;      return response.readEntity(new GenericType&lt;ArrayList&lt;Token&gt;&gt;() {});</b>
+&nbsp;    }
+&nbsp;
+&nbsp;  public boolean deregister(String customerId) throws DeregisterException {
+<b class="fc">&nbsp;    Response response = baseURL</b>
+<b class="fc">&nbsp;          .path(&quot;/customers&quot;)</b>
+<b class="fc">&nbsp;          .path(customerId)</b>
+<b class="fc">&nbsp;          .request()</b>
+<b class="fc">&nbsp;          .delete();</b>
+&nbsp;
+<b class="fc">&nbsp;    if (response.getStatus() != Response.Status.OK.getStatusCode()) {</b>
+<b class="fc">&nbsp;      throw new DeregisterException(response.readEntity(String.class));</b>
+&nbsp;    }
+<b class="fc">&nbsp;    return true;</b>
+&nbsp;  }
+&nbsp;}
+&nbsp;
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>

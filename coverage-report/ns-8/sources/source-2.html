@@ -1,0 +1,167 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > EventTypes</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services.account.utilities</a>
+</div>
+
+<h1>Coverage Summary for Class: EventTypes (dtupay.services.account.utilities)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">EventTypes</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    75%
+  </span>
+  <span class="absValue">
+    (3/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    96,6%
+  </span>
+  <span class="absValue">
+    (28/29)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services.account.utilities;
+&nbsp;
+&nbsp;import dtupay.services.account.annotations.ClassAuthor;
+&nbsp;
+<b class="fc">&nbsp;@ClassAuthor(author = &quot;Adrian Ursu&quot;, stdno = &quot;s240160&quot;)</b>
+&nbsp;public enum EventTypes {
+<b class="fc">&nbsp;    CUSTOMER_REGISTRATION_REQUESTED(&quot;CustomerRegistrationRequested&quot;),</b>
+<b class="fc">&nbsp;    CUSTOMER_ACCOUNT_CREATED(&quot;CustomerAccountCreated&quot;),</b>
+<b class="fc">&nbsp;    CUSTOMER_ACCOUNT_VERIFIED(&quot;CustomerAccountVerified&quot;),</b>
+<b class="fc">&nbsp;    CUSTOMER_ACCOUNT_INVALID(&quot;CustomerAccountInvalid&quot;),</b>
+<b class="fc">&nbsp;    CUSTOMER_ACCOUNT_CREATION_FAILED(&quot;CustomerAccountCreationFailed&quot;),</b>
+<b class="fc">&nbsp;    CUSTOMER_DEREGISTRATION_REQUESTED(&quot;CustomerDeregistrationRequested&quot;),</b>
+<b class="fc">&nbsp;    CUSTOMER_DELETED(&quot;CustomerDeleted&quot;),</b>
+<b class="fc">&nbsp;    CUSTOMER_DELETED_FAILED(&quot;CustomerDeleteFailed&quot;),</b>
+&nbsp;    
+<b class="fc">&nbsp;    MERCHANT_ACCOUNT_VERIFIED(&quot;MerchantAccountVerified&quot;),</b>
+<b class="fc">&nbsp;    MERCHANT_ACCOUNT_INVALID(&quot;MerchantAccountInvalid&quot;),</b>
+<b class="fc">&nbsp;    MERCHANT_REGISTRATION_REQUESTED(&quot;MerchantRegistrationRequested&quot;),</b>
+<b class="fc">&nbsp;    MERCHANT_ACCOUNT_CREATED(&quot;MerchantAccountCreated&quot;),</b>
+<b class="fc">&nbsp;    MERCHANT_ACCOUNT_CREATION_FAILED(&quot;MerchantAccountCreationFailed&quot;),</b>
+<b class="fc">&nbsp;    MERCHANT_DEREGISTRATION_REQUESTED(&quot;MerchantDeregistrationRequested&quot;),</b>
+<b class="fc">&nbsp;    MERCHANT_DELETED(&quot;MerchantDeleted&quot;),</b>
+<b class="fc">&nbsp;    MERCHANT_DELETED_FAILED(&quot;MerchantDeleteFailed&quot;),</b>
+&nbsp;
+<b class="fc">&nbsp;    PAYMENT_INITIATED(&quot;PaymentInitiated&quot;),</b>
+<b class="fc">&nbsp;    PAYMENT_TOKEN_VERIFIED(&quot;PaymentTokenVerified&quot;),</b>
+&nbsp;
+<b class="fc">&nbsp;    TOKEN_ACCOUNT_INVALID(&quot;TokenAccountInvalid&quot;),</b>
+&nbsp;
+<b class="fc">&nbsp;    TOKENS_REQUESTED(&quot;TokensRequested&quot;),</b>
+<b class="fc">&nbsp;    TOKEN_ACCOUNT_VERIFIED(&quot;TokenAccountVerified&quot;);</b>
+&nbsp;
+&nbsp;    private final String topic;
+&nbsp;
+<b class="fc">&nbsp;    EventTypes(String topic) {</b>
+<b class="fc">&nbsp;        this.topic = topic;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public String getTopic() {
+<b class="fc">&nbsp;        return topic;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    public static EventTypes fromTopic(String topic) {
+<b class="pc">&nbsp;        for (EventTypes eventType : values()) {</b>
+<b class="fc">&nbsp;            if (eventType.topic.equals(topic)) {</b>
+<b class="fc">&nbsp;              return eventType;</b>
+&nbsp;            }
+&nbsp;        }
+<b class="nc">&nbsp;        return null;</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>

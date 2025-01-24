@@ -1,0 +1,169 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > MemoryTokenRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">dtupay.services.token.domain.models</a>
+</div>
+
+<h1>Coverage Summary for Class: MemoryTokenRepository (dtupay.services.token.domain.models)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">MemoryTokenRepository</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (6/6)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (4/4)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (17/17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package dtupay.services.token.domain.models;
+&nbsp;
+&nbsp;import dtupay.services.token.annotations.MethodAuthor;
+&nbsp;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.Map;
+&nbsp;import java.util.concurrent.ConcurrentHashMap;
+&nbsp;
+<b class="fc">&nbsp;public class MemoryTokenRepository implements TokenRepository {</b>
+&nbsp;
+<b class="fc">&nbsp;	private Map&lt;String, ArrayList&lt;Token&gt;&gt; tokenLists = new ConcurrentHashMap&lt;&gt;();</b>
+<b class="fc">&nbsp;	private Map&lt;Token, String&gt; customerIds = new ConcurrentHashMap&lt;&gt;();</b>
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Paul Becker&quot;)
+&nbsp;	@Override
+&nbsp;	public synchronized int getNumberOfTokens(String customerId){
+<b class="fc">&nbsp;		return tokenLists.getOrDefault(customerId, new ArrayList&lt;&gt;()).size();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Adrian Zvizdenco&quot;, stdno = &quot;s204683&quot;)
+&nbsp;	@Override
+&nbsp;	public synchronized String extractId(Token token) {
+<b class="fc">&nbsp;		var cid = customerIds.get(token);</b>
+<b class="fc">&nbsp;		if (cid == null) { return null;}</b>
+<b class="fc">&nbsp;		customerIds.remove(token);</b>
+<b class="fc">&nbsp;		tokenLists.get(cid).remove(token);</b>
+<b class="fc">&nbsp;		return cid;</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Adrian Zvizdenco&quot;, stdno = &quot;s204683&quot;)
+&nbsp;	@Override
+&nbsp;	public synchronized void removeId(String customerId) {
+<b class="fc">&nbsp;		ArrayList&lt;Token&gt; tokens = tokenLists.get(customerId);</b>
+<b class="fc">&nbsp;		tokens.forEach(token -&gt; customerIds.remove(token));</b>
+<b class="fc">&nbsp;		tokenLists.remove(customerId);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	@MethodAuthor(author = &quot;Paul Becker&quot;)
+&nbsp;	@Override
+&nbsp;	public synchronized void addTokens(String customerId, ArrayList&lt;Token&gt; tokens) {
+<b class="fc">&nbsp;		if (!tokenLists.containsKey(customerId)) {</b>
+<b class="fc">&nbsp;			tokenLists.put(customerId, new ArrayList&lt;&gt;());</b>
+&nbsp;		}
+<b class="fc">&nbsp;		tokenLists.get(customerId).addAll(tokens);</b>
+&nbsp;
+<b class="fc">&nbsp;		tokens.forEach((token) -&gt; customerIds.put(token, customerId));</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	@Override
+&nbsp;	public synchronized boolean exists(String customerId) {
+<b class="fc">&nbsp;		return tokenLists.containsKey(customerId);</b>
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-24 00:36</div>
+</div>
+</body>
+</html>
