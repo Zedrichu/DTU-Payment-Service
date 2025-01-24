@@ -28,11 +28,16 @@ Before proceeding to the installation of the project, make sure you have the fol
 2. Navigate to the end-to-end-test folder``cd DTU-Payment-Service/end-to-end-test``
 3. To build and install the system locally using docker, execute the following script:``sh ./build_deploy_test.sh``
 <br>The script builds and deploys the docker images, run the tests and then stops the images.
-<br><br>
-In case you want to keep the docker images turned on after running the tests, instead of running the ``./build_deploy_test.sh`` from ``./end-to-end-test`` directory, run the ``./build_deploy.sh`` script.
+<br><be>
+Alternatively, in the root folder of the repository the script ``sh ./build_run.sh`` is supposed to achieve the same functionality.
+In case you want to keep the docker images running after build, instead of running the ``./build_deploy_test.sh`` from ``./end-to-end-test`` directory, run the ``./build_deploy.sh`` script.
+
 
 ### Note: RabbitMQ Compose Service
 Even though the `docker-compose` mechanism employs a custom health check for the RabbitMQ container, its booting is completely failing occasionally (as seen in our Jenkins build history). To verify the application testing and deployment, one should try restarting the compose deployment until the RabbitMQ service is marked as healthy.
+
+### GitHub Access
+[GitHub URL](https://github.com/Zedrichu/DTU-Payment-Service)
 
 ### Jenkins Access
 [Jenkins URL](http://fm-18.compute.dtu.dk:8282/view/DTUPay-Platform/)
