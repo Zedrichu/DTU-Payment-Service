@@ -76,7 +76,7 @@ public class PaymentStepDefs {
 
     @When("the merchant initiates a payment of {int}")
     public void theMerchantInitiatesAPaymentOf(int amount) {
-        paymentRequest = new PaymentRequest(registeredMerchant.payId(),customersTokens.get(0),amount);
+        paymentRequest = new PaymentRequest(registeredMerchant.payId(),customersTokens.getFirst(),amount);
         paymentSucceeded = merchantService.pay(paymentRequest);
     }
 
