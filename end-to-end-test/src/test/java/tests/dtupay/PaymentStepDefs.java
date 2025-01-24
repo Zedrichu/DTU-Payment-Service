@@ -8,6 +8,7 @@ import dtupay.exceptions.TokenRequestException;
 import dtupay.model.*;
 import dtupay.services.CustomerService;
 import dtupay.services.MerchantService;
+import dtupay.services.ReportService;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -75,7 +76,7 @@ public class PaymentStepDefs {
 
     @When("the merchant initiates a payment of {int}")
     public void theMerchantInitiatesAPaymentOf(int amount) {
-        paymentRequest = new PaymentRequest(registeredMerchant.payId(),customersTokens.getFirst(),amount);
+        paymentRequest = new PaymentRequest(registeredMerchant.payId(),customersTokens.get(0),amount);
         paymentSucceeded = merchantService.pay(paymentRequest);
     }
 
@@ -99,6 +100,9 @@ public class PaymentStepDefs {
     @And("the merchants balance in the bank is {int}")
     public void theMerchantsBalanceInTheBankIs(int balance) throws BankServiceException_Exception {
         assertEquals(bankService.getAccount(registeredMerchant.bankAccountNo()).getBalance(), BigDecimal.valueOf(balance));
+        ReportService reportService = new ReportService();
+        System.out.println(reportService.getMerchantReport(registeredMerchant.payId()));
+
     }
 
     ArrayList<Token> customersTokens = new ArrayList<>();

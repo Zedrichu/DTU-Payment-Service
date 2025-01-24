@@ -13,3 +13,27 @@ Feature: dtupay.E2E DTUPay Reporting
   Scenario: Successful Reporting Generation for Manager
     When the manager requests a report
     Then the manager report is retrieved
+
+  Scenario: Successful Reporting Generation For Customer After Transaction
+    Given a registered customer with tokens
+    And a registered merchant
+    And the merchant has requested a payment for 100 from customer
+    When the customer requests a report
+    Then the customer report is retrieved
+    And the customer report contains an entry
+
+  Scenario: Successful Reporting Generation For Merchant After Transaction
+    Given a registered customer with tokens
+    And a registered merchant
+    And the merchant has requested a payment for 100 from customer
+    When the merchant requests a report
+    Then the merchant report is retrieved
+    And the merchant report contains an entry
+
+  Scenario: Successful Reporting Generation For Manager After Transaction
+    Given a registered customer with tokens
+    And a registered merchant
+    And the merchant has requested a payment for 100 from customer
+    When the manager requests a report
+    Then the manager report is retrieved
+    And the manager report contains an entry
