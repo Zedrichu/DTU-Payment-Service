@@ -29,6 +29,7 @@ Before proceeding to the installation of the project, make sure you have the fol
 3. To build and install the system locally using docker, execute the following script:``sh ./build_deploy_test.sh``
 <br>The script builds and deploys the docker images, run the tests and then stops the images.
 <br><be>
+
 Alternatively, in the root folder of the repository the script ``sh ./build_run.sh`` is supposed to achieve the same functionality.
 In case you want to keep the docker images running after build, instead of running the ``./build_deploy_test.sh`` from ``./end-to-end-test`` directory, run the ``./build_deploy.sh`` script.
 
