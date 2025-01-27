@@ -1,6 +1,7 @@
-package dtupay.services.token.domain.models;
+package dtupay.services.token.domain;
 
 import dtupay.services.token.annotations.MethodAuthor;
+import dtupay.services.token.domain.models.Token;
 
 import java.util.ArrayList;
 import java.util.Map;

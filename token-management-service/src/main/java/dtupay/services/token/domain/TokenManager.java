@@ -1,7 +1,10 @@
-package dtupay.services.token.domain.models;
+package dtupay.services.token.domain;
 
 import dtupay.services.token.annotations.MethodAuthor;
 
+import dtupay.services.token.domain.models.PaymentRequest;
+import dtupay.services.token.domain.models.Token;
+import dtupay.services.token.domain.models.TokenGenerationAggregate;
 import dtupay.services.token.utilities.Correlator;
 import dtupay.services.token.utilities.EventTypes;
 import messaging.Event;

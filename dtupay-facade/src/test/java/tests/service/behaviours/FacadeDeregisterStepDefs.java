@@ -91,7 +91,7 @@ public class FacadeDeregisterStepDefs {
 
 	@Then("the {string} event for the customer is sent with their id")
 	public void theEventForTheCustomerIsSentWithTheirId(String eventType) {
-		eventTypeName = EventTypes.fromTopic(eventType);
+		eventTypeName = EventTypes.valueOf(eventType);
 		String id = customerIdKeyExtractor.apply(mockEvent);
 
 		Event event = publishedEvents.get(id).join();

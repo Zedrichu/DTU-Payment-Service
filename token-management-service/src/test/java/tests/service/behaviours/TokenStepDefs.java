@@ -1,6 +1,9 @@
 package tests.service.behaviours;
 
 import com.google.gson.internal.LinkedTreeMap;
+import dtupay.services.token.domain.MemoryTokenRepository;
+import dtupay.services.token.domain.TokenManager;
+import dtupay.services.token.domain.TokenRepository;
 import dtupay.services.token.domain.models.*;
 import dtupay.services.token.utilities.Correlator;
 import dtupay.services.token.utilities.EventTypes;

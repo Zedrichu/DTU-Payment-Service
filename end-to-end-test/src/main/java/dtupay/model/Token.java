@@ -1,6 +1,5 @@
 package dtupay.model;
 
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.Value;
 

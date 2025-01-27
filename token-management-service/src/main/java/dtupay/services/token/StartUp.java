@@ -1,8 +1,8 @@
 package dtupay.services.token;
 
-import dtupay.services.token.domain.models.MemoryTokenRepository;
-import dtupay.services.token.domain.models.TokenManager;
-import dtupay.services.token.domain.models.TokenRepository;
+import dtupay.services.token.domain.MemoryTokenRepository;
+import dtupay.services.token.domain.TokenManager;
+import dtupay.services.token.domain.TokenRepository;
 import messaging.implementations.RabbitMqQueue;
 
 public class StartUp {
