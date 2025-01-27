@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="payment-management-service" />
+        <module name="cqrs-reporting-service" />
         <module name="messaging-utilities" />
         <module name="account-management-service" />
         <module name="dtupay-facade" />
@@ -16,9 +17,6 @@
         <module name="token-management-service" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="cqrs-reporting-service" target="23" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

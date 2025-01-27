@@ -6,7 +6,7 @@ import dtupay.services.token.domain.TokenRepository;
 import messaging.implementations.RabbitMqQueue;
 
 public class StartUp {
-	private String HOSTNAME = "rabbitMq";
+	private final String HOSTNAME = "rabbitMq";
 
 	public static void main(String[] args) throws Exception {
 		new StartUp().startUp();

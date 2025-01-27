@@ -1,7 +1,7 @@
 package dtupay.services.reporting.domain.repositories;
 
-import dtupay.services.reporting.domain.views.CustomerView;
-import dtupay.services.reporting.domain.views.MerchantView;
+import dtupay.services.reporting.domain.aggregate.views.CustomerView;
+import dtupay.services.reporting.domain.aggregate.views.MerchantView;
 import dtupay.services.reporting.domain.events.CustomerViewAdded;
 import dtupay.services.reporting.domain.events.MerchantViewAdded;
 import dtupay.services.reporting.domain.events.ReportCreated;

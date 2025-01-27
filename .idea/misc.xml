@@ -14,6 +14,7 @@
         <option value="$PROJECT_DIR$/payment-management-service/pom.xml" />
         <option value="$PROJECT_DIR$/token-management-service/pom.xml" />
         <option value="$PROJECT_DIR$/reporting-service/pom.xml" />
+        <option value="$PROJECT_DIR$/cqrs-reporting-service/pom.xml" />
       </list>
     </option>
   </component>

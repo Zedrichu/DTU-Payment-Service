@@ -1,7 +1,9 @@
 package dtupay.services.reporting.utilities;
 
 import dtupay.services.reporting.annotations.ClassAuthor;
+import lombok.Getter;
 
+@Getter
 @ClassAuthor(author = "Adrian Ursu", stdno = "s240160")
 public enum EventTypes {
     PAYMENT_INITIATED("PaymentInitiated"),
@@ -19,19 +21,6 @@ public enum EventTypes {
 
     EventTypes(String topic) {
         this.topic = topic;
-    }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public static EventTypes fromTopic(String topic) {
-        for (EventTypes eventType : values()) {
-            if (eventType.topic.equals(topic)) {
-              return eventType;
-            }
-        }
-        throw new IllegalArgumentException("No matching EventTypes for topic: " + topic);
     }
 
     @Override

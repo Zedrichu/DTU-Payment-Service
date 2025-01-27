@@ -1,10 +1,13 @@
-package dtupay.services.reporting.domain.views;
+package dtupay.services.reporting.domain.aggregate;
 
+import dtupay.services.reporting.domain.aggregate.views.CustomerView;
+import dtupay.services.reporting.domain.aggregate.views.MerchantView;
 import dtupay.services.reporting.domain.events.CustomerViewAdded;
 import dtupay.services.reporting.domain.events.Event;
 import dtupay.services.reporting.domain.events.MerchantViewAdded;
 import dtupay.services.reporting.domain.events.ReportCreated;
 import dtupay.services.reporting.domain.models.PaymentRecord;
+import dtupay.services.reporting.domain.repositories.ReportRepository;
 import dtupay.services.reporting.utilities.intramessaging.Message;
 
 import lombok.Getter;
@@ -19,12 +22,12 @@ public class PaymentReport {
     private String reportId;
     private String role;
 
-    private Set<CustomerView> customerViews = new HashSet<>();
-    private Set<MerchantView> merchantViews = new HashSet<>();
+    private final Set<CustomerView> customerViews = new HashSet<>();
+    private final Set<MerchantView> merchantViews = new HashSet<>();
 
-    private List<Event> appliedEvents = new ArrayList<Event>();
+    private final List<Event> appliedEvents = new ArrayList<Event>();
 
-    private Map<Class<? extends Message>, Consumer<Message>> handlers = new HashMap<>();
+    private final Map<Class<? extends Message>, Consumer<Message>> handlers = new HashMap<>();
 
     public static PaymentReport createManager() {
         var reportId = "admin";
@@ -68,7 +71,6 @@ public class PaymentReport {
         handlers.put(ReportCreated.class, e -> apply((ReportCreated) e));
     }
 
-    /* Business Logic my ass, yes please (-===3 */
     public void update(Set<CustomerView> customerViews, Set<MerchantView> merchantViews) {
         addNewCustomerViews(customerViews);
         addNewMerchantViews(merchantViews);

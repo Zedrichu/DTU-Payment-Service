@@ -1,8 +1,8 @@
 package dtupay.services.reporting.domain;
 
-import dtupay.services.reporting.domain.views.CustomerView;
-import dtupay.services.reporting.domain.views.MerchantView;
-import dtupay.services.reporting.domain.views.PaymentReport;
+import dtupay.services.reporting.domain.aggregate.views.CustomerView;
+import dtupay.services.reporting.domain.aggregate.views.MerchantView;
+import dtupay.services.reporting.domain.aggregate.PaymentReport;
 import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.domain.repositories.ReadModelRepository;
 import dtupay.services.reporting.domain.repositories.ReportRepository;
@@ -63,23 +63,14 @@ public class ReportingManager {
     }
 
 
-    /* Command Operation */
-    /*
-    public String createManagerReport(PaymentRecord paymentRecord) {
-        // Create a paymentReport
-        PaymentReport paymentReport = PaymentReport.createManager(paymentRecord);
-        reportRepository.save(paymentReport);
-        return paymentReport.getReportId();
-    }
-    */
-
-
+    /* Command Operations */
     public String createCustomerReport(PaymentRecord paymentRecord) {
         // Create a paymentReport
         PaymentReport paymentReport = PaymentReport.createCustomer(paymentRecord);
         reportRepository.save(paymentReport);
         return paymentReport.getReportId();
     }
+
     public String createMerchantReport(PaymentRecord paymentRecord) {
         // Create a paymentReport
         PaymentReport paymentReport = PaymentReport.createMerchant(paymentRecord);
@@ -92,7 +83,6 @@ public class ReportingManager {
         PaymentReport paymentReport = reportRepository.getById(reportId);
         paymentReport.update(customerViews, merchantViews);
         reportRepository.save(paymentReport);
-
     }
 
 
@@ -102,7 +92,6 @@ public class ReportingManager {
     //    return readModelRepository.getReportsById(customer);
     //}
 
-
     // report/{id} ? Or report/{id}/customer
 
     // aggregate/ User (aggregate) -> UserId (aggregate root)
@@ -110,10 +99,6 @@ public class ReportingManager {
     //                             -> Contact
 
     // aggregate/ Report (aggregated) -> TransactionId (aggregate root)
-
-
-
-
 
     //public Set<CustomerReport> paymentByCustomerId(String cId) {
 
