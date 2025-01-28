@@ -35,6 +35,6 @@ public class EventStore {
     }
 
     public void addEvents(@NonNull String reportId, List<Event> appliedEvents) {
-        appliedEvents.stream().forEach(e -> addEvent(reportId, e));
+        appliedEvents.forEach(e -> addEvent(reportId, e));
     }
 }

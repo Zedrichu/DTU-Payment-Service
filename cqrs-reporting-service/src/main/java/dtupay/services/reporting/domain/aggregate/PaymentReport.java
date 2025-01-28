@@ -32,8 +32,11 @@ public class PaymentReport {
     public static PaymentReport createManager() {
         var reportId = "admin";
         ReportCreated event = new ReportCreated(reportId, "manager");
+
         var report = new PaymentReport();
         report.reportId = "admin";
+        report.role = "manager";
+
         report.appliedEvents.add(event);
         return report;
     }
@@ -41,7 +44,11 @@ public class PaymentReport {
     public static PaymentReport createMerchant(PaymentRecord paymentRecord) {
         var reportId = paymentRecord.merchantId();
         ReportCreated event = new ReportCreated(reportId, "merchant");
+
         var merchantReport = new PaymentReport();
+        merchantReport.reportId = reportId;
+        merchantReport.role = "merchant";
+
         merchantReport.appliedEvents.add(event);
         return merchantReport;
     }
@@ -49,7 +56,11 @@ public class PaymentReport {
     public static PaymentReport createCustomer(PaymentRecord paymentRecord) {
         var reportId = paymentRecord.customerId();
         ReportCreated event = new ReportCreated(reportId, "customer");
+
         var customerReport = new PaymentReport();
+        customerReport.reportId = reportId;
+        customerReport.role = "customer";
+
         customerReport.appliedEvents.add(event);
         return customerReport;
     }
@@ -81,14 +92,14 @@ public class PaymentReport {
         var events = customerViews.stream().filter(a -> !getCustomerViews().contains(a))
               .map(customerView -> (Event) new CustomerViewAdded(reportId, customerView.getAmount(),
                     customerView.getToken(), customerView.getMerchantId()))
-              .collect(Collectors.toList());
+              .toList();
         appliedEvents.addAll(events);
     }
 
     private void addNewMerchantViews(Set<MerchantView> merchantViews) {
         var events = merchantViews.stream().filter(mw -> !getMerchantViews().contains(mw))
               .map(mView -> (Event) new MerchantViewAdded(reportId, mView.getAmount(), mView.getToken()))
-              .collect(Collectors.toList());
+              .toList();
         appliedEvents.addAll(events);
     }
 
@@ -97,7 +108,7 @@ public class PaymentReport {
 
     public void applyEvents(Stream<Event> events) {
         events.forEachOrdered(this::applyEvent);
-        if (this.getReportId() != null) {
+        if (this.getReportId() == null) {
             throw new Error("Report ID does not exist");
         }
     }

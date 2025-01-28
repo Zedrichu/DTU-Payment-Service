@@ -1,6 +1,7 @@
 package dtupay.services.reporting.domain;
 
 import dtupay.services.reporting.domain.aggregate.views.CustomerView;
+import dtupay.services.reporting.domain.aggregate.views.ManagerView;
 import dtupay.services.reporting.domain.aggregate.views.MerchantView;
 import dtupay.services.reporting.domain.aggregate.PaymentReport;
 import dtupay.services.reporting.domain.models.PaymentRecord;
@@ -44,25 +45,39 @@ public class ReportingManager {
 
     public void handleBankTransferConfirmed(Event event) {
         logger.debug("Received BankTransferConfirmed event: {}", event);
-        var paymentRecord = event.getArgument(0, PaymentRecord.class);
+        var pay = event.getArgument(0, PaymentRecord.class);
+
+        CustomerView cView = new CustomerView(pay.amount(), pay.merchantId(), pay.token());
+        MerchantView mView = new MerchantView(pay.amount(), pay.token());
         String reportId;
+
         // First time Customer, Merchant report creation
-        var response1 = this.readModelRepository.contains(paymentRecord.merchantId());
+        var response1 = this.readModelRepository.contains(pay.merchantId());
         if (!response1.getKey()) {
-            reportId = createMerchantReport(paymentRecord);
-
+            reportId = createMerchantReport(pay);
         }
+        logPayment(pay.merchantId(), mView);
 
-        var response2 = this.readModelRepository.contains(paymentRecord.customerId());
+        var response2 = this.readModelRepository.contains(pay.customerId());
         if (!response2.getKey()) {
-            reportId = createCustomerReport(paymentRecord);
+            reportId = createCustomerReport(pay);
         }
-        //updateReport(reportId);
+        logPayment(pay.customerId(), cView);
 
-
+        logPayment("admin", mView);
+        logPayment("admin", cView);
     }
 
+    /* Helper methods */
+    public void logPayment(String customerId, CustomerView customerView) {
+        updateReport(customerId, Set.of(customerView), Set.of());
+    }
 
+    public void logPayment(String customerId, MerchantView merchantView) {
+        updateReport(customerId, Set.of(), Set.of(merchantView));
+    }
+
+    /*____________________________________________________________________________________*/
     /* Command Operations */
     public String createCustomerReport(PaymentRecord paymentRecord) {
         // Create a paymentReport
@@ -85,14 +100,19 @@ public class ReportingManager {
         reportRepository.save(paymentReport);
     }
 
+    /*_________________________________________________________________________*/
+    /* Query Operations */
+    public Set<CustomerView> customerViews(String customerId) {
+        return readModelRepository.getCustomerViews(customerId);
+    }
 
-    /* Query Operation */
+    public Set<MerchantView> merchantViews(String customerId) {
+        return readModelRepository.getMerchantViews(customerId);
+    }
 
-    //public Set<CustomerReport> paymentsByCustomerId(String customerId) {
-    //    return readModelRepository.getReportsById(customer);
-    //}
-
-    // report/{id} ? Or report/{id}/customer
+    public Set<ManagerView> managerViews() {
+        return readModelRepository.getAllManagerViews();
+    }
 
     // aggregate/ User (aggregate) -> UserId (aggregate root)
     //                             -> Address
@@ -100,6 +120,18 @@ public class ReportingManager {
 
     // aggregate/ Report (aggregated) -> TransactionId (aggregate root)
 
-    //public Set<CustomerReport> paymentByCustomerId(String cId) {
+    // Report - customerId, token, amount, merchantId, customerBank, merchantBank, description
+    // -> Token (aggregate root)
+    // repo.save(report)
+    // return report.getId() -> Token
 
+    // manager: all fields -> Set<Report>
+    // customer: <amount, merchantId, token> with filter <customerId> on report
+    // merchant: <amount, token> with filter <merchantId> on report
+    // others: <customerId, customerBank, merchantBank, description>
+
+    // Report (aggregate) -> ReportId(token), CustomerView(...), MerchantView(...), HiddenView(...)
+    // Report repository:
+    // 		Set <CustomerView> customerReportsByCustomerId(ReportId, String customerId)
+    // 		Set <MerchantView> merchantReportsByMerchantId(ReportId, String merchantId)
 }

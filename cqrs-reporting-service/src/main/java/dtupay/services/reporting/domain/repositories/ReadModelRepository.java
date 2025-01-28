@@ -1,6 +1,7 @@
 package dtupay.services.reporting.domain.repositories;
 
 import dtupay.services.reporting.domain.aggregate.views.CustomerView;
+import dtupay.services.reporting.domain.aggregate.views.ManagerView;
 import dtupay.services.reporting.domain.aggregate.views.MerchantView;
 import dtupay.services.reporting.domain.events.CustomerViewAdded;
 import dtupay.services.reporting.domain.events.MerchantViewAdded;
@@ -8,12 +9,13 @@ import dtupay.services.reporting.domain.events.ReportCreated;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ReadModelRepository {
 
-    private Map<String, Set<CustomerView>> customerViews = new HashMap<>();
+    private final Map<String, Set<CustomerView>> customerViews = new HashMap<>();
 
-    private Map<String, Set<MerchantView>> merchantViews = new HashMap<>();
+    private final Map<String, Set<MerchantView>> merchantViews = new HashMap<>();
 
     public ReadModelRepository(MessageQueue eventQueue) {
         eventQueue.addHandler(ReportCreated.class, e -> apply((ReportCreated) e));
@@ -44,5 +46,21 @@ public class ReadModelRepository {
         var merchantViewsByReport = merchantViews.getOrDefault(event.getReportId(), new HashSet<>());
         merchantViewsByReport.add(new MerchantView(event.getAmount(),event.getToken()));
         merchantViews.put(event.getReportId(), merchantViewsByReport);
+    }
+
+
+    public Set<CustomerView> getCustomerViews(String customerId) {
+        return customerViews.getOrDefault(customerId, new HashSet<>());
+    }
+
+    public Set<MerchantView> getMerchantViews(String merchantId) {
+        return merchantViews.getOrDefault(merchantId, new HashSet<>());
+    }
+
+    public Set<ManagerView> getAllManagerViews() {
+        return customerViews.entrySet().stream()
+              .flatMap(entry -> entry.getValue().stream()
+                  .map(value -> new ManagerView(entry.getKey(), value)))
+              .collect(Collectors.toSet());
     }
 }
