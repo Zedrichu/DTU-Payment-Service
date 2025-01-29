@@ -1,4 +1,4 @@
-package dtupay.services.reporting.domain.aggregate.views;
+package dtupay.services.reporting.domain.projection.views;
 
 import dtupay.services.reporting.domain.models.Token;
 import lombok.Value;

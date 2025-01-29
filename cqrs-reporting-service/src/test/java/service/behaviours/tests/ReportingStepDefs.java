@@ -3,8 +3,8 @@ package service.behaviours.tests;
 import dtupay.services.reporting.domain.ReportingManager;
 import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.domain.models.Token;
+import dtupay.services.reporting.domain.repositories.LedgerRepository;
 import dtupay.services.reporting.domain.repositories.ReadModelRepository;
-import dtupay.services.reporting.domain.repositories.ReportRepository;
 import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.mock;
 public class ReportingStepDefs {
     private ReportingManager reportingManager;
     private ReadModelRepository readModelRepository;
-    private ReportRepository reportRepository;
+    private LedgerRepository reportRepository;
     private PaymentRecord paymentRecord;
     messaging.MessageQueue messageQueue = mock(messaging.MessageQueue.class);
     MessageQueue internalMQ = mock(MessageQueue.class);
@@ -26,7 +26,7 @@ public class ReportingStepDefs {
   @Given("a reporting service")
   public void aReportingService() {
     readModelRepository = new ReadModelRepository(internalMQ);
-    reportRepository = new ReportRepository(internalMQ);
+    reportRepository = new LedgerRepository(internalMQ);
     reportingManager = new ReportingManager(messageQueue, readModelRepository, reportRepository);
   }
 

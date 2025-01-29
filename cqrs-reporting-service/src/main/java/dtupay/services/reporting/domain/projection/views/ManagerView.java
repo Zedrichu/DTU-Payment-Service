@@ -1,4 +1,4 @@
-package dtupay.services.reporting.domain.aggregate.views;
+package dtupay.services.reporting.domain.projection.views;
 
 import dtupay.services.reporting.domain.models.Token;
 import lombok.Value;
@@ -15,10 +15,10 @@ public class ManagerView implements Serializable {
 	Token token;
 	String customerId;
 
-	public ManagerView(String customerId, CustomerView customerView) {
+	public ManagerView(String customerId, String merchantId, Token token, int amount) {
 		this.customerId = customerId;
-		this.merchantId = customerView.getMerchantId();
-		this.token = customerView.getToken();
-		this.amount = customerView.getAmount();
+		this.merchantId = merchantId;
+		this.token = token;
+		this.amount = amount;
 	}
 }

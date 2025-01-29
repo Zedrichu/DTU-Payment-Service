@@ -16,5 +16,5 @@ public abstract class Event implements Message, Serializable {
     @Getter
     private final long version = versionCount++;
 
-    public abstract String getReportId();
+    public abstract String getId();
 }

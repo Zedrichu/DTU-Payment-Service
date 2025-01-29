@@ -1,11 +1,9 @@
 package dtupay.services.reporting.domain.repositories;
 
-import dtupay.services.reporting.domain.aggregate.views.CustomerView;
-import dtupay.services.reporting.domain.aggregate.views.ManagerView;
-import dtupay.services.reporting.domain.aggregate.views.MerchantView;
-import dtupay.services.reporting.domain.events.CustomerViewAdded;
-import dtupay.services.reporting.domain.events.MerchantViewAdded;
-import dtupay.services.reporting.domain.events.ReportCreated;
+import dtupay.services.reporting.domain.events.LedgerCreated;
+import dtupay.services.reporting.domain.events.LedgerDeleted;
+import dtupay.services.reporting.domain.events.TransactionAdded;
+import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 
 import java.util.*;
@@ -13,54 +11,42 @@ import java.util.stream.Collectors;
 
 public class ReadModelRepository {
 
-    private final Map<String, Set<CustomerView>> customerViews = new HashMap<>();
-
-    private final Map<String, Set<MerchantView>> merchantViews = new HashMap<>();
+    // Mapping from LedgerId -> Set of Transaction Logs
+    private final Map<String, Set<PaymentRecord>> paymentRecords = new HashMap<>();
 
     public ReadModelRepository(MessageQueue eventQueue) {
-        eventQueue.addHandler(ReportCreated.class, e -> apply((ReportCreated) e));
-        eventQueue.addHandler(CustomerViewAdded.class, e -> apply((CustomerViewAdded) e));
-        eventQueue.addHandler(MerchantViewAdded.class, e -> apply((MerchantViewAdded) e));
+        eventQueue.addHandler(LedgerCreated.class, e -> apply((LedgerCreated) e));
+        eventQueue.addHandler(TransactionAdded.class, e -> apply((TransactionAdded) e));
+        eventQueue.addHandler(LedgerDeleted.class, e -> apply((LedgerDeleted) e));
     }
 
-    public AbstractMap.SimpleEntry<Boolean, String> contains(String reportId) {
-        String stack = customerViews.containsKey(reportId) ? "customer" : null;
-        stack = merchantViews.containsKey(reportId) && stack == null ? "merchant" : null;
-        if (stack != null) {
-            return new AbstractMap.SimpleEntry<>(true, stack);
-        }
-        return new AbstractMap.SimpleEntry<>(false, null);
-
+    public boolean contains(String ledgerId) {
+        return paymentRecords.containsKey(ledgerId);
     }
 
-    public void apply(ReportCreated event) {
+    public void apply(LedgerCreated event) {
     }
 
-    public void apply(CustomerViewAdded event) {
-        var customerViewsByReport = customerViews.getOrDefault(event.getReportId(), new HashSet<>());
-        customerViewsByReport.add(new CustomerView(event.getAmount(), event.getMerchantId(), event.getToken()));
-        customerViews.put(event.getReportId(), customerViewsByReport);
+    public void apply(TransactionAdded event) {
+        var transactionsByLedger = paymentRecords.getOrDefault(event.getId(), new HashSet<>());
+        transactionsByLedger.add(event.getTransaction());
+        paymentRecords.put(event.getId(), transactionsByLedger);
     }
 
-    public void apply(MerchantViewAdded event) {
-        var merchantViewsByReport = merchantViews.getOrDefault(event.getReportId(), new HashSet<>());
-        merchantViewsByReport.add(new MerchantView(event.getAmount(),event.getToken()));
-        merchantViews.put(event.getReportId(), merchantViewsByReport);
+    public void apply(LedgerDeleted event) {
+        var transactionsByLedger = paymentRecords.getOrDefault(event.getId(), new HashSet<>());
+        transactionsByLedger.clear();
+        paymentRecords.put(event.getId(), transactionsByLedger);
     }
 
 
-    public Set<CustomerView> getCustomerViews(String customerId) {
-        return customerViews.getOrDefault(customerId, new HashSet<>());
+    public Set<PaymentRecord> getTransactionsByLedger(String ledgerId) {
+        return paymentRecords.getOrDefault(ledgerId, new HashSet<>());
     }
 
-    public Set<MerchantView> getMerchantViews(String merchantId) {
-        return merchantViews.getOrDefault(merchantId, new HashSet<>());
-    }
-
-    public Set<ManagerView> getAllManagerViews() {
-        return customerViews.entrySet().stream()
-              .flatMap(entry -> entry.getValue().stream()
-                  .map(value -> new ManagerView(entry.getKey(), value)))
+    public Set<PaymentRecord> getAllTransactions() {
+        return paymentRecords.entrySet().stream()
+              .flatMap(entry -> entry.getValue().stream())
               .collect(Collectors.toSet());
     }
 }
