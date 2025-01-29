@@ -10,13 +10,17 @@ import dtupay.services.reporting.domain.projection.views.ManagerView;
 import dtupay.services.reporting.domain.projection.views.MerchantView;
 import dtupay.services.reporting.domain.repositories.LedgerRepository;
 import dtupay.services.reporting.domain.repositories.ReadModelRepository;
+import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;
+import io.cucumber.java.an.E;
 import messaging.Event;
 import messaging.MessageQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ReportingManager {
     private static final Logger logger = LoggerFactory.getLogger(ReportingManager.class);
@@ -33,19 +37,55 @@ public class ReportingManager {
         this.reportProjector = new ReportProjector();
 
         this.dtupayMQ.addHandler(EventTypes.BANK_TRANSFER_CONFIRMED.getTopic(), this::handleBankTransferConfirmed);
-        this.dtupayMQ.addHandler(EventTypes.CUSTOMER_REPORT_REQUESTED.getTopic(), this::handleCustomerRecordRequested);
+        this.dtupayMQ.addHandler(EventTypes.CUSTOMER_REPORT_REQUESTED.getTopic(), this::handleCustomerReportRequested);
+        this.dtupayMQ.addHandler(EventTypes.MERCHANT_REPORT_REQUESTED.getTopic(), this::handleMerchantReportRequested);
+        this.dtupayMQ.addHandler(EventTypes.MANAGER_REPORT_REQUESTED.getTopic(), this::handleManagerReportRequested);
 
         Ledger initManager = Ledger.create("ADMIN", ReportingRole.MANAGER);
         ledgerRepository.save(initManager);
     }
 
-    public void handleCustomerRecordRequested(Event event) {
+    public void handleCustomerReportRequested(Event event) {
         logger.debug("Received CustomerReportRequested event: {}", event);
         var customerId = event.getArgument(0, String.class);
+        var correlationId = event.getArgument(1, Correlator.class);
 
         // generate the event with the report back to the facade
+        ArrayList<CustomerView> views = new ArrayList<>();
+        try {
+            views = new ArrayList<>(getCustomerViews(customerId));
+        } catch (IllegalAccessException e) {
+            logger.error(e.getMessage(), e);
+        }
+        Event response = new Event(EventTypes.CUSTOMER_REPORT_GENERATED.getTopic(), views, correlationId);
+        this.dtupayMQ.publish(response);
+    }
 
-        // < id -> ArrayList<Events> (processing)  <Id -> Set<Event>
+    public void handleMerchantReportRequested(Event event) {
+        logger.debug("Received MerchantReportRequested event: {}", event);
+        var merchantId = event.getArgument(0, String.class);
+        var correlationId = event.getArgument(1, Correlator.class);
+
+        // generate the event with the report back to the facade
+        ArrayList<MerchantView> views = new ArrayList<>();
+        try {
+            views = new ArrayList<>(getMerchantViews(merchantId));
+        } catch (IllegalAccessException e) {
+            logger.error(e.getMessage(), e);
+        }
+        Event response = new Event(EventTypes.MERCHANT_REPORT_GENERATED.getTopic(), views, correlationId);
+        this.dtupayMQ.publish(response);
+    }
+
+    public void handleManagerReportRequested(Event event) {
+        logger.debug("Received ManagerReportRequested event: {}", event);
+        var correlationId = event.getArgument(0, Correlator.class);
+
+        // generate the event with the report back to the facade
+        ArrayList<ManagerView> views = new ArrayList<>(getManagerViews());
+
+        Event response = new Event(EventTypes.MANAGER_REPORT_GENERATED.getTopic(), views, correlationId);
+        this.dtupayMQ.publish(response);
     }
 
     public void handleBankTransferConfirmed(Event event) {
