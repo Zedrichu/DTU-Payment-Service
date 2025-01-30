@@ -70,7 +70,7 @@ public class Ledger {
     public void applyEvents(Stream<Event> events) {
         events.forEachOrdered(this::applyEvent);
         if (this.getId() == null) {
-            throw new Error("Report ID does not exist");
+            throw new Error("Ledger ID does not exist");
         }
     }
 

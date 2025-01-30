@@ -90,26 +90,25 @@ public class ReportingManager {
         logger.debug("Received BankTransferConfirmed event: {}", event);
         var payLog = event.getArgument(0, PaymentRecord.class);
 
-
-        // First time Customer, Merchant report creation
+        // First time Customer, Merchant ledger creation
         var response1 = this.ledgerReadRepository.contains(payLog.merchantId());
         if (!response1) {
-            var id = createLedger(payLog.merchantId(), ReportingRole.MERCHANT);
+            createLedger(payLog.merchantId(), ReportingRole.MERCHANT);
         }
-        logPayment(payLog.merchantId(), payLog);
 
         var response2 = this.ledgerReadRepository.contains(payLog.customerId());
         if (!response2) {
-            var id = createLedger(payLog.customerId(), ReportingRole.CUSTOMER);
+            createLedger(payLog.customerId(), ReportingRole.CUSTOMER);
         }
-        logPayment(payLog.customerId(), payLog);
 
-        logPayment("ADMIN", payLog);
+        logPayment(payLog);
     }
 
     /* Helper methods */
-    public void logPayment(String ledgerId, PaymentRecord transaction) {
-        updateLedger(ledgerId, Set.of(transaction));
+    public void logPayment(PaymentRecord transaction) {
+        updateLedger(transaction.merchantId(), Set.of(transaction));
+        updateLedger(transaction.customerId(), Set.of(transaction));
+        updateLedger("ADMIN", Set.of(transaction));
     }
 
     /*____________________________________________________________________________________*/

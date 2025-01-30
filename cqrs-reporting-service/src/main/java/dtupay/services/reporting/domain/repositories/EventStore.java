@@ -13,9 +13,9 @@ import java.util.stream.Stream;
 
 public class EventStore {
 
-    private Map<String, List<Event>> store = new ConcurrentHashMap<>();
+    private final Map<String, List<Event>> store = new ConcurrentHashMap<>();
 
-    private MessageQueue eventBus;
+    private final MessageQueue eventBus;
     public EventStore(MessageQueue bus) { eventBus = bus;}
 
 

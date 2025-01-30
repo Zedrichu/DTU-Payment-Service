@@ -1,5 +1,6 @@
 package dtupay.services.reporting.domain.models;
 
+import java.io.Serializable;
 
 // <<Value>> Immutable object, identified by attributes
 public record PaymentRecord(
@@ -9,5 +10,4 @@ public record PaymentRecord(
     String description,
     Token token,
     String customerId,
-    String merchantId) {}
-
+    String merchantId) implements Serializable {}

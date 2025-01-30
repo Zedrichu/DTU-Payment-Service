@@ -2,7 +2,7 @@
 .tools/
 obsolete/
 target/
-.idea/
+.idea/**
 end-to-end-test/docker-compose.yml
 
 **/.DS_Store
