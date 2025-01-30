@@ -9,12 +9,12 @@ import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ReadModelRepository {
+public class LedgerReadRepository {
 
     // Mapping from LedgerId -> Set of Transaction Logs
     private final Map<String, Set<PaymentRecord>> paymentRecords = new HashMap<>();
 
-    public ReadModelRepository(MessageQueue eventQueue) {
+    public LedgerReadRepository(MessageQueue eventQueue) {
         eventQueue.addHandler(LedgerCreated.class, e -> apply((LedgerCreated) e));
         eventQueue.addHandler(TransactionAdded.class, e -> apply((TransactionAdded) e));
         eventQueue.addHandler(LedgerDeleted.class, e -> apply((LedgerDeleted) e));
@@ -22,6 +22,10 @@ public class ReadModelRepository {
 
     public boolean contains(String ledgerId) {
         return paymentRecords.containsKey(ledgerId);
+    }
+
+    public void addTransactions(String ledgerId, Set<PaymentRecord> transactions) {
+        paymentRecords.computeIfAbsent(ledgerId, k -> new HashSet<>()).addAll(transactions);
     }
 
     public void apply(LedgerCreated event) {

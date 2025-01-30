@@ -1,18 +1,17 @@
 package dtupay.services.reporting.domain;
 
 import dtupay.services.reporting.domain.aggregate.Ledger;
-import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.domain.aggregate.ReportingRole;
-import dtupay.services.reporting.domain.projection.ReportProjector;
+import dtupay.services.reporting.domain.models.PaymentRecord;
+import dtupay.services.reporting.domain.projection.LedgerViewProjector;
 import dtupay.services.reporting.domain.projection.ViewFactory;
 import dtupay.services.reporting.domain.projection.views.CustomerView;
 import dtupay.services.reporting.domain.projection.views.ManagerView;
 import dtupay.services.reporting.domain.projection.views.MerchantView;
-import dtupay.services.reporting.domain.repositories.LedgerRepository;
-import dtupay.services.reporting.domain.repositories.ReadModelRepository;
+import dtupay.services.reporting.domain.repositories.LedgerWriteRepository;
+import dtupay.services.reporting.domain.repositories.LedgerReadRepository;
 import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;
-import io.cucumber.java.an.E;
 import messaging.Event;
 import messaging.MessageQueue;
 import org.slf4j.Logger;
@@ -20,21 +19,20 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ReportingManager {
     private static final Logger logger = LoggerFactory.getLogger(ReportingManager.class);
-    private final ReadModelRepository readModelRepository;
-    private final LedgerRepository ledgerRepository;
-    private final ReportProjector reportProjector;
-    private MessageQueue dtupayMQ;
+    private final LedgerReadRepository ledgerReadRepository;
+    private final LedgerWriteRepository ledgerWriteRepository;
+    private final LedgerViewProjector ledgerViewProjector;
+    private final MessageQueue dtupayMQ;
 
-    public ReportingManager(MessageQueue messageQueue, ReadModelRepository readRepository, LedgerRepository writeRepository) {
-        this.readModelRepository = readRepository;
-        this.ledgerRepository = writeRepository;
+    public ReportingManager(MessageQueue messageQueue, LedgerReadRepository readRepository, LedgerWriteRepository writeRepository) {
+        this.ledgerReadRepository = readRepository;
+        this.ledgerWriteRepository = writeRepository;
         this.dtupayMQ = messageQueue;
 
-        this.reportProjector = new ReportProjector();
+        this.ledgerViewProjector = new LedgerViewProjector(readRepository);
 
         this.dtupayMQ.addHandler(EventTypes.BANK_TRANSFER_CONFIRMED.getTopic(), this::handleBankTransferConfirmed);
         this.dtupayMQ.addHandler(EventTypes.CUSTOMER_REPORT_REQUESTED.getTopic(), this::handleCustomerReportRequested);
@@ -42,7 +40,7 @@ public class ReportingManager {
         this.dtupayMQ.addHandler(EventTypes.MANAGER_REPORT_REQUESTED.getTopic(), this::handleManagerReportRequested);
 
         Ledger initManager = Ledger.create("ADMIN", ReportingRole.MANAGER);
-        ledgerRepository.save(initManager);
+        ledgerWriteRepository.save(initManager);
     }
 
     public void handleCustomerReportRequested(Event event) {
@@ -94,15 +92,15 @@ public class ReportingManager {
 
 
         // First time Customer, Merchant report creation
-        var response1 = this.readModelRepository.contains(payLog.merchantId());
+        var response1 = this.ledgerReadRepository.contains(payLog.merchantId());
         if (!response1) {
-            var id = createMerchantLedger(payLog);
+            var id = createLedger(payLog.merchantId(), ReportingRole.MERCHANT);
         }
         logPayment(payLog.merchantId(), payLog);
 
-        var response2 = this.readModelRepository.contains(payLog.customerId());
+        var response2 = this.ledgerReadRepository.contains(payLog.customerId());
         if (!response2) {
-            var id = createCustomerLedger(payLog);
+            var id = createLedger(payLog.customerId(), ReportingRole.CUSTOMER);
         }
         logPayment(payLog.customerId(), payLog);
 
@@ -115,49 +113,44 @@ public class ReportingManager {
     }
 
     /*____________________________________________________________________________________*/
+    // Commands: CreateLedgerCommand<id, role>, UpdateLedgerCommand<id, transactions>
     /* Command Operations */
-    public String createCustomerLedger(PaymentRecord paymentRecord) {
+    public String createLedger(String ledgerId, ReportingRole role) {
         // Create a transaction ledger for the entity
-        Ledger ledger = Ledger.create(paymentRecord.customerId(), ReportingRole.CUSTOMER);
-        ledgerRepository.save(ledger);
-        return ledger.getId();
-    }
-
-    public String createMerchantLedger(PaymentRecord paymentRecord) {
-        // Create a transaction ledger for the entity
-        Ledger ledger = Ledger.create(paymentRecord.merchantId(), ReportingRole.MERCHANT);
-        ledgerRepository.save(ledger);
+        Ledger ledger = Ledger.create(ledgerId, role);
+        ledgerWriteRepository.save(ledger);
         return ledger.getId();
     }
 
     // < id --> Set<event>
     public void updateLedger(String ledgerId, Set<PaymentRecord> paymentRecords) {
-        Ledger ledger = ledgerRepository.getById(ledgerId);
+        Ledger ledger = ledgerWriteRepository.getById(ledgerId);
         ledger.update(paymentRecords);
-        ledgerRepository.save(ledger);
+        ledgerWriteRepository.save(ledger);
     }
 
     /*_________________________________________________________________________*/
+    // Queries: CustomerViewsById<id>, MerchantViewsById<id>, ManagerViews
     /* Query Operations */
     public Set<CustomerView> getCustomerViews(String customerId) throws IllegalAccessException {
-        if (ledgerRepository.getById(customerId).getRole() != ReportingRole.CUSTOMER) {
+        if (ledgerWriteRepository.getById(customerId).getRole() != ReportingRole.CUSTOMER) {
             throw new IllegalAccessException("Access control failure: accessing wrong ledger as a customer");
         }
-        Set<PaymentRecord> transactions = readModelRepository.getTransactionsByLedger(customerId);
-        return reportProjector.projectViews(transactions, ViewFactory::convertToCustomerView);
+        Set<PaymentRecord> transactions = ledgerReadRepository.getTransactionsByLedger(customerId);
+        return ledgerViewProjector.projectViews(transactions, ViewFactory::convertToCustomerView);
     }
 
     public Set<MerchantView> getMerchantViews(String merchantId) throws IllegalAccessException {
-        if (ledgerRepository.getById(merchantId).getRole() != ReportingRole.MERCHANT) {
+        if (ledgerWriteRepository.getById(merchantId).getRole() != ReportingRole.MERCHANT) {
             throw new IllegalAccessException("Access control failure: accessing wrong ledger as a merchant");
         }
-        Set<PaymentRecord> transactions = readModelRepository.getTransactionsByLedger(merchantId);
-        return reportProjector.projectViews(transactions, ViewFactory::convertToMerchantView);
+        Set<PaymentRecord> transactions = ledgerReadRepository.getTransactionsByLedger(merchantId);
+        return ledgerViewProjector.projectViews(transactions, ViewFactory::convertToMerchantView);
     }
 
     public Set<ManagerView> getManagerViews() {
-        Set<PaymentRecord> transactions = readModelRepository.getAllTransactions();
-        return reportProjector.projectViews(transactions, ViewFactory::convertToManagerView);
+        Set<PaymentRecord> transactions = ledgerReadRepository.getAllTransactions();
+        return ledgerViewProjector.projectViews(transactions, ViewFactory::convertToManagerView);
     }
 }
     // aggregate/ User (aggregate) -> UserId (aggregate root)

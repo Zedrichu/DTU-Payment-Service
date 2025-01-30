@@ -3,8 +3,8 @@ package service.behaviours.tests;
 import dtupay.services.reporting.domain.ReportingManager;
 import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.domain.models.Token;
-import dtupay.services.reporting.domain.repositories.LedgerRepository;
-import dtupay.services.reporting.domain.repositories.ReadModelRepository;
+import dtupay.services.reporting.domain.repositories.LedgerWriteRepository;
+import dtupay.services.reporting.domain.repositories.LedgerReadRepository;
 import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
@@ -16,8 +16,8 @@ import static org.mockito.Mockito.mock;
 
 public class ReportingStepDefs {
     private ReportingManager reportingManager;
-    private ReadModelRepository readModelRepository;
-    private LedgerRepository reportRepository;
+    private LedgerReadRepository ledgerReadRepository;
+    private LedgerWriteRepository reportRepository;
     private PaymentRecord paymentRecord;
     messaging.MessageQueue messageQueue = mock(messaging.MessageQueue.class);
     MessageQueue internalMQ = mock(MessageQueue.class);
@@ -25,9 +25,9 @@ public class ReportingStepDefs {
 
   @Given("a reporting service")
   public void aReportingService() {
-    readModelRepository = new ReadModelRepository(internalMQ);
-    reportRepository = new LedgerRepository(internalMQ);
-    reportingManager = new ReportingManager(messageQueue, readModelRepository, reportRepository);
+    ledgerReadRepository = new LedgerReadRepository(internalMQ);
+    reportRepository = new LedgerWriteRepository(internalMQ);
+    reportingManager = new ReportingManager(messageQueue, ledgerReadRepository, reportRepository);
   }
 
   @When("a BankTransferConfirmed event is received")

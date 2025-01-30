@@ -1,8 +1,8 @@
 package dtupay.services.reporting;
 
 import dtupay.services.reporting.domain.ReportingManager;
-import dtupay.services.reporting.domain.repositories.LedgerRepository;
-import dtupay.services.reporting.domain.repositories.ReadModelRepository;
+import dtupay.services.reporting.domain.repositories.LedgerWriteRepository;
+import dtupay.services.reporting.domain.repositories.LedgerReadRepository;
 import messaging.implementations.RabbitMqQueue;
 import dtupay.services.reporting.utilities.intramessaging.implementations.MessageQueueAsync;
 
@@ -18,8 +18,8 @@ public class StartUp {
 		var mq = new RabbitMqQueue(HOSTNAME);
 
 		var intraMQ = new MessageQueueAsync();
-		var readModelRepository = new ReadModelRepository(intraMQ);
-		var reportRepository = new LedgerRepository(intraMQ);
+		var readModelRepository = new LedgerReadRepository(intraMQ);
+		var reportRepository = new LedgerWriteRepository(intraMQ);
 
 		new ReportingManager(mq, readModelRepository, reportRepository);
 	}

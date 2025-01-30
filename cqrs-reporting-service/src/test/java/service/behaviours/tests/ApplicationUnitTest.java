@@ -4,8 +4,8 @@ import dtupay.services.reporting.domain.ReportingManager;
 import dtupay.services.reporting.domain.aggregate.ReportingRole;
 import dtupay.services.reporting.domain.models.PaymentRecord;
 import dtupay.services.reporting.domain.models.Token;
-import dtupay.services.reporting.domain.repositories.ReadModelRepository;
-import dtupay.services.reporting.domain.repositories.LedgerRepository;
+import dtupay.services.reporting.domain.repositories.LedgerReadRepository;
+import dtupay.services.reporting.domain.repositories.LedgerWriteRepository;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 import dtupay.services.reporting.utilities.intramessaging.implementations.MessageQueueAsync;
 import dtupay.services.reporting.utilities.intramessaging.implementations.MessageQueueSync;
@@ -23,36 +23,36 @@ import static org.junit.Assert.*;
 public class ApplicationUnitTest {
 
 	private ReportingManager service;
-	LedgerRepository repository;
+	LedgerWriteRepository repository;
 
 	public void setUp_async_queues() {
 		MessageQueue eventQueue = new MessageQueueAsync();
-		repository = new LedgerRepository(eventQueue);
-		ReadModelRepository readRepository = new ReadModelRepository(eventQueue);
+		repository = new LedgerWriteRepository(eventQueue);
+		LedgerReadRepository readRepository = new LedgerReadRepository(eventQueue);
 		messaging.MessageQueue dtupayMq = new messaging.implementations.RabbitMqQueue("localhost");
 		service = new ReportingManager(dtupayMq, readRepository, repository);
 	}
 
 	private void setup_sync_queues() throws InterruptedException, ExecutionException, Exception {
 		MessageQueue eventQueue = new MessageQueueSync();
-		repository = new LedgerRepository(eventQueue);
-		ReadModelRepository readRepository = new ReadModelRepository(eventQueue);
+		repository = new LedgerWriteRepository(eventQueue);
+		LedgerReadRepository readRepository = new LedgerReadRepository(eventQueue);
 		messaging.MessageQueue dtupayMq = new messaging.implementations.RabbitMqQueue();
 		service = new ReportingManager(dtupayMq, readRepository, repository);
 	}
 
 	private void setup_rabbitmq() throws InterruptedException, ExecutionException, Exception {
 		MessageQueue eventQueue = new RabbitMqQueue("event");
-		repository = new LedgerRepository(eventQueue);
-		ReadModelRepository readRepository = new ReadModelRepository(eventQueue);
+		repository = new LedgerWriteRepository(eventQueue);
+		LedgerReadRepository readRepository = new LedgerReadRepository(eventQueue);
 		messaging.MessageQueue dtupayMq = new messaging.implementations.RabbitMqQueue();
 		service = new ReportingManager(dtupayMq, readRepository, repository);
 	}
 
 	public void create_a_new_report() throws InterruptedException, ExecutionException {
-		var ledgerId = service.createCustomerLedger(
-					new PaymentRecord("custom-bank", "merchant-bank",
-								1000, "", Token.random(), "customerId", "merchantId"));
+		PaymentRecord record = new PaymentRecord("custom-bank", "merchant-bank",
+										1000, "", Token.random(), "customerId", "merchantId");
+		var ledgerId = service.createLedger(record.customerId(), ReportingRole.CUSTOMER);
 		var ledger = repository.getById(ledgerId);
 		assertEquals("customerId", ledger.getId());
 		assertEquals(ledgerId, ledger.getId());
@@ -65,13 +65,9 @@ public class ApplicationUnitTest {
 			final int k=i;
 			new Thread(() -> {try {
 				if (k % 2 == 0) {
-					rids.add(service.createCustomerLedger(
-								new PaymentRecord("", "", 1000,
-											"", Token.random(), "customerId"+(k+1), "merchantId"+k)));
+					rids.add(service.createLedger("customerId"+(k+1), ReportingRole.CUSTOMER));
 				} else {
-					rids.add(service.createMerchantLedger(
-								new PaymentRecord("", "", 1000,
-											"", Token.random(), "customerId"+k, "merchantId"+(k+2))));
+					rids.add(service.createLedger("merchantId"+(k+2), ReportingRole.MERCHANT));
 				}
 			} catch (Exception e) {
 				throw new Error(e);
@@ -85,7 +81,7 @@ public class ApplicationUnitTest {
 		var token = Token.random();
 		var paymentRecord = new PaymentRecord("custom-bank", "merchant-bank",
 												1000, "", token, "customerId", "merchantId");
-		var ledgerId = service.createMerchantLedger(paymentRecord);
+		var ledgerId = service.createLedger(paymentRecord.merchantId(), ReportingRole.MERCHANT);
 
 		service.updateLedger(ledgerId, Set.of(paymentRecord));
 
