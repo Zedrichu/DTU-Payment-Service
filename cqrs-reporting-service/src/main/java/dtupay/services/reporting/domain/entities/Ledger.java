@@ -22,7 +22,7 @@ public class Ledger {
 
     private final Set<PaymentRecord> transactions = new HashSet<>();
 
-    private final List<Event> appliedEvents = new ArrayList<Event>();
+    private final List<Event> appliedEvents = new ArrayList<>();
 
     private final Map<Class<? extends Message>, Consumer<Message>> handlers = new HashMap<>();
 
@@ -39,9 +39,9 @@ public class Ledger {
 
     // cid -> arrayList ==> cid --> Set<CustomerViews>
     public static Ledger createFromEvents(Stream<Event> events) {
-        Ledger report = new Ledger();
-        report.applyEvents(events);
-        return report;
+        Ledger ledger = new Ledger();
+        ledger.applyEvents(events);
+        return ledger;
     }
 
     public Ledger() {
@@ -50,8 +50,8 @@ public class Ledger {
 
     private void registerEventHandlers() {
         handlers.put(TransactionAdded.class, e -> apply((TransactionAdded) e));
-        handlers.put(LedgerDeleted.class, e -> apply((LedgerDeleted) e));
-        handlers.put(LedgerCreated.class, e -> apply((LedgerCreated) e));
+        handlers.put(LedgerDeleted.class,    e -> apply((LedgerDeleted) e));
+        handlers.put(LedgerCreated.class,    e -> apply((LedgerCreated) e));
     }
 
     public void update(Set<PaymentRecord> transactions) {
@@ -93,7 +93,9 @@ public class Ledger {
     }
 
     private void apply(LedgerDeleted event) {
-        this.transactions.clear();
+        if (this.getId().equals(event.getId())) {
+            this.transactions.clear();
+        }
     }
 
     public void clearAppliedEvents() { appliedEvents.clear();

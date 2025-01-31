@@ -1,56 +1,62 @@
 package dtupay.services.reporting.query.repositories;
 
-import dtupay.services.reporting.domain.events.LedgerCreated;
-import dtupay.services.reporting.domain.events.LedgerDeleted;
-import dtupay.services.reporting.domain.events.TransactionAdded;
-import dtupay.services.reporting.models.PaymentRecord;
-import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
+import dtupay.services.reporting.domain.entities.ReportingRole;
+import dtupay.services.reporting.query.views.CustomerView;
+import dtupay.services.reporting.query.views.ManagerView;
+import dtupay.services.reporting.query.views.MerchantView;
+import lombok.Getter;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class LedgerReadRepository {
 
-    // Mapping from LedgerId -> Set of Transaction Logs
-    private final Map<String, Set<PaymentRecord>> paymentRecords = new HashMap<>();
+  // Mapping from LedgerId -> Set of Transaction Logs
+  private final Map<String, Set<CustomerView>> customerViews = new HashMap<>();
+  private final Map<String, Set<MerchantView>> merchantViews = new HashMap<>();
+  @Getter
+  private final Set<ManagerView> managerViews = new HashSet<>();
 
-    public LedgerReadRepository(MessageQueue eventQueue) {
-        eventQueue.addHandler(LedgerCreated.class, e -> apply((LedgerCreated) e));
-        eventQueue.addHandler(TransactionAdded.class, e -> apply((TransactionAdded) e));
-        eventQueue.addHandler(LedgerDeleted.class, e -> apply((LedgerDeleted) e));
+  public boolean contains(String ledgerId) {
+    return customerViews.containsKey(ledgerId) || merchantViews.containsKey(ledgerId);
+  }
+
+  public Set<CustomerView> getCustomerViewsByLedger(String ledgerId) {
+    return customerViews.getOrDefault(ledgerId, new HashSet<>());
+  }
+
+  public Set<MerchantView> getMerchantViewsByLedger(String ledgerId) {
+    return merchantViews.getOrDefault(ledgerId, new HashSet<>());
+  }
+
+  public void addCustomerViews(String ledgerId, Set<CustomerView> views) {
+    customerViews.computeIfAbsent(ledgerId, _ -> new HashSet<>()).addAll(views);
+  }
+
+  public void addMerchantViews(String ledgerId, Set<MerchantView> views) {
+    merchantViews.computeIfAbsent(ledgerId, _ -> new HashSet<>()).addAll(views);
+  }
+
+  public void addManagerViews(Set<ManagerView> views) {
+    managerViews.addAll(views);
+  }
+
+  public void initRoleLedger(String ledgerId, ReportingRole role) {
+    switch (role) {
+      case CUSTOMER: customerViews.put(ledgerId, new HashSet<>()); break;
+      case MERCHANT: merchantViews.put(ledgerId, new HashSet<>()); break;
+      default: managerViews.clear(); break;
     }
+  }
 
-    public boolean contains(String ledgerId) {
-        return paymentRecords.containsKey(ledgerId);
+  public void removeRoleLedger(String ledgerId) {
+    customerViews.remove(ledgerId);
+    merchantViews.remove(ledgerId);
+    if (ledgerId.equals("ADMIN")) {
+      managerViews.clear();
     }
+  }
 
-    public void addTransactions(String ledgerId, Set<PaymentRecord> transactions) {
-        paymentRecords.computeIfAbsent(ledgerId, k -> new HashSet<>()).addAll(transactions);
-    }
-
-    public void apply(LedgerCreated event) {
-    }
-
-    public void apply(TransactionAdded event) {
-        var transactionsByLedger = paymentRecords.getOrDefault(event.getId(), new HashSet<>());
-        transactionsByLedger.add(event.getTransaction());
-        paymentRecords.put(event.getId(), transactionsByLedger);
-    }
-
-    public void apply(LedgerDeleted event) {
-        var transactionsByLedger = paymentRecords.getOrDefault(event.getId(), new HashSet<>());
-        transactionsByLedger.clear();
-        paymentRecords.put(event.getId(), transactionsByLedger);
-    }
-
-
-    public Set<PaymentRecord> getTransactionsByLedger(String ledgerId) {
-        return paymentRecords.getOrDefault(ledgerId, new HashSet<>());
-    }
-
-    public Set<PaymentRecord> getAllTransactions() {
-        return paymentRecords.entrySet().stream()
-              .flatMap(entry -> entry.getValue().stream())
-              .collect(Collectors.toSet());
-    }
 }

@@ -1,19 +1,17 @@
 package dtupay.services.reporting.utilities;
 
 
+import lombok.Getter;
 import lombok.Value;
 
 import java.util.Objects;
 import java.util.UUID;
 
+@Getter
 @Value
 public class Correlator {
 
-	public UUID getId() {
-		return id;
-	}
-
-	UUID id;
+  UUID id;
 
 	public Correlator(UUID id) { this.id = id; }
 

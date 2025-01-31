@@ -29,7 +29,7 @@ public class EventStore {
 
     public Stream<Event> getEventsFor(String repId) {
         if (!store.containsKey(repId)) {
-            store.put(repId, new ArrayList<Event>());
+            store.put(repId, new ArrayList<>());
         }
         return store.get(repId).stream();
     }

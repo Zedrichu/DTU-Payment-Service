@@ -1,11 +1,14 @@
 package service.behaviours.tests;
 
+import dtupay.services.reporting.adapters.persistence.LedgerWriteRepository;
 import dtupay.services.reporting.application.services.ReportingManager;
+import dtupay.services.reporting.domain.entities.LedgerAggregate;
 import dtupay.services.reporting.domain.entities.ReportingRole;
 import dtupay.services.reporting.models.PaymentRecord;
 import dtupay.services.reporting.models.Token;
+import dtupay.services.reporting.query.projection.LedgerViewProjector;
+import dtupay.services.reporting.query.projection.ReportProjection;
 import dtupay.services.reporting.query.repositories.LedgerReadRepository;
-import dtupay.services.reporting.adapters.persistence.LedgerWriteRepository;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 import dtupay.services.reporting.utilities.intramessaging.implementations.MessageQueueAsync;
 import dtupay.services.reporting.utilities.intramessaging.implementations.MessageQueueSync;
@@ -15,44 +18,55 @@ import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class ApplicationUnitTest {
 
 	private ReportingManager service;
 	LedgerWriteRepository repository;
+	private LedgerAggregate aggregate;
+	private ReportProjection projection;
 
 	public void setUp_async_queues() {
 		MessageQueue eventQueue = new MessageQueueAsync();
 		repository = new LedgerWriteRepository(eventQueue);
-		LedgerReadRepository readRepository = new LedgerReadRepository(eventQueue);
+		LedgerReadRepository readRepository = new LedgerReadRepository();
+		new LedgerViewProjector(repository, readRepository, eventQueue);
 		messaging.MessageQueue dtupayMq = new messaging.implementations.RabbitMqQueue("localhost");
 		service = new ReportingManager(dtupayMq, readRepository, repository);
+		aggregate = service.getAggregate();
+		projection = service.getProjection();
 	}
 
-	private void setup_sync_queues() throws InterruptedException, ExecutionException, Exception {
+	private void setup_sync_queues() {
 		MessageQueue eventQueue = new MessageQueueSync();
 		repository = new LedgerWriteRepository(eventQueue);
-		LedgerReadRepository readRepository = new LedgerReadRepository(eventQueue);
+		LedgerReadRepository readRepository = new LedgerReadRepository();
+		new LedgerViewProjector(repository, readRepository, eventQueue);
 		messaging.MessageQueue dtupayMq = new messaging.implementations.RabbitMqQueue();
 		service = new ReportingManager(dtupayMq, readRepository, repository);
+		aggregate = service.getAggregate();
+		projection = service.getProjection();
 	}
 
-	private void setup_rabbitmq() throws InterruptedException, ExecutionException, Exception {
+	private void setup_rabbitmq() {
 		MessageQueue eventQueue = new RabbitMqQueue("event");
 		repository = new LedgerWriteRepository(eventQueue);
-		LedgerReadRepository readRepository = new LedgerReadRepository(eventQueue);
+		LedgerReadRepository readRepository = new LedgerReadRepository();
+		new LedgerViewProjector(repository, readRepository, eventQueue);
 		messaging.MessageQueue dtupayMq = new messaging.implementations.RabbitMqQueue();
 		service = new ReportingManager(dtupayMq, readRepository, repository);
+		aggregate = service.getAggregate();
+		projection = service.getProjection();
 	}
 
-	public void create_a_new_report() throws InterruptedException, ExecutionException {
+	public void create_a_new_report() {
 		PaymentRecord record = new PaymentRecord("custom-bank", "merchant-bank",
 										1000, "", Token.random(), "customerId", "merchantId");
-		var ledgerId = service.createLedger(record.customerId(), ReportingRole.CUSTOMER);
+		var ledgerId = aggregate.createLedger(record.customerId(), ReportingRole.CUSTOMER).getId();
 		var ledger = repository.getById(ledgerId);
 		assertEquals("customerId", ledger.getId());
 		assertEquals(ledgerId, ledger.getId());
@@ -65,9 +79,9 @@ public class ApplicationUnitTest {
 			final int k=i;
 			new Thread(() -> {try {
 				if (k % 2 == 0) {
-					rids.add(service.createLedger("customerId"+(k+1), ReportingRole.CUSTOMER));
+					rids.add(aggregate.createLedger("customerId"+(k+1), ReportingRole.CUSTOMER).getId());
 				} else {
-					rids.add(service.createLedger("merchantId"+(k+2), ReportingRole.MERCHANT));
+					rids.add(aggregate.createLedger("merchantId"+(k+2), ReportingRole.MERCHANT).getId());
 				}
 			} catch (Exception e) {
 				throw new Error(e);
@@ -77,47 +91,47 @@ public class ApplicationUnitTest {
 		assertEquals(10, rids.size());
 	}
 
-	public void create_a_new_report_with_one_update() throws InterruptedException, ExecutionException, IllegalAccessException {
+	public void create_a_new_report_with_one_update() throws InterruptedException {
 		var token = Token.random();
 		var paymentRecord = new PaymentRecord("custom-bank", "merchant-bank",
 												1000, "", token, "customerId", "merchantId");
-		var ledgerId = service.createLedger(paymentRecord.merchantId(), ReportingRole.MERCHANT);
+		var ledgerId = aggregate.createLedger(paymentRecord.merchantId(), ReportingRole.MERCHANT).getId();
 
-		service.updateLedger(ledgerId, Set.of(paymentRecord));
+		var writtenLedger = aggregate.updateLedger(ledgerId, Set.of(paymentRecord));
 
 		Thread.sleep(1000); // Give the repository time to update its data (-> eventual consistency)
-		var report = repository.getById(ledgerId);
-		assertEquals("merchantId", report.getId());
-		assertEquals(ReportingRole.MERCHANT, report.getRole());
-		var transactions = report.getTransactions();
-		var views = service.getMerchantViews(ledgerId);
+		var ledger = repository.getById(ledgerId);
+		assertEquals(writtenLedger.getId(), ledger.getId());
+		assertEquals(writtenLedger.getRole(), ledger.getRole());
+		var transactions = ledger.getTransactions();
+		var views = projection.getMerchantViews(ledgerId);
 		assertEquals(1, views.size());
 		assertEquals(1, transactions.size());
 
-		assertEquals(token, views.stream().iterator().next().getToken());
-		assertEquals(1000, views.stream().iterator().next().getAmount());
+		assertEquals(token, views.stream().iterator().next().token());
+		assertEquals(1000, views.stream().iterator().next().amount());
 
 		var managerReport = repository.getById("ADMIN");
 		assertEquals(ReportingRole.MANAGER, managerReport.getRole());
 		assertEquals(0, managerReport.getTransactions().size());
 	}
 
-	public void create_a_new_bank_transfer_log() throws InterruptedException, ExecutionException, IllegalAccessException {
+	public void create_a_new_bank_transfer_log() throws InterruptedException {
 		var token = Token.random();
 		var payRecord = new PaymentRecord("custom-bank", "merchant-bank",
 					1000, "", token, "customerId", "merchantId");
 		Event event = new Event("BTC", payRecord);
 		service.handleBankTransferConfirmed(event);
 
-		Thread.sleep(2000);
+		Thread.sleep(1000);
 
 		var managerLedger = repository.getById("ADMIN");
 		assertEquals(1, managerLedger.getTransactions().size());
 
-		var customerViews = service.getCustomerViews("customerId");
+		var customerViews = projection.getCustomerViews("customerId");
 		assertEquals(1, customerViews.size());
 
-		assertEquals(2, service.getMerchantViews("merchantId").size());
+		assertEquals(2, projection.getMerchantViews("merchantId").size());
 	}
 	
 	@Test

@@ -34,4 +34,13 @@ public enum EventTypes {
     public String toString() {
         return topic;
     }
+
+    public static EventTypes fromTopic(String topic) {
+        for (EventTypes eventType : values()) {
+            if (eventType.topic.equals(topic)) {
+                return eventType;
+            }
+        }
+        throw new IllegalArgumentException("No matching EventTypes for topic: " + topic);
+    }
 }

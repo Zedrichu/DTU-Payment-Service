@@ -1,26 +1,31 @@
 package dtupay.services.reporting.config;
 
-import dtupay.services.reporting.application.services.ReportingManager;
 import dtupay.services.reporting.adapters.persistence.LedgerWriteRepository;
+import dtupay.services.reporting.application.services.ReportingManager;
+import dtupay.services.reporting.query.projection.LedgerViewProjector;
 import dtupay.services.reporting.query.repositories.LedgerReadRepository;
-import messaging.implementations.RabbitMqQueue;
 import dtupay.services.reporting.utilities.intramessaging.implementations.MessageQueueAsync;
+import messaging.implementations.RabbitMqQueue;
 
 public class StartUp {
-	private String HOSTNAME = "rabbitMq";
 
-	public static void main(String[] args) throws Exception {
+	public final String HOSTNAME = "rabbitMq";
+
+  public static void main(String[] args) {
 		new StartUp().startUp();
 	}
 
-	private void startUp() throws Exception {
-		System.out.println(HOSTNAME);
-		var mq = new RabbitMqQueue(HOSTNAME);
+	private void startUp() {
+    System.out.println(HOSTNAME);
+		var externalMQ = new RabbitMqQueue(HOSTNAME);
 
 		var intraMQ = new MessageQueueAsync();
-		var readModelRepository = new LedgerReadRepository(intraMQ);
-		var reportRepository = new LedgerWriteRepository(intraMQ);
 
-		new ReportingManager(mq, readModelRepository, reportRepository);
+		LedgerWriteRepository writeRepository = new LedgerWriteRepository(intraMQ);
+		LedgerReadRepository readRepository = new LedgerReadRepository();
+
+		new LedgerViewProjector(writeRepository, readRepository, intraMQ);
+
+		new ReportingManager(externalMQ, readRepository, writeRepository);
 	}
 }
