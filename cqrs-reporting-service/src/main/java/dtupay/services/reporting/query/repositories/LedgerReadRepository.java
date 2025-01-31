@@ -1,9 +1,9 @@
-package dtupay.services.reporting.domain.repositories;
+package dtupay.services.reporting.query.repositories;
 
 import dtupay.services.reporting.domain.events.LedgerCreated;
 import dtupay.services.reporting.domain.events.LedgerDeleted;
 import dtupay.services.reporting.domain.events.TransactionAdded;
-import dtupay.services.reporting.domain.models.PaymentRecord;
+import dtupay.services.reporting.models.PaymentRecord;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 
 import java.util.*;

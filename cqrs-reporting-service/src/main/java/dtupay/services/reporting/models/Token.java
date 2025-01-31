@@ -1,4 +1,4 @@
-package dtupay.services.reporting.domain.models;
+package dtupay.services.reporting.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -6,7 +6,6 @@ import lombok.ToString;
 import lombok.Value;
 
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.UUID;
 
 @Getter

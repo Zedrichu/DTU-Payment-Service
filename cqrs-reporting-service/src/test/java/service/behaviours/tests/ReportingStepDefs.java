@@ -1,10 +1,10 @@
 package service.behaviours.tests;
 
-import dtupay.services.reporting.domain.ReportingManager;
-import dtupay.services.reporting.domain.models.PaymentRecord;
-import dtupay.services.reporting.domain.models.Token;
-import dtupay.services.reporting.domain.repositories.LedgerWriteRepository;
-import dtupay.services.reporting.domain.repositories.LedgerReadRepository;
+import dtupay.services.reporting.application.services.ReportingManager;
+import dtupay.services.reporting.models.PaymentRecord;
+import dtupay.services.reporting.models.Token;
+import dtupay.services.reporting.adapters.persistence.LedgerWriteRepository;
+import dtupay.services.reporting.query.repositories.LedgerReadRepository;
 import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;

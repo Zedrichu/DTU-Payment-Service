@@ -1,8 +1,8 @@
-package dtupay.services.reporting;
+package dtupay.services.reporting.config;
 
-import dtupay.services.reporting.domain.ReportingManager;
-import dtupay.services.reporting.domain.repositories.LedgerWriteRepository;
-import dtupay.services.reporting.domain.repositories.LedgerReadRepository;
+import dtupay.services.reporting.application.services.ReportingManager;
+import dtupay.services.reporting.adapters.persistence.LedgerWriteRepository;
+import dtupay.services.reporting.query.repositories.LedgerReadRepository;
 import messaging.implementations.RabbitMqQueue;
 import dtupay.services.reporting.utilities.intramessaging.implementations.MessageQueueAsync;
 

@@ -1,12 +1,12 @@
-package dtupay.services.reporting.domain.projection;
+package dtupay.services.reporting.query.projection;
 
-import dtupay.services.reporting.domain.aggregate.ReportingRole;
-import dtupay.services.reporting.domain.models.PaymentRecord;
-import dtupay.services.reporting.domain.projection.views.CustomerView;
-import dtupay.services.reporting.domain.projection.views.ManagerView;
-import dtupay.services.reporting.domain.projection.views.MerchantView;
-import dtupay.services.reporting.domain.repositories.LedgerReadRepository;
-import dtupay.services.reporting.domain.repositories.LedgerWriteRepository;
+import dtupay.services.reporting.domain.entities.ReportingRole;
+import dtupay.services.reporting.models.PaymentRecord;
+import dtupay.services.reporting.query.views.CustomerView;
+import dtupay.services.reporting.query.views.ManagerView;
+import dtupay.services.reporting.query.views.MerchantView;
+import dtupay.services.reporting.query.repositories.LedgerReadRepository;
+import dtupay.services.reporting.adapters.persistence.LedgerWriteRepository;
 import org.picocontainer.annotations.Inject;
 
 import java.util.Set;

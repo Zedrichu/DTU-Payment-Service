@@ -1,15 +1,16 @@
-package dtupay.services.reporting.domain.projection.views;
+package dtupay.services.reporting.query.views;
 
-import dtupay.services.reporting.domain.models.Token;
+import dtupay.services.reporting.models.Token;
 import lombok.Value;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 @Value
-public class MerchantView implements Serializable {
+public class CustomerView implements Serializable {
 	@Serial
 	private static final long serialVersionUID = 1231553453445L;
 	int amount;
+	String merchantId;
 	Token token;
 }

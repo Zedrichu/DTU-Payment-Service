@@ -1,4 +1,4 @@
-package dtupay.services.reporting.domain.models;
+package dtupay.services.reporting.models;
 
 import java.io.Serializable;
 

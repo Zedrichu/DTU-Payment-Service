@@ -1,10 +1,10 @@
-package dtupay.services.reporting.domain.aggregate;
+package dtupay.services.reporting.domain.entities;
 
 import dtupay.services.reporting.domain.events.Event;
 import dtupay.services.reporting.domain.events.LedgerCreated;
 import dtupay.services.reporting.domain.events.LedgerDeleted;
 import dtupay.services.reporting.domain.events.TransactionAdded;
-import dtupay.services.reporting.domain.models.PaymentRecord;
+import dtupay.services.reporting.models.PaymentRecord;
 import dtupay.services.reporting.utilities.intramessaging.Message;
 
 import lombok.Getter;

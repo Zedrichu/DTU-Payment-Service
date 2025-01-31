@@ -1,6 +1,6 @@
-package dtupay.services.reporting.domain.repositories;
+package dtupay.services.reporting.adapters.persistence;
 
-import dtupay.services.reporting.domain.aggregate.Ledger;
+import dtupay.services.reporting.domain.entities.Ledger;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;
 
 public class LedgerWriteRepository {

@@ -1,4 +1,4 @@
-package dtupay.services.reporting.domain.aggregate;
+package dtupay.services.reporting.domain.entities;
 
 public enum ReportingRole {
 	MANAGER,

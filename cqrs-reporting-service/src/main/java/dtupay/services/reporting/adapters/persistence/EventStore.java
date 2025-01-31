@@ -1,4 +1,4 @@
-package dtupay.services.reporting.domain.repositories;
+package dtupay.services.reporting.adapters.persistence;
 
 import dtupay.services.reporting.domain.events.Event;
 import dtupay.services.reporting.utilities.intramessaging.MessageQueue;

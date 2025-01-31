@@ -1,15 +1,15 @@
-package dtupay.services.reporting.domain;
+package dtupay.services.reporting.application.services;
 
-import dtupay.services.reporting.domain.aggregate.Ledger;
-import dtupay.services.reporting.domain.aggregate.ReportingRole;
-import dtupay.services.reporting.domain.models.PaymentRecord;
-import dtupay.services.reporting.domain.projection.LedgerViewProjector;
-import dtupay.services.reporting.domain.projection.ViewFactory;
-import dtupay.services.reporting.domain.projection.views.CustomerView;
-import dtupay.services.reporting.domain.projection.views.ManagerView;
-import dtupay.services.reporting.domain.projection.views.MerchantView;
-import dtupay.services.reporting.domain.repositories.LedgerWriteRepository;
-import dtupay.services.reporting.domain.repositories.LedgerReadRepository;
+import dtupay.services.reporting.domain.entities.Ledger;
+import dtupay.services.reporting.domain.entities.ReportingRole;
+import dtupay.services.reporting.models.PaymentRecord;
+import dtupay.services.reporting.query.projection.LedgerViewProjector;
+import dtupay.services.reporting.query.projection.ViewFactory;
+import dtupay.services.reporting.query.views.CustomerView;
+import dtupay.services.reporting.query.views.ManagerView;
+import dtupay.services.reporting.query.views.MerchantView;
+import dtupay.services.reporting.adapters.persistence.LedgerWriteRepository;
+import dtupay.services.reporting.query.repositories.LedgerReadRepository;
 import dtupay.services.reporting.utilities.Correlator;
 import dtupay.services.reporting.utilities.EventTypes;
 import messaging.Event;
@@ -20,6 +20,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Set;
 
+
+/* See CQRS scheme logic: resources/ledger-cqrs.txt */
+/* See <<CQRS+EventSourcing>> architecture diagram: resources/.png */
 public class ReportingManager {
     private static final Logger logger = LoggerFactory.getLogger(ReportingManager.class);
     private final LedgerReadRepository ledgerReadRepository;
@@ -152,22 +155,3 @@ public class ReportingManager {
         return ledgerViewProjector.projectViews(transactions, ViewFactory::convertToManagerView);
     }
 }
-    // aggregate/ User (aggregate) -> UserId (aggregate root)
-    //                             -> Address (value objects)
-    //                             -> Contact (value objects)
-
-    // aggregate/ Ledger (aggregate) -> LedgerId (aggregate root)
-    //                               -> PaymentRecord (value objects)
-
-    // Report - customerId, token, amount, merchantId, customerBank, merchantBank, description
-    // -> Token (aggregate root)
-    // repo.save(report)
-    // return report.getId() -> Token
-
-    // manager: all fields -> Set<PaymentRecord>
-    // customer: <amount, merchantId, token> with filter <customerId> on report
-    // merchant: <amount, token> with filter <merchantId> on report
-    // others: <customerId, customerBank, merchantBank, description>
-
-    // Ledger (aggregate) -> LedgerId(token, aggregate root), Role, Set<PaymentRecord>
-    // Report -> CustomerView, MerchantView, ManagerView

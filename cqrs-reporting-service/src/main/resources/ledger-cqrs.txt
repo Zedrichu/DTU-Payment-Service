@@ -1,0 +1,19 @@
+    // aggregate/ User (aggregate) -> UserId (aggregate root)
+    //                             -> Address (value objects)
+    //                             -> Contact (value objects)
+
+    // aggregate/ Ledger (aggregate) -> LedgerId (aggregate root)
+    //                               -> PaymentRecord (value objects)
+
+    // Report - customerId, token, amount, merchantId, customerBank, merchantBank, description
+    // -> Token (aggregate root)
+    // repo.save(report)
+    // return report.getId() -> Token
+
+    // manager: all fields -> Set<PaymentRecord>
+    // customer: <amount, merchantId, token> with filter <customerId> on report
+    // merchant: <amount, token> with filter <merchantId> on report
+    // others: <customerId, customerBank, merchantBank, description>
+
+    // Ledger (aggregate) -> LedgerId(token, aggregate root), Role, Set<PaymentRecord>
+    // Report -> CustomerView, MerchantView, ManagerView

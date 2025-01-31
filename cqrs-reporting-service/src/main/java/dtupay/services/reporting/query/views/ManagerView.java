@@ -1,6 +1,6 @@
-package dtupay.services.reporting.domain.projection.views;
+package dtupay.services.reporting.query.views;
 
-import dtupay.services.reporting.domain.models.Token;
+import dtupay.services.reporting.models.Token;
 import lombok.Value;
 
 import java.io.Serial;

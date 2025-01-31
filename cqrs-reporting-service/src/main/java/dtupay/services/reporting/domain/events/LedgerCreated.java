@@ -1,6 +1,6 @@
 package dtupay.services.reporting.domain.events;
 
-import dtupay.services.reporting.domain.aggregate.ReportingRole;
+import dtupay.services.reporting.domain.entities.ReportingRole;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
