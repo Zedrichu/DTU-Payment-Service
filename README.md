@@ -40,12 +40,5 @@ Even though the `docker-compose` mechanism employs a custom health check for the
 ### GitHub Access
 [GitHub URL](https://github.com/Zedrichu/DTU-Payment-Service)
 
-### Jenkins Access
-[Jenkins URL](http://fm-18.compute.dtu.dk:8282/view/DTUPay-Platform/)
-<br><br>
-Credentials:
-``Login: huba |
-Password: group18``
-
 #### Project completed in course 02267 Software Development of Web Services @ Technical University of Denmark 
 <img src="https://user-images.githubusercontent.com/65953954/120001846-7f05f180-bfd4-11eb-8c11-2379a547dc9f.jpg" alt="drawing" width="100"/>
