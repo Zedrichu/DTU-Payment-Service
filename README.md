@@ -40,5 +40,34 @@ Even though the `docker-compose` mechanism employs a custom health check for the
 ### GitHub Access
 [GitHub URL](https://github.com/Zedrichu/DTU-Payment-Service)
 
+
+## License
+  DTU Payment Service - Microservice Java application for mobile payments via REST API client 
+                        interactions and a SOAP-based backend served by the bank
+
+  Copyright (C) 2025 Technical University of Denmark
+
+  Authors: 
+  - Adrian Zvizdenco <s204683@dtu.dk>
+  - Paul Nelson Becker
+  - Jonas Lykke Kjeldsen
+  - Jeppe Mikkelsen
+  - Simon Hermansen
+  - Adrian Ursu
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+--------------------------------------------------------------------------
 #### Project completed in course 02267 Software Development of Web Services @ Technical University of Denmark 
 <img src="https://user-images.githubusercontent.com/65953954/120001846-7f05f180-bfd4-11eb-8c11-2379a547dc9f.jpg" alt="drawing" width="100"/>
